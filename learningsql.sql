@@ -671,3 +671,162 @@ where major not in ("cosc","math");
 /* In union, no new columns can be added to the final result.  Join new columns can be added to the final result.
 /* In union, the number of columns in the result set has be to the same as the number of columns in the sets being unioned.  Join number of oclumns in the result set may vary. */
 
+/* Chapter 8 Joins versus Subqueries */
+select st.stno, st.sname
+from student st
+where stno in (select gr.student_number
+    from grade_report gr
+    where gr.grade="A" or gr.grade="B")
+order by st.stno; /* find students with A or B in student and grade_report tables SQL subquery.  student numbers are the joins.  31 rows. */
+select st.sname
+from student st, grade_report gr
+where st.stno = gr.student_number
+and (gr.grade="A" or gr.grade="B");  /* find students with A or B in student and grade_report tables SQL join.  student numbers are the joins.  67 rows because there are duplicates */
+/*which is more efficient?  Join or subquery?  Depends on which SQL you're using.  To get results without duplicates using join, use distinct below. */
+select distinct st.sname
+from student st, grade_report gr
+where st.stno = gr.student_number
+and (gr.grade="A" or gr.grade="B");
+select st.stno, st.sname, gr.grade, gr.section_id
+from student st, grade_report gr
+where st.stno = gr.student_number
+and (gr.grade="A" or gr.grade="B"); /* duplicates are okay in SQL join query because we list all A's and B's and each student's classes earning A's and B's */
+select distinct st.sname, gr.grade
+from student st, grade_report gr
+where st.stno = gr.student_number
+and (gr.grade="A" or gr.grade="B"); /* want list of students who earn A, B, and A and B.  Use SQL join query and distinct.  We don't need to see a student earning multiple A's and/or multiple B's grades. */
+select d2m.dname
+from department_to_major d2m
+where d2m.dcode in (select course.offering_dept
+    from course
+    where course.course_name like "*intro*"); /* find deparments offering classes with "intro" in the title.  d2m.dcode and course.offering_dept are the links between department_to_major table and course table */
+select s.sname, s.major, g.section_id
+from Student s, grade_report g
+where g.student_number = s.stno
+and g.grade = "C"
+and g.section_id in (select t.section_id
+    from section t
+    where t.instructor like "hermano"); /* find students earned C's taught by professor hermano.  grade report table section_id and section table section_id are the link */
+
+select *
+from room
+where capacity = 25;
+select *
+from room
+where capacity < (select avg(capacity)
+	from room);
+select *
+from room
+where capacity < (select avg(capacity)
+	from room
+	where bldg = 99); /* Using subqueries in this fashion the subquery must return one row.  Where operators are used, only single values are acceptable from the subquery. */
+
+/* Chapter 9 Aggregation and GROUP BY */
+/* An aggregate function is one that extracts information by operating on multiple rows such as count, average, minimum, or maximum. */
+/* group by is a must when aggregation */
+select class, count(*) as [count]
+from student
+group by class; /* count the number of class groups */
+select class, major, count(*) as [count by class then major]
+from student
+group by class, major;  /* count all students by class and by major like a pivot table. */
+select class, major, count(*) as [count by class then major]
+from student
+group by class, major
+order by count(*) desc, class;
+/* distinct unnecessary because group by clause groups rows for which the column(s) that are grouped don't have duplicate values */
+/* Having clause is a final filter on the output of a select statement.  It's like a pivot table filter. */
+select class, count(*) as [count]
+from student
+group by class
+having count(*) > 9;
+select class, major, count(*) as [count by class then major cosc majors 2 or greater]
+from student
+where major = "cosc"
+group by class, major
+having count(*) > 2;
+
+select min(count(stno))
+from student;
+group by class; /*error message appears in SQL in Access.  Min function is an aggregate function.  Aggregate functions operate on tables that contain rows.  There are no rows.  SQL in Access can't handle a mismatch of aggretation and grouping.  SQL in Access create temporary tables, inline views, or regular views.  Best use a temporary table or an inline view */
+select count(stno) as [temporary table count of students]
+from student
+group by class;
+select count(stno) as [temporary table temp91 count of students] into temp91
+from student
+group by class;
+select min([temporary table temp91 count of students])
+from temp91;
+select count(stno) as [count of stno], class
+from student
+group by class
+having count(stno) = (select min([temporary table temp91 count of students]) as [minimum count]
+    from temp91); /* use temporary table temp91 to find the class with the minimum or lowest count students */
+select min(c) as [minimum students inline view]
+from (select count(stno) as [c]
+from student
+group by class);
+select class, count(*) as [write query in subquery with having clause]
+from student
+group by class
+having count(*) =
+    (select min(c) as [minimum students inline view]
+    from (select count(stno) as [c]
+    from student
+    group by class));
+
+/* Nulls are never equal, less than, greater than, or not equal to any value.  Aggregates by themselves on columns containing nulls ignore null values.  */
+select count(*) as [count], avg(salary) as [average], sum(salary) as [sum], max(salary) as [max], min(salary) as [min]
+from sal;
+select count(name) as [count all four names]
+from sal;  /* four of the four rows contains a name.  count(name) returns 4 */
+select count(salary) as [count all three salary]
+from sal; /* three of the four rows contains a salary.  count(salary) returns 3 */
+select name, nz(salary,0) as [salary is zero when null]
+from sal;
+select count(nz(salary,0)) as [count salary including zero salary; salary is zero when null]
+from sal;
+select avg(nz(salary,0)) as [average salary including zero salary; salary is zero when null]
+from sal;
+
+/* Chapter 10 Correlated Subqueries skipped */
+
+/* Chapter 11 Indexes and Constraints on Tables */
+/* Indexes and contraints can be added to tables to make tables more efficient and to increase data integrity.  Index speeds up queries and searches and facilitates sorting and grouping operations; however indexes slows down updates on indexed fields.  A constraint is similar to an index, but a constraint can also be used to establish relationships with other tables. */
+create table test1 (name varchar(20), ssn char(9), dept_number integer, acct_balance currency);
+create index ssn_ndx
+on test1 (ssn desc); /* create index called ssn_ndx on ssn in descending order */
+create unique index ssn_ndx1
+on test1 (ssn desc); /* create index called ssn_ndx on ssn in descending order no duplicates.  The unique options can be used on fields no duplicates allowed even thought it's not a primary key. */
+create index ssn_ndx2
+on test1 (ssn desc) with primary; /* make ssn the primary key of test1 */
+create index ssn_ndx3
+on test1 (name) with disallow null; /* disallow null in name field */
+/* Click on the Access Indexes button to view all the indexes created.  Design-->Indexes. */
+drop index ssn_ndx1
+on test1; /* delete an index */
+
+/* constraints can be added to tables for more integrity. */
+create table test2 (name varchar(20), ssn char(9), dept_number integer not null, acct_balance currency); /* dept_number attribute has a not null constraint.  dept_number can't be null */
+alter table test2
+alter column dept_number integer not null; /* if test2 dept_number wasn't null, we can alter table or edit table for dept_number to be not null.  Column type and size must be included. */
+create table xxx (ssn char(9) constraint ssn_pk primary key, name varchar(20)); /* primary key constraint added to create table new table.  ssn_pk is the name of the primary key constraint for ssn.  */
+alter table test2
+add constraint ssn_pk primary key (ssn); /*add a primary key after create table.  Use alter table */
+create table xxx2 (ssn char(9), salary number, constraint ssn_pk primary key (ssn, salary)); /* two primary key concatenated primary key concatenate primary key multiple primary key */
+create table xxx3 (ssn char(9), salary number);
+alter table xxx3
+add constraint ssn_salary_pk primary key (ssn, salary); /* create table xx3, then alter table adding ssn and salary primary keys */
+
+/* unique constraint.  Unique can have null values.  More than one column can be unique. */
+create table emp (empno number, name varchar(20), title varchar(20), constraint empno_pk primary key(empno), constraint title_uk unique (title)); /* employee number empno field empno_pk constraint name is the primary key.  title title field title_uk constraint name is unique */
+
+/* delete constraint remove constraint */
+alter table xxx3
+drop constraint ssn_salary_pk;
+
+/* to enable a referential integrity constraint for two interrelated tables.  We can enforce a referential integrity constraint.  A foreign key and primary key constraint.  A row in one table foreign key can't exist if a value in the table referring to a value in another table primary key doesn't exist. */
+create table department (deptno number, deptname varchar(20), constraint deptno_pk primary key (deptno));
+create table employee2 (empno number constraint empno_pk primary key, empname varchar(20), dept number constraint dept_fk references department(deptno)); /* dept column is a foreign key references department table.  deptno is reference to table department which must be a primary key in department table */
+alter table xxx4
+add constraint dept_fk foreign key (dept) references department(deptno); /* the foreign key constraint can be added after tables are created.  The primary key table must be created before the alter table. */
