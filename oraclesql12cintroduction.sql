@@ -2,7 +2,7 @@
 /* char() fixed-length character data.  Set char(100).  If data is 10, database saves data as 100. */
 /* number(p,s) s is the decimal length to the right of decimal */
 /* long variable-length character data up to 2GB. */
-/* sql statements are not case sensitive. ctrl+shift+quote changes uppercase and lowercase and initial cap.  ctrl+d clears entire query builder.  However, it seems data is case sensitive  */
+/* sql statements are not case sensitive. ctrl+shift+quote changes uppercase and lowercase and initial cap.  ctrl+d clears entire query builder.  However, it seems data is case sensitive; yes, matching with characters is case sensitive.  */
 
 select *
 from employees
@@ -93,3 +93,99 @@ where manager_id is null;
 select *
 from employees
 where commission_pct is not null;
+
+select *
+from employees
+where job_id = 'SA_REP'
+and salary > 10000;
+select *
+from employees
+where job_id = 'SA_REP'
+or salary > 10000;
+/* not null is null */
+select last_name, job_id, salary
+from employees
+where salary > 10000 and job_id NOT IN ('SA_MAN','ST_CLERK','SH_CLERK');
+
+/* order of execution from high priority to low priority:  Arithmtic, concatenation, comparison, is [not] null, like, [not] in, [not] between, not equal to, NOT, AND, OR.  Use parahtheses to avoid logical order confusion. */
+select first_name, last_name, job_id, salary
+from employees
+where job_id = 'IT_PROG'
+or job_id = 'ST_CLERK'
+and salary > 5000;  /* returned six results */
+select first_name, last_name, job_id, salary
+from employees
+where (job_id = 'IT_PROG'
+or job_id = 'ST_CLERK')
+and salary > 5000;  /* return two results */
+
+select *
+from employees
+order by last_name;
+select first_name, last_name, salary
+from employees
+order by first_name,last_name;
+select first_name, last_name, salary*12 as s
+from employees
+order by first_name, s desc;
+/* nulls are displayed last in ascending order */
+select first_name, salary, commission_pct
+from employees
+order by commission_pct;
+select first_name, salary, commission_pct
+from employees
+order by commission_pct nulls first; /* nulls are displayed first then commission_pct ascending */
+select first_name, salary, commission_pct
+from employees
+order by 2 desc; /*sorting can be done with columns numeric position */
+select first_name, last_name
+from employees
+order by 1 desc, 2 asc;
+
+/* There are five types of single-row functions:  numeric, date, conversion, general, character */
+/* Two types of character functions:  case conversion lower, upper, initcap and character manipulation substr substring, length, concat or ||, instr instring, trim, ltrim, rtrim, replace, lpad left pad or rpad right pad. */
+select lower(first_name), upper(last_name), initcap(job_id)
+from employees;
+select first_name, lower(first_name) as lowerfirstname
+from employees;
+select first_name, upper(first_name), lower(last_name), initcap(email), upper('My name is Ellen')
+from employees;
+select first_name, upper(first_name), lower(last_name), initcap(email), upper('My name is Ellen')
+from employees
+where upper(last_name) = 'KING';  /* Data is case sensitive; yes, matching with characters is case sensitive.  */
+select length(first_name), first_name, substr(first_name,1,5), last_name, substr(last_name,3,6)
+from employees; /* last name start at 3, display 6 characters inclusive */
+select first_name, last_name, concat(first_name, last_name)
+from employees; /* concat() concatenates two parameters only */ 
+select first_name, last_name, concat(first_name, last_name), first_name||last_name, first_name||' '||last_name
+from employees;
+select first_name, instr(first_name,'e')
+from employees /* if there are more than one e in first_name, the first e number position is returned */
+select trim('              good  ')
+from dual; /* trim removes white space */
+select job_id, replace(job_id,'CLERK','specialist'), first_name, replace(first_name,'a','-')
+from employees; /* all a characters in first_name are replaced, not like instr instring returning first number position */
+/* lpad and rpad.  lpad('sql',10,'-')  I want ten characters as a result, and if there are not 10 characters in my input string, fill them into 10 characters with a - from the left--> -------sql   If first_name below has 11 or more characters, then the first 10 characters are returned.  */
+select first_name, lpad(first_name,10,'*')
+from employees;
+
+/* math Number or numeric functions:  round, trunc truncates, ceil, floor, mod returns remainder*/
+/* ceil and floor get one argument */
+select round(12.136,2) from dual; /* returns 12.14 */
+select round(12.136,3) from dual; /* returns 12.136 */
+select round(12.136,1) from dual; /* returns 12.1 */
+select round(12.136) from dual; /* returns 12 */
+select round(12.536) from dual; /* returns 13 */
+select trunc(12.536,2) from dual; /* returns 12.53 */
+select trunc(12.536) from dual; /* returns 12 */
+select ceil(12.536) from dual; /* returns 13 */
+select ceil(12.001) from dual; /* returns 13 */
+select ceil(12.999) from dual; /* returns 13 */
+select floor(12.001) from dual; /* returns 12 */
+select mod(1800,23) from dual; /* returns 6 */
+
+/* nesting functions use a function into another function. */
+select first_name, last_name, lpad(upper(concat(first_name,last_name)),20,'*') as nesting
+from employees;
+select substr('Omer Dagasan',instr('Omer Dagasan',' ')+1) from dual; /* extract part of data same as below*/
+select substr('Omer Dagasan',instr('Omer Dagasan',' ')+1,length('Omer Dagasan')) from dual; /* extract part of data same as above */
