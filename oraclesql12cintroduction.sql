@@ -286,3 +286,99 @@ where (job_id = 'IT_PROG' and salary > 5000) or (job_id = 'SA_MAN' and salary > 
 select first_name, last_name, job_id, salary, hire_date, decode(job_id, 'ST_MAN', salary*1.2, 'SH_MAN', salary*1.3, 'SA_MAN', salary*1.4, salary*1.0) as "Updated Salary"
 from employees
 where job_id in ('ST_MAN','SH_MAN','SA_MAN');
+
+/* group functions.  Operate with multiple rows and return one result per group.  Used after select keyword.  Multiple group functions can be used in one select.  Null values ignored.  Can use nvl, nvl2, coalesce, case, or decode functions to handle null values.  distinct and all are used with the function to consider duplicate values. all is default value.  group functions:  avg average, count returns number of rows, max, min, sum.*/
+select avg(salary), avg(all salary), avg(distinct salary)
+from employees;
+select avg(salary), avg(all salary), avg(distinct salary)
+from employees
+where job_id = 'IT_PROG';
+select avg(salary), avg(all salary), avg(distinct salary), salary
+from employees
+where job_id = 'IT_PROG'; /* column without group function.  Error message. groups are results of groups.  column is individual rows.  */
+select count(*)
+from employees;  /* all rows with null are included using asterik */
+select count(*), count(manager_id), count(all manager_id), count(distinct manager_id)
+from employees;
+select count(*), count(commission_pct), count(distinct commission_pct), count(nvl(commission_pct,0)), count(distinct nvl(commission_pct,0))
+from employees;
+select max(salary), max(hire_date), max(first_name)
+from employees;
+select min(commission_pct), min(nvl(commission_pct,0)), min(hire_date)
+from employees;
+select sum(salary), sum(all salary), sum(distinct salary)
+from employees;
+select min(salary), max(hire_date), avg(salary), count(*)
+from employees;
+
+/* Grouping data group by clause.  Divide rows into smaller groups.  Can use more than one column in group by clause.  Select clause can't have any different columns then used in GROUP BY clause. No column aliases.  Use where clause to restrict resulting data.  */
+select department_id, avg(salary)
+from employees
+group by department_id
+order by avg(salary);  /* column 1 department_id, column 2 average salaries for each department_id which includes a column for null department_id */
+select job_id, avg(salary)
+from employees
+group by job_id;
+select job_id, department_id, avg(salary)
+from employees
+group by department_id
+order by avg(salary); /* error message because job_id is not in group by statement */
+select job_id, department_id, avg(salary)
+from employees
+group by department_id, job_id
+order by avg(salary); /* valid sql statement  because job_id is in group by statement */
+select job_id, department_id, manager_id, avg(salary)
+from employees
+group by department_id, job_id, manager_id;
+select department_id, avg(salary), sum(salary), min(salary), max(salary), count(*)
+from employees
+group by department_id
+order by avg(salary);
+select department_id as "Departments", avg(salary)
+from employees
+group by department_id
+order by "Departments"; /* column aliases can be used in order by clause */
+select job_id, department_id as "Departments", avg(salary)
+from employees
+where job_id in ('ST_MAN','SH_CLERK','ST_CLERK')
+group by job_id, department_id
+order by "Departments"; /* column aliases can be used in order by clause */
+select job_id, avg(salary)
+from employees
+group by job_id
+having avg(salary) > 10000; /* having statement is like a where statement.  It's for the group function.  Can't use group function with where clause.  where clause restricts rows.  having clause restricts groups.  order by clause is the last statement.  */
+select job_id, avg(salary)
+from employees
+where job_id in ('IT_PROG','SA_MAN','FI_MGR')
+group by job_id
+having avg(salary) > 10000
+order by avg(salary) desc; /* IT_PROG didn't return in results */
+select job_id, avg(salary)
+from employees
+where hire_date > '05/28/09'
+group by job_id
+having avg(salary) > 10000
+order by avg(salary) desc;
+/* nesting group functions.  Nesting group functions can't be used with any columns.  Can only nest group functions. */
+select department_id, avg(salary)
+from employees
+group by department_id; /* error message "not a single-group group function" */
+select max(avg(salary))
+from employees
+group by department_id; /* return 19333.333333.  However, what's the department with the highest average salary? */
+
+/* Joining multiple tables.  Combine tables.  Join.  Natural join, join with using clause, join with on clause, outer joins left outer join, right outer join, full outer join, cross join (cartesian product)  */
+select *
+from employees e, departments d
+where e.department_id = d.department_id;
+select e.first_name, e.last_name, d.department_id
+from employees e, departments d
+where e.department_id = d.department_id
+order by first_name;
+/* Natural join.  Join two tables with columns with the same name.  select rows from two tables which have equal values in the same name columns; for example, the two queries below two rows of many are returned because both tables have manager_id 100 and department_id 90.  Another example is manager_id 114 and department_id 40.  Steven King doesn't return because there's no manager_id null and department_id 90.  If two columns with same name and different data type results in error.  */
+select *
+from employees natural join departments;
+select first_name, last_name, department_id
+from employees natural join departments
+order by first_name;
+
