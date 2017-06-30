@@ -381,4 +381,51 @@ from employees natural join departments;
 select first_name, last_name, department_id
 from employees natural join departments
 order by first_name;
-
+/* Using clause.  Joining with using clause is named equijoin */
+select first_name, last_name, department_id
+from employees join departments
+using (department_id); /* must use parentheses */
+select first_name, last_name, department_id
+from employees join departments
+using (department_id, manager_id); /* must use parentheses */
+select first_name, last_name, department_name, e.manager_id
+from employees e join departments d
+using (department_id);
+/* table alias invalid to a column that is using caluse or natural join; in other words, the column in using clause can't be used as an alias to a column in select statment and vice versa */
+select first_name, last_name, department_name, e.manager_id
+from employees e join departments d
+using (manager_id); /* error message */
+/* on clause join two tables with one or more columns. */
+select e.first_name, e.last_name, d.manager_id, d.department_name
+from employees e join departments d
+on (e.department_id = d.department_id and e.manager_id = d.manager_id);
+select e.first_name, e.last_name, manager_id, department_name
+from employees e join departments d
+using (department_id, manager_id); /* same query as above with using clause */
+/* multiple join.  want employees, department, and city location.  link department_id with employees and departments, then link location_id with departments and locations. */
+select first_name, last_name, d.department_name, l.city
+from employees e join departments d
+on (e.department_id = d.department_id)
+join locations l
+on (l.location_id = d.location_id);
+/*restricting join restrict join where statement or and statement */
+select first_name, last_name, d.department_name, l.city
+from employees e join departments d
+on (e.department_id = d.department_id)
+join locations l
+on (l.location_id = d.location_id)
+where d.department_id = 100;
+select first_name, last_name, d.department_name, l.city
+from employees e join departments d
+on (e.department_id = d.department_id)
+join locations l
+on (l.location_id = d.location_id)
+and d.department_id = 100;
+/* join unequal tables.  Can use between ... and, and comparison operators < > >= <= */
+select *
+from employees;
+select *
+from job_salaries;
+select first_name, last_name, salary, job_title, min_salary, max_salary
+from employees e join job_salaries j
+on e.salary between j.min_salary and j.max_salary; /* join unequal SQL code returned multiple employees */
