@@ -4,6 +4,7 @@
 /* long variable-length character data up to 2GB. */
 /* sql statements are not case sensitive. ctrl+shift+quote changes uppercase and lowercase and initial cap.  ctrl+d clears entire query builder.  However, it seems data is case sensitive; yes, matching with characters is case sensitive.  */
 /* date format Tools-->Preferences-->Database-->NLS */
+--comments are actually double hyphens
 
 select *
 from employees
@@ -429,3 +430,222 @@ from job_salaries;
 select first_name, last_name, salary, job_title, min_salary, max_salary
 from employees e join job_salaries j
 on e.salary between j.min_salary and j.max_salary; /* join unequal SQL code returned multiple employees */
+/* self join Join same table.  Combine table.  Combine same table.  In this case, we can find managerid's full name for each employee in employees table.  */
+select worker.employee_id, worker.first_name, worker.last_name, manager.manager_id, manager.employee_id, manager.first_name, manager.last_name
+from employees worker join employees manager
+on (worker.manager_id = manager.employee_id);
+/* outer join.  Join two tables resulting matched and unmatched rows is called outer join.  There are three:  left outer join retrives all matched rows or columns from the left table and unmatched rows of the right table, right outer join retives all matched rows or columns from the right table and unmatched rows of the left table, full outer join.  */
+select first_name, last_name, department_name
+from employees join departments
+using (department_id); /* must have parantheses */
+select first_name, last_name, department_name
+from employees left outer join departments
+using (department_id); /* must have parantheses */
+/* or */
+select e.first_name, e.last_name, d.department_name
+from employees e left outer join departments d
+on e.department_id=d.department_id;
+select first_name, last_name, e.department_id, d.department_id, department_name
+from employees e right outer join departments d
+on e.department_id = d.department_id;
+/* full outer join retrives all the columns or matching rows from both tables and nulls for the unmatched rows of both tables.  The union of left and router outer joins and unmatched rows of both tables are returned.  */
+select first_name, last_name, e.department_id, d.department_id, department_name
+from employees e full outer join departments d
+on e.department_id = d.department_id;
+/* cross join or cartesian product.  Each row of one table is joined with every row of another table. */
+select first_name, last_name, department_name
+from employees cross join departments;
+select first_name, last_name, department_name, job_title
+from employees cross join departments cross join jobs;
+select e.first_name, e.last_name, e.department_id, d.department_id, d.department_name
+from employees e cross join departments d;
+
+--Subquery subqueries.  The inner query is executed first and the result of the inner query is used as the input of the outer query.  The final result is returned after the outer query is executed.  Inner query is subquery enclosed in parantheses and outer query is main query.  Subquery can be used with select, where, having, from clauses.  There are three types of subqueries:  single-row returns one row from inner query, multiple-row returns more than one row from inner query in any all used with comparison operators used within from where or having clauses and can't use select clause, and multiple-column return more than one column in a row used from where or having clauses used with in operator
+select salary
+from employees
+where employee_id = 201;  --return 13000
+select *
+from employees
+where salary > 13000;
+select *
+from employees
+where salary > (select salary
+from employees
+where employee_id = 201); --written as a subquery under where clause.  single-row subquery?  Yes.
+select department_id
+from employees
+where employee_id = 201; --returns 20.  Next, it's the subquery
+select *
+from employees
+where department_id = (select department_id
+from employees
+where employee_id = 201);
+--or
+select *
+from employees
+where department_id = 20;
+select *
+from employees
+where department_id = (select department_id
+from employees
+where employee_id = 201)
+and
+salary < (select salary
+from employees
+where employee_id = 201);  --multi single-row subquery
+select *
+from employees
+where hire_date = (select min(hire_date)
+from employees);
+select *
+from employees
+where hire_date = (select max(hire_date)
+from employees);
+--salary are changing.  Use multiple row subqueries.  Who earn the minimum salary for each department
+select min(salary)
+from employees
+group by department_id;
+select first_name, last_name, department_id, salary
+from employees
+where salary in (select min(salary)
+from employees
+group by department_id);  --answers are here
+select salary
+from employees
+where job_id='SA_MAN';
+select first_name, last_name, department_id, salary
+from employees
+where salary > any (select salary
+from employees
+where job_id='SA_MAN');
+select first_name, last_name, department_id, salary
+from employees
+where salary > all (select salary
+from employees
+where job_id='SA_MAN');
+select department_id, min(salary)
+from employees
+group by department_id;  --the 12 minimum salaries for each of the 12 departments
+select first_name, last_name, department_id, salary
+from employees
+where (department_id, salary) in (select department_id, min(salary)
+from employees
+group by department_id);  --employees earned the minimum salaries in their department.  multiple column subquery.
+
+--Set Operators combine the result of more than one query and return as one result.  Queries that set operators used are called compound queries.  Except union all operator, duplicate rows are eliminated automatically.  The column headings on the results are from the first query or top query.
+--Union returns rows of both queries eliminating duplicate rows.  Union All returns rows of both queries including duplicate rows.  Intersect returns rows which exist in both queries.  Minus returns rows which exist in first query, but not in the second query or return rows exist in first table and not second table.
+select *
+from retired_employees;
+select *
+from employees;
+select *
+from retired_employees
+union
+select *
+from employees;
+select first_name, last_name, salary
+from retired_employees
+union
+select *
+from employees;  --error message because expressions and column names in both queries are mistmatch in number.
+select first_name, last_name, salary
+from retired_employees
+union
+select first_name, last_name, department_id
+from employees;  --return first_name, last_name, salary with department_id data not salary data
+select first_name, last_name, salary
+from retired_employees
+union
+select first_name, last_name, salary
+from employees;  --return first_name, last_name, salary with actual salary data
+select *
+from retired_employees
+union
+select *
+from employees
+where job_id = 'IT_PROG';
+select first_name, last_name, email, hire_date, salary
+from retired_employees
+union
+select first_name, last_name, email, department_id, salary
+from employees;  --error message because hire_date and department_id are mismatch data type
+select first_name, last_name, email, hire_date, salary
+from retired_employees
+union
+select first_name, last_name, email, hire_date, salary
+from employees  
+order by salary desc;  --returned 109 records
+select first_name, last_name, email, hire_date, salary
+from retired_employees
+union all
+select first_name, last_name, email, hire_date, salary
+from employees
+order by salary desc;  --returned 114 records.  order by recognizes columns in first query and is written at the end of the compound query.
+select first_name, last_name, email, hire_date, salary
+from retired_employees
+union all
+select first_name, last_name, email, hire_date, salary
+from employees
+where department_id = 80
+order by salary desc;  --returned 40 record..  order by recognizes columns in first query and is written at the end of the compound query.
+select *
+from retired_employees
+intersect
+select *
+from employees;
+select *
+from retired_employees
+minus
+select *
+from employees;  --returned one record which is in retired_employees table only.  If a record is in both retired_employees and employees or employees only, then record is not returned.
+select *
+from employees
+minus
+select *
+from retired_employees;  --returned 103 records which are in employes table only.  If a record is in both employees and retired_employees or retired_employees only, then record is not returned.
+--In set operations, if a column doesn't exist in another table, we can match these columns with null values.
+select job_id, department_id, first_name, last_name
+from employees
+union
+select job_id, department_id, null, null
+from job_history;  --returned job_id, department_id, first_name, last_name as column headings
+select first_name, last_name, salary s , department_id
+from employees
+union
+select first_name, last_name, salary, department_id
+from retired_employees
+order by s;  --column aliases are recognized on first column only.  Never on second column.  Default sort is first column of the first query.
+
+--Data Manipulation Language (DML)  Add, delete, update data from database.  A collection of DML statements is called transaction.  Transaction starts with the first execution of a DML statement and finishes with a commit, rollback operation or a system failure.  Transaction is for data security.
+insert into jobs(job_id, job_title, min_salary, max_salary)
+values('GR_LDR','Group Leader',8500,17000);
+insert into jobs(job_id, job_title, min_salary, max_salary)
+values('PR_MGR','Project Manager',500,15000);
+insert into jobs
+values('PR_CRD','Project Coordinator',4000,18000);  --order of values match columns from left to right
+insert into jobs(job_id, job_title, min_salary)
+values('PR_CRD2','Project Coordinator2',4000);
+insert into jobs(job_id, job_title)
+values('PR_CRD3','Project Coordinator2');
+insert into departments
+values(280,'Customer Relations',null,null);  --department_id, department_name, manager_id, location_id
+insert into jobs
+values('PR_CRD4','Project Coordinator2',null,19000);
+insert into job_history(employee_id, start_date, end_date, job_id, department_id)
+values(200,to_date('10/24/03', 'mm/dd/yy'),sysdate,'IT_PROG',60);
+insert into employees_copy
+select *
+from employees;  --copy a table into another table
+insert into employees_copy
+select *
+from employees
+where job_id like 'IT_PROG';  --copy specific values from a table into another table
+insert into employees_copy (employee_id, first_name, last_name, email, hire_date, job_id, salary)
+select employee_id, first_name, last_name, email, hire_date, job_id, salary
+from employees
+where job_id like 'IT_PROG';  --copy specific values from a table into another table
+insert into employee_addresses
+select employee_id, first_name, last_name, city || ' ' || street_address
+from employees
+join departments using (department_id)
+join locations using (location_id); --insert values from multiple tables
