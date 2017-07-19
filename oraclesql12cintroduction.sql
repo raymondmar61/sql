@@ -5,6 +5,7 @@
 /* sql statements are not case sensitive. ctrl+shift+quote changes uppercase and lowercase and initial cap.  ctrl+d clears entire query builder.  However, it seems data is case sensitive; yes, matching with characters is case sensitive.  */
 /* date format Tools-->Preferences-->Database-->NLS */
 --comments are actually double hyphens
+--Oracle database is a transactional database.
 
 select *
 from employees
@@ -602,7 +603,7 @@ select *
 from employees
 minus
 select *
-from retired_employees;  --returned 103 records which are in employes table only.  If a record is in both employees and retired_employees or retired_employees only, then record is not returned.
+from retired_employees;  --returned 103 records which are in employees table only.  If a record is in both employees and retired_employees or retired_employees only, then record is not returned.
 --In set operations, if a column doesn't exist in another table, we can match these columns with null values.
 select job_id, department_id, first_name, last_name
 from employees
@@ -649,3 +650,109 @@ select employee_id, first_name, last_name, city || ' ' || street_address
 from employees
 join departments using (department_id)
 join locations using (location_id); --insert values from multiple tables
+
+update employees_copy
+set salary = 500;  --update all salary records to 500
+update employees_copy
+set salary = 50000
+where job_id = 'IT_PROG';
+update employees_copy
+set salary = 5, department_id = null
+where job_id = 'IT_PROG';
+update employees_copy
+set (salary, commission_pct) = (select max(salary), max(commission_pct)
+from employees)
+where job_id = 'IT_PROG';  --update columns with a subquery
+
+delete from employees_copy;  --delete all data in a table
+delete from employees_copy
+where job_id = 'IT_PROG';
+delete employees_copy
+where department_id in (select department_id
+from employees
+where job_id like 'SA%');  --delete records with a subquery
+
+--Oracle database is a transactional database.
+--We see changes before making them permanent.  Other uses see the old data.
+--Transaction starts with the first execution of a DML statement.  Finishes with a commit, rollback operaetions, system failure, DDL Data Definition Language, and DCL Data Control Language statements.
+--The affected rows are locked and nobody can update or delete the affected rows when DML operations is executed.
+--There are three transactional control statements:  commit saves the changes into the database and makes changes permanent and ends the transaction, rollback undoes all changes on data and restores data to previous state, and savepoint.
+--Nobody else can see the changes before commit or rollback.  Everyone can see the permanent changes after committing DML operations.  The locked rows are released and anyone can change these rows after commit or rollback.
+rollback;  --undoes all changes on data and restores data to previous state
+commit; --saves the changes into the database and makes changes permanent and ends the transaction.  rollback doesn't unsave after commit.
+--Commit automatically executed after a DDL or DCL statements; for instance, create table, delete rows of a table.
+--Sometimes we make lots of changes and don't want to rollback them all.  We need to rollback to some point.  After rollback to an earlier savepoint, the next ones are deleted but laters stay.
+savepoint A; --saves the state of the transaction A and we can rollback to that state.
+savepoint B; --saves the state of the transaction B and we can rollback to that state.
+savepoint C; --saves the state of the transaction C and we can rollback to that state.
+savepoint D; --saves the state of the transaction D and we can rollback to that state.
+rollback to B;  --If I turn back to savepoint B, savepoint C and savepoint D are deleted and can't turn to these savepoints again.  savepoint A stays.
+--using rollback without savepoint which typing rollback without "to *savepoint name*" deletes all savepoints.  For instance, type rollback; instead of type rollback to D, all savepoints are gone.
+--for update locks all rows returned from query.  Lock is released with commit or rollback statements.
+--if a rows we want to lock is locked by somebody else, then we wait until the lock releases.
+--However, to perform quick execution we write nowait keyword.  In this time control of locked rows passes from the other user to us.
+select *
+from employees
+where job_id = 'IT_PROG'
+for update nowait;
+select first_name, last_name, salary
+from employees e join departments
+using (department_id)
+where location_id = 1400
+for update; --with joins rows for all tables are locked
+select first_name, last_name, salary
+from employees e join departments
+using (department_id)
+where location_id = 1400
+for update of first_name, last_name; --we can use for update of *column name* to specify columns we want to lock.  We can prevent to lock all the tables.  Table for which these columns are returned are locked.  In this case, first_name and last_name both from employees table are locked.  Employees table is locked.  Also, the returning row from employees table will be locked.  department_id not locked because we didn't use any column from departments table.
+for update wait 10;  --Oracle Database waits for 10 seconds and after that gives control to us.
+
+--DDL Data Definition Language used to define database structure.  create, alter, drop deletes objects, truncate removes all records from table including all spaces allocated for the records are removed, comment adds comments to the data dictionary, rename renames an object.
+describe employees;
+--or
+desc employees;  --returns the structure of a table.  Describe table.
+create table my_employees
+	(employee_id number(3),first_name varchar2(50), last_name varchar2(50), hire_date date default sysdate); --if date entered is null, then Oracle enters today's date in date field.
+create table employees_copy
+	as select * from employees;  --copy table with data using a subquery
+create table employees_copynodata
+	as select * from employees
+	where 1=2;  --copy table without data using a subquery.  1 doesn't equal 2.
+create table employees_copyitprogonly
+	as select * from employees
+	where job_id = 'IT_PROG';  --copy table wit data using a subquery it programmers only
+create table employees_copysalarytable(first_name, last_name, dollarsalary)
+	as select first_name, last_name, salary from employees;  --copy table wit data using a subquery it programmers only.  We can give different column names while creating new table at create table new table name.
+--Not null constraint is the only constraint inherited to the new table.  All other constraints must be added explicitly.
+alter table employees_copy
+add birth_date date; --add birth_date column date datatype to employees_copy table.  add column.
+alter table employees_copy
+add (fax_number number, fathers_name varchar2(50), password varchar2(10) default 'abc123');  --add columns.  add multiple columns.
+alter table employees_copy
+modify fathers_name varchar2(100);  --edit column or modify column.  change varchar2(50) to varchar2(100)
+alter table employees_copy
+modify (fax_number varchar2(11), password varchar2(10) default 'abc1234');  --edit columns or modify multiple columns.  Modifying a column to a new default value affects the new records.  Existing rows are not modified.  However, datatype is modified.
+alter table employees_copy
+drop column fathers_name; --drop column or delete column
+alter table employees_copy
+drop (fax_number, password);  --drop columns or delete multiple columns.  Note column word is excluded.
+--dropping or delete a column(s) can't be recovered
+drop table employees_copy;  --drop table statement removes the table with all the data from the database and moves it to the recycle bin.  Delete table.  All objects related with the drop table are invalid.  Can delete one table or drop one table at a time.  Can be rollback.
+truncate table employees_copy; --truncate statement empties whole table in one step.  Delete removes data row by row.  Truncate rmoves data in one step and commits.  Truncate faster than drop table.
+comment on column employees.job_id is 'Abbreviated job title'; --We can add a comment to a table's column
+comment on table employees is 'Employees Table'; --We can add a comment to a table itself
+--comment can't be deleted.  Instead, comment with something empty such as ''
+select *
+from user_tab_comments; --we can query these comments from user_tab_comments or user_col_comments
+select *
+from user_tab_comments
+where table_name = 'EMPLOYEES';  --returned Employees Table.  Table name must be in caps
+select *
+from user_col_comments
+where table_name = 'EMPLOYEES';  --returned Employees Table with table_name, column_name, and comments.  Table name must be in caps
+alter table employees_copy
+rename column birth_date to birthdate;  --rename column.  Change the name of a table's column.
+rename employees_copy to employees_copy99; --rename table.  Change the name of a table.
+--or
+alter table employees_copy
+rename to employees_copy99;  --rename table.  Change the name of a table.
