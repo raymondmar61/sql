@@ -756,3 +756,32 @@ rename employees_copy to employees_copy99; --rename table.  Change the name of a
 --or
 alter table employees_copy
 rename to employees_copy99;  --rename table.  Change the name of a table.
+
+--Constraints restrict data entry such as insert, update, and delete to prevent invalid entries.  Constraints prevent dropping a table dependent on another table.  There are five types of constraints:  not null, unique, primary key, foreign key, check.
+--Oracle Server default names constraints with SYS_C... format.
+create table managers
+(employee_id number [constraint constraint_name] constrainttype, first_name varchar2(50), last_name varchar2(50), department_id number, [constraint constraint_name] constrainttype (columnname1, columnname2, ...));  --[constraint constraint_name] constrainttype (columnname1, columnname2, ...) is table level constraint
+create table managers
+(employee_id number not null, first_name varchar2(50), last_name varchar2(50) constraint lname_cons not null, department_id number not null);  --last_name varchar2(50) constraint lname_cons not null is a column level constraint.  lname_cons is the constraint name.
+--highlight table name in query builder.  Press shift+F4.
+--unique constraint no dpulicate values can be inserted in a column.  Creating unique with more than one column is called composite unique key.  Create it with table level.
+create table managers
+(employee_id number not null, first_name varchar2(50) unique, last_name varchar2(50) constraint lname_cons unique, department_id number not null, phone_number varchar2(11) unique not null, constraint department_cons unique (department_id), constraint composed_unique unique (employee_id, first_name, last_name));  --first_name varchar2(50) unique, last_name varchar2(50) constraint lname_cons unique, department_id number not null, phone_number varchar2(11) unique not null are column level constraints.  constraint department_cons unique (department_id) and constraint composed_unique unique (employee_id, first_name, last_name) are table level constraints.
+--primary key is unique keys designed for identifying all table records and uniqueness of a row.  It's like ID's of rows.  There can only be one primary key in a table.  not null constraint is automatically created on a primary key creation.  We can create composite primary key on multiple column.
+create table managers
+(employee_id number constraint pk_managers primary key, first_name varchar2(50), last_name varchar2(50));
+--or
+create table managers
+(employee_id number, first_name varchar2(50), last_name varchar2(50), constraint pk_managers primary key (employee_id));
+--primary key can also be created after creating a table
+alter table managers add constraint pk_managers primary key(employee_id);
+--a foreign key establishes a relationsihp between a parent table's primary key or unique key and its child's table primary key.
+--a foreign key constraint can be defined as column level or table level.
+--a composite foreign key must be created by table level.
+create table managers
+(manager_id number constraint pk_managers primary key, first_name varchar2(50), last_name varchar2(50), department_id number, constraint emp_man_fk foreign key (manager_id) references employees (employee_id));  --constraint emp_man_fk foreign key (manager_id) references employees (employee_id)  --foreign key constraint.  manager_id is a foreign key and references at the IDs employee_id.  manager_id is both primary key and foreign key.  manager_id has a relationship between employee's table employee_id.  Every manager should be an employee.
+--on delete cascade keyword deletes dependent rows in the child table when a related row in the parent table is deleted.
+--on delete set null updates dependent row in the child table to null when a related row in the parent table is deleted
+--check constraint enforces a condition each row must satisfy; e.g. salary must be greater than zero.  table constraint.  table restrictions.  table condition.
+create table managers
+(manager_id number constraint pk_managers primary key, first_name varchar2(50), last_name, department_id number, salary number, email varchar2(50), constraint min_salary check (salary>0));
