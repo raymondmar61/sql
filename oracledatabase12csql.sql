@@ -14,6 +14,8 @@ from tabs;  --show tables?
 describe customers;  --describe tablename.  Returns columns
 insert into customers (customer_id, first_name, last_name, dob, phone)
 values (6, 'Fred', 'Brown', 'Jan-01-1970', '800-555-1215');
+insert into customers (customer_id, first_name, last_name, dob, phone)
+values (7, 'Steve', 'Purple', 'Oct-25-1972', '800-555-1215');
 update customers
 set last_name = 'Orange'
 where customer_id = 2;
@@ -400,4 +402,54 @@ from products
 where price < 15
 group by product_type_id
 having avg(price) > 13;
---start page 137 Chapter 5
+
+--CHAPTER 5 STORING AND PROCESSING DATES AND TIMES
+--to_char(x, [,format]) convert x to a string; in this case, convert datetime to a string.  RM:  page 141 lists parameters
+--to_date(x, [,format]) convert string to a date
+select customer_id, to_char(dob, 'MONTH DD, YYYY')
+from customers;  --JANUARY   01, 1965
+select customer_id, to_char(dob, 'MM/DD/YYYY')
+from customers;  --01/01/1965
+SELECT TO_CHAR(SYSDATE, 'MONTH DD, YYYY, HH24:MI:SS')
+FROM dual; --OCTOBER   06, 2017, 15:05:01
+SELECT TO_CHAR(SYSDATE, 'MONTH DD, YYYY, HH:MI AM')
+FROM dual; --OCTOBER   06, 2017, 03:07 PM
+SELECT TO_DATE('JUL-04-2012')
+FROM dual;  --07/04/2012.  RM:  My Oracle default format is month, day, year.
+SELECT TO_DATE('July 4, 2012', 'MONTH DD, YYYY')
+FROM dual;  --04-JUL-12.  My computer returns 07/04/2012
+SELECT TO_DATE('7.4.12', 'MM.DD.YY')
+FROM dual;  --04-JUL-12. My computer returns 07/04/2012
+INSERT INTO customers (customer_id, first_name, last_name, dob, phone)
+VALUES (6, 'Fred', 'Brown', TO_DATE('05-FEB-1968 19:32:36', 'DD-MON-YYYY HH24:MI:SS'), '800-555-1215');  --dob column for the new row is set to the datetime returned by TO_DATE().
+select customer_id, dob, to_char(dob, 'DD-MON-YYYY HH24:MI:SS')
+from customers;  --2 02/05/1968	05-FEB-1968 00:00:00  --to_char converts dob to another date format as a string
+/*
+The default date format is specified in the NLS_DATE_FORMAT database parameter.  You can also set the NLS_DATE_FORMAT parameter for your own SQL*Plus session using the ALTER SESSION command.  e.g. ALTER SESSION SET NLS_DATE_FORMAT = 'MONTH-DD-YYYY';  Any changes you make using the ALTER SESSION statement last only for
+that particular session. When you disconnect, you lose the change.
+*/
+/*
+An Oracle database stores all four digits of the year. If only two digits are supplied when adding
+or updating rows, the database software will interpret the century according to whether the YY or
+RR format is used.  You should always specify all four digits of the year.
+*/
+select customer_id, dob, add_months(dob,6)
+from customers;  --adds six months to dob.  Can subtract months using negative.
+SELECT TO_CHAR(ADD_MONTHS(TO_DATE('01-JAN-2012 19:15:26', 'DD-MON-YYYY HH24:MI:SS'), 2), 'DD-MON-YYYY HH24:MI:SS')
+FROM dual;  --convert the returned datetime from ADD_MONTHS() to a string using TO_CHAR() with the format DD-MON-YYYY HH24:MI:SS and add two months.
+select customer_id, dob, last_day(dob)
+from customers;  --returns the date of the last day of dob's month
+SELECT MONTHS_BETWEEN('MAY-25-2012', 'JAN-15-2012')
+FROM dual;  --returns 4.32258065
+SELECT MONTHS_BETWEEN('JAN-15-2012', 'MAY-25-2012')
+FROM dual;;  --returns -4.32258065
+SELECT ROUND(TO_DATE('OCT-25-2012'), 'YYYY')
+FROM dual;  --returns 01/01/2013
+SELECT ROUND(TO_DATE('MAY-25-2012'), 'MM')
+FROM dual;  --returns 06/01/2012
+SELECT TRUNC(TO_DATE('MAY-25-2012'), 'YYYY')
+FROM dual;  --return 01/01/2012
+SELECT TRUNC(TO_DATE('MAY-25-2012'), 'MM')
+FROM dual;  --return 05/01/2012
+--RM:  Skipped Timestamps A timestamp stores all four digits of a year, plus the month, day, hour, minute, second, fractional second, and time zone.  Time Intervals A time interval stores a length of time. An example time interval is 1 year 3 months.
+--Start Page 177
