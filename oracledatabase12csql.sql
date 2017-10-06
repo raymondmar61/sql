@@ -2,6 +2,7 @@
 --Five types of SQL statements.  Query statements; Data Manipulation Language (DML) such as insert, update, delete; Data Definition Language (DDL) such as create, alter, drop, rename, truncate, Transaction Control (TC) such as commit, rollback, savepoint, and Data Control Language (DCL) such as grant and revoke.
 --Foreign key references a column in another table.  The table containing the foreign key is known as the detail or child table.  The table that is referenced is known as the master or parent table. This type of relationship is known as a master-detail or parentchild relationship.
 --Composite primary key when a primary key consists of multiple columns.  The combination of the multiple columns must be unique for each row.
+--Double quotes for alias; otherwise single quotes.
 
 --BONUS
 select *
@@ -260,4 +261,143 @@ SELECT *
 FROM product_types CROSS JOIN products; 
 RM:  Book could have explained more on joins because joins are important.
 */
---Start page 63
+
+--CHAPTER 3 USING SQL*Plus
+describe customers;  --table information view the structure of a table describe tablename;
+--query above same as query below
+desc customers;
+
+--CHAPTER 4 USING SIMPLE FUNCTIONS
+--There are two functions.  Single-row functions operate on one row at a time and return one row of output for each input row; e.g. CONCAT(x, y) appends y to x and returns the resulting string.  Aggregate functions operate on multiple rows at the same time known as group functions and return one row of output; e.g. AVG(x) returns the average value of x.
+--Single-row functions:  character, numeric, conversion, date, regular expression to search data.
+--RM:  There are many functions.  I highlight selected functions.
+select concat(first_name, last_name)
+from customers;  --The concatenation operator does not permit spaces.  https://docs.oracle.com/cd/B12037_01/server.101/b10759/functions022.htm
+select name, instr(name, 'Science')
+from products;  --instring searches for string returns the position
+select name, instr(name, 'e',1,2)
+from products;  --find e starting at first position find the second occurrence 'e' returns the position
+select name, instr(name, 'e',-1,2)
+from products;  --find e starting at last position find the third occurrence 'e' returns the position
+select name, length(name)
+from products;  --length returns the number of characters
+select first_name, upper(first_name), last_name, lower(last_name)
+from customers;  --upper and lower converts the ltters to uppercase and lowercase
+--LTRIM(x [, trim_string]) and RTRIM(x [, trim_string]) removes characters from the left or right of x. You can provide an optional trim_string, which specifies the characters to remove. If no trim_string is provided, spaces are removed by default.
+SELECT LTRIM(' Hello Kathy Lindsey!')
+FROM dual;  --return Hello Kathy Lindsey!
+SELECT RTRIM('Hi Doreen Oakley!abcabc', 'abc')
+FROM dual;  --return Hi Doreen Oakley!
+--TRIM([trim_char FROM) x) removes characters from the left and right of x. You can provide an optional trim_char, which specifies the characters to remove. If no trim_ char is provided, spaces are removed by default.
+SELECT TRIM('0' FROM '000Hey Steve Button!00000')
+FROM dual;  --return Hey Steve Button!
+select customer_id, nvl(phone, 'Unknown Phone Number')
+from customers;  --phone field is null 'Unknown Phone Number' is returned
+select customer_id, nvl2(phone, 'field is not null','Unknown Phone Number')
+from customers;  --phone 'field is not null' is not null, 'Unknown Phone Number' is null
+select name, replace(name, 'Science','replace Science with Physics')
+from products;  --search for 'Science' replaces with 'replace Science with Physics'
+select name, substr(name,2, 7)
+from products;  --substring returns name start at second position seven characters
+select name, substr(name,-5, 3)
+from products;  --substring returns name start at fifth position from end three characters
+SELECT name, UPPER(SUBSTR(name, 2, 8))
+FROM products;  --example combinting functions
+SELECT ABS(10), ABS(-10)
+FROM dual;  --absolute value
+SELECT CEIL(5.8), CEIL(-5.2)
+FROM dual;  --ceiling returns 6, -5
+SELECT FLOOR(5.8), FLOOR(-5.2)
+FROM dual;  --floor returns 5, -6
+SELECT GREATEST(3, 4, 1)
+FROM dual;  --returns 4
+SELECT LEAST(3, 4, 1)
+FROM dual;  --returns 1
+SELECT POWER(2, 1), POWER(2, 3)
+FROM dual;  --returns 2, 8 exponent
+SELECT ROUND(5.75), ROUND(5.75, 1), ROUND(5.75, -1)
+FROM dual;  --returns 6, 5.8, 10
+SELECT TRUNC(5.75), TRUNC(5.75, 1), TRUNC(5.75, -1)
+FROM dual;  --returns 5, 5.7, 0, truncate default is zero decimal places
+--TO_CHAR(x [, format]) converts x to a string. An optional format indicates the format of x. The structure format depends on whether x is a number or date.  RM:  there are many format options starting on page 114 like Excel Custom Numerber; e.g. C999 returns USD999, rn returns roman numerials, FM90.9 removes leading and trailing spaces
+SELECT TO_CHAR(12345.67)
+FROM dual;  --returns 12345.67
+SELECT TO_CHAR(12345.67, '99,999.99')
+FROM dual;  --returns 12,345.67
+SELECT TO_CHAR(8712345.675, '99,999,999.99')
+FROM dual;  --returns 8,712,345.68
+--TO_NUMBER(x [, format]) converts x to a number. An optional format to indicate the format of x. The format string can use the same parameters as TO_CHAR.
+SELECT TO_NUMBER('970.13')
+FROM dual;
+SELECT TO_NUMBER('970.13') + 25.5
+FROM dual;  --return 995.63
+SELECT TO_NUMBER('-$12,345.67', '$99,999.99')
+FROM dual;  --return -12345.67
+SELECT TO_NUMBER('-12,345.67', '99999.99')
+FROM dual;  --return -12345.67
+--Regular expressions and their associated Oracle database functions allow you to search for a pattern of characters in a string. For example, let’s say you want to obtain the years 1965 through 1968 from the following list of years.  Regular expression is ^196[5-8]$.  ^ matches the beginning position of a string.  [5-8] matches characters between 5 and 8.  $ matches the end position of a string.
+--RM:  There are many regular expressions formats starting on page 119.
+/*
+REGEXP_LIKE(x, pattern [, match_option]) searches x for the regular expression defined
+in the pattern parameter. You can also provide an optional match_option that can be set to
+one of the following characters:
+■■ 'c', which specifies case-sensitive matching (the default)
+■■ 'I', which specifies case-insensitive matching
+■■ 'n', which allows you to use the match-any-character operator
+■■ 'm', which treats x as a multiple line
+*/
+SELECT customer_id, first_name, last_name, dob
+FROM customers
+WHERE REGEXP_LIKE(TO_CHAR(dob, 'YYYY'), '^196[5-8]$');  --retrieves customers whose date of birth is between 1965 and 1968
+SELECT customer_id, first_name, last_name, dob
+FROM customers
+WHERE REGEXP_LIKE(first_name, '^j', 'i');  --retrieves customers whose first name starts with J or j.  ^j and the match option is i (i indicates case-insensitive matching)
+/*
+REGEXP_INSTR(x, pattern [, start [, occurrence [, return_option [, match_ option]]]]) searches x for pattern. The function returns the position at which pattern occurs (positions start at 1).
+REGEXP_REPLACE(x, pattern [, replace_string [, start [, occurrence [, match_option]]]]) searches x for pattern and replaces it with replace_string.
+REGEXP_SUBSTR(x, pattern [, start [, occurrence [, match_option]]]) returns a substring of x that matches pattern. The search begins at the position specified by start.
+REGEXP_COUNT() was introduced in Oracle Database 11g. REGEXP_COUNT(x, pattern [, start [, match_option]]) searches x for pattern and returns the number of times pattern is found in x. You can provide an optional start number to indicate the character in x to begin searching for pattern and an optional match_option string to indicate the match option.
+*/
+select avg(price), avg(price)+2
+from products;
+select count(product_id)
+from products;
+select max(price), min(price)
+from products;
+select sum(price)
+from products;
+select product_type_id
+from products
+group by product_type_id;
+select product_id, customer_id
+from purchases
+group by product_id, customer_id;  --You can specify multiple columns in a GROUP BY clause. the product_id and customer_id columns
+select product_type_id, avg(price)
+from products
+group by product_type_id;
+select product_type_id, round(avg(price),2)
+from products
+group by product_type_id;
+select product_type_id, count(rowid)
+from products
+group by product_type_id;  --count number of product_type_ids
+SELECT product_type_id, AVG(price)
+FROM products
+WHERE AVG(price) > 20
+GROUP BY product_type_id;  --error message.  use the WHERE clause to filter individual rows, not groups of rows. To filter groups of rows, you use the HAVING clause.  HAVING clause filters groups of rows placed after the GROUP BY clause.
+select product_type_id, avg(price)
+from products
+group by product_type_id
+having avg(price) > 20;
+--You can use the WHERE and GROUP BY clauses together in the same query. WHERE clause first filters the rows returned.  The GROUP BY clause groups the remaining rows into blocks.
+select product_type_id, avg(price)
+from products
+where price < 15
+group by product_type_id;
+--You can use the WHERE, GROUP BY, and HAVING clauses together in the same query. WHERE clause filters the rows, GROUP BY clause groups the remaining rows into blocks, and HAVING clause filters the row groups.
+select product_type_id, avg(price)
+from products
+where price < 15
+group by product_type_id
+having avg(price) > 13;
+--start page 137 Chapter 5
