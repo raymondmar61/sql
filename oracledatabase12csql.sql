@@ -10,7 +10,7 @@ from tab;  --show tables and more tables?
 select *
 from tabs;  --show tables?
 
---CHAPTER 1 INTRODUCTION
+--CHAPTER 1 INTRODUCTION PAGE 1
 describe customers;  --describe tablename.  Returns columns
 insert into customers (customer_id, first_name, last_name, dob, phone)
 values (6, 'Fred', 'Brown', 'Jan-01-1970', '800-555-1215');
@@ -23,7 +23,7 @@ delete from customers
 where customer_id = 6;
 rollback; --undo the changes.  It didn't work when I deleted customer_id = 6.
 
---CHAPTER 2 RETRIEVING INFORMATION FROM DATABASE TABLES.  Also arithmetic, math.
+--CHAPTER 2 RETRIEVING INFORMATION FROM DATABASE TABLES.  Also arithmetic, math. PAGE 27
 select customer_id, first_name, last_name, dob, phone
 from customers;
 select *
@@ -264,12 +264,12 @@ FROM product_types CROSS JOIN products;
 RM:  Book could have explained more on joins because joins are important.
 */
 
---CHAPTER 3 USING SQL*Plus
+--CHAPTER 3 USING SQL*Plus PAGE 63
 describe customers;  --table information view the structure of a table describe tablename;
 --query above same as query below
 desc customers;
 
---CHAPTER 4 USING SIMPLE FUNCTIONS
+--CHAPTER 4 USING SIMPLE FUNCTIONS PAGE 89
 --There are two functions.  Single-row functions operate on one row at a time and return one row of output for each input row; e.g. CONCAT(x, y) appends y to x and returns the resulting string.  Aggregate functions operate on multiple rows at the same time known as group functions and return one row of output; e.g. AVG(x) returns the average value of x.
 --Single-row functions:  character, numeric, conversion, date, regular expression to search data.
 --RM:  There are many functions.  I highlight selected functions.
@@ -403,7 +403,7 @@ where price < 15
 group by product_type_id
 having avg(price) > 13;
 
---CHAPTER 5 STORING AND PROCESSING DATES AND TIMES
+--CHAPTER 5 STORING AND PROCESSING DATES AND TIMES PAGE 137
 --to_char(x, [,format]) convert x to a string; in this case, convert datetime to a string.  RM:  page 141 lists parameters
 --to_date(x, [,format]) convert string to a date
 select customer_id, to_char(dob, 'MONTH DD, YYYY')
@@ -452,4 +452,307 @@ FROM dual;  --return 01/01/2012
 SELECT TRUNC(TO_DATE('MAY-25-2012'), 'MM')
 FROM dual;  --return 05/01/2012
 --RM:  Skipped Timestamps A timestamp stores all four digits of a year, plus the month, day, hour, minute, second, fractional second, and time zone.  Time Intervals A time interval stores a length of time. An example time interval is 1 year 3 months.
---Start Page 177
+
+--CHAPTER 6 SUBQUERIES PAGE 177
+/*
+There are two basic types of subqueries:
+■■ Single-row subqueries return zero rows or one row to the outer SQL statement. There is
+a special case of a single-row subquery that contains exactly one column. This type of
+subquery is called a scalar subquery.
+■■ Multiple-row subqueries return one or more rows to the outer SQL statement.
+In addition, there are three subtypes of subqueries that can return single or multiple rows:
+■■ Multiple-column subqueries return more than one column to the outer SQL statement.
+■■ Correlated subqueries reference one or more columns in the outer SQL statement. These
+are called correlated subqueries because they are related to the outer SQL statement
+through the same columns.
+■■ Nested subqueries are placed within another subquery.
+*/
+--A single-row subquery returns zero rows or one row to the outer SQL statement. You can place a subquery in a WHERE clause, a HAVING clause, or a FROM clause of a SELECT statement.
+select customer_id
+from customers
+where last_name = 'Brown';  --return 1
+select first_name, last_name
+from customers
+where customer_id = 
+	(select customer_id
+	from customers
+	where last_name = 'Brown');  --return 1, return John Brown
+select avg(price)
+from products;  --return 19.73083333333333333333333333333333333333
+select product_id, name, price
+from products
+where price >
+	(select avg(price)
+	from products);
+select max(avg(price))
+from products
+group by product_type_id;  --return 26.22
+select product_type_id, avg(price)
+from products
+group by product_type_id
+order by product_type_id;
+select product_type_id, avg(price)
+from products
+group by product_type_id
+having avg(price) <
+	(select max(avg(price))
+	from products
+	group by product_type_id)
+order by product_type_id;
+select product_id
+from products
+where product_id < 3;
+select product_id
+from
+	(select product_id
+	from products
+	where product_id < 3);
+select product_id, count(product_id)
+from purchases
+group by product_id;
+select product_id, price
+from products;
+select prds.product_id, price, purchs.product_count
+from products prds, 
+	(select product_id, count(product_id) product_count
+	from purchases
+	group by product_id) purchs
+where prds.product_id = purchs.product_id;  --The subquery retrieves the product_id and COUNT(product_id) from the purchases table and returns them to the outer query. The output from the subquery is just another source of data to the FROM clause of the outer query.
+--A multiple-row subquery returns one or more rows to an outer SQL statement. To process the multiple rows returned by a subquery, an outer query can use the IN, ANY, or ALL operators.
+select product_id
+from products
+where name like '%e%';
+select product_id, name
+from products
+where product_id in
+	(select product_id
+	from products
+	where name like '%e%');
+SELECT product_id, name
+FROM products
+WHERE product_id NOT IN
+	(SELECT product_id
+	FROM purchases)
+ORDER BY product_id;  --Uses NOT IN to retrieve the products that are not in the purchases table.
+select low_salary
+from salary_grades;
+select employee_id, last_name
+from employees
+where salary < any
+	(select low_salary
+	from salary_grades)
+order by employee_id;  --The ANY operator compares one value with any value in a list. You must place an =, <>, <, >, <=, or >= operator before ANY in your query.
+select high_salary
+from salary_grades;
+select employee_id, last_name
+from employees
+where salary > any
+	(select high_salary
+	from salary_grades)
+order by employee_id;  --The ANY operator compares one value with any value in a list. You must place an =, <>, <, >, <=, or >= operator before ANY in your query.
+select high_salary
+from salary_grades;
+select employee_id, last_name
+from employees
+where salary > all
+	(select high_salary
+	from salary_grades)
+order by employee_id;  --The ALL operator compares one value with all values in a list. You must place an =, <>, <, >, <=, or >= operator before ALL in your query.
+--A subquery can return multiple columns.
+select product_type_id, min(price)
+from products
+group by product_type_id;
+select product_id, product_type_id, name, price
+from products
+order by product_id;
+select product_id, product_type_id, name, price
+from products
+where (product_type_id, price) in
+	(select product_type_id, min(price)
+	from products
+	group by product_type_id)
+order by product_id;  --The subquery returns the product_type_id and the minimum price for each group of products. The product_type_id and minimum price for each group are compared in the outer query’s WHERE clause with the product_type_id and price for each product. The products with the lowest price for each product type group are displayed.
+--A correlated subquery references one or more columns in the outer SQL statement. These are called correlated subqueries because they are related to the outer SQL statement through the same columns.  A correlated subquery can resolve null values.
+select product_type_id, avg(price)
+from products
+group by product_type_id;
+select product_id, product_type_id, name, price
+from products;
+select product_id, product_type_id, name, price
+from products outer
+where price >
+	(select avg(price)
+	from products inner
+	where inner.product_type_id = outer.product_type_id);
+order by product_id;  --retrieves the products that have a price greater than the average price for their product type
+/*
+I’ve used the alias outer to label the outer query and the alias inner for the inner subquery. The reference to the product_type_id column in both the inner and outer parts is what makes the inner subquery correlated with the outer query. Also, the subquery returns a single row containing the average price for the product.
+
+The outer query retrieves each row from the products table and passes it to the inner query. Each row is read by the inner query, which calculates the average price for each product where the product_type_id in the inner query is equal to the product_type_id in the outer query.
+*/
+--You use the EXISTS operator to check for the existence of rows returned by a subquery. Although you can use EXISTS with non-correlated subqueries, EXISTS is typically used with correlated subqueries.  NOT EXISTS does the logical opposite of EXISTS. NOT EXISTS checks if rows do not exist in the results returned by a subquery.
+select *
+from employees;
+SELECT *
+FROM employees outer
+WHERE EXISTS
+	(SELECT employee_id
+	FROM employees inner
+	WHERE inner.manager_id = outer.employee_id)
+ORDER BY employee_id;  --retrieve employees who manage other employees
+select *
+from products;
+select *
+from purchases;
+SELECT product_id, name
+FROM products outer
+WHERE EXISTS
+	(SELECT 1  --1 is a placeholder returns columns product_id, name
+	FROM purchases inner
+	WHERE inner.product_id = outer.product_id)
+ORDER BY product_id;  --uses EXISTS to retrieve products that have been purchased
+SELECT product_id, name
+FROM products outer
+WHERE NOT EXISTS
+	(SELECT 1  --1 is a placeholder returns columns product_id, name
+	FROM purchases inner
+	WHERE inner.product_id = outer.product_id)
+ORDER BY product_id;  --uses NOT EXISTS to retrieve products that haven’t been purchased
+/*
+The IN operator checks if a value is contained in a list of values. EXISTS is different from IN. EXISTS
+checks for the existence of rows, whereas IN checks for actual values.
+*/
+SELECT product_type_id, name
+FROM product_types outer
+WHERE NOT EXISTS
+	(SELECT 1
+	FROM products inner
+	WHERE inner.product_type_id = outer.product_type_id)
+ORDER BY product_type_id;  --uses NOT EXISTS to retrieve the product types that don’t have any products of that type in the products table.  Returned 5 Magazine.
+SELECT product_type_id, name
+FROM product_types
+WHERE product_type_id NOT IN
+	(SELECT product_type_id
+	FROM products)
+ORDER BY product_type_id;  --The next example rewrites the previous query to use NOT IN. No rows are returned.
+--No rows are returned because the subquery returns a list of product_id values, one of which is null (the product_type_id for product #12 is null). Because of this, NOT IN in the Chapter 6: Subqueries 189 outer query returns false, and therefore no rows are returned. You must use the NVL() function to convert nulls to a value. In the following example, NVL() is used to convert null product_type_id values to 0:
+SELECT product_type_id, name
+FROM product_types
+WHERE product_type_id NOT IN
+	(SELECT NVL(product_type_id, 0)
+	FROM products)
+ORDER BY product_type_id;  --Returned 5 Magazine
+--You can nest subqueries inside other subqueries.
+SELECT product_type_id, AVG(price)
+FROM products
+GROUP BY product_type_id
+HAVING AVG(price) <
+	(SELECT MAX(AVG(price))
+	FROM products
+	WHERE product_type_id IN  --Second.  This subquery returns the maximum average price for the products returned by the nested subquery.
+		(SELECT product_id
+		FROM purchases
+		WHERE quantity > 1)  --First.  This nested subquery returns the product_id for the products that have been purchased more than once.
+	GROUP BY product_type_id)
+ORDER BY product_type_id;  --Finally.  This query returns the product_type_id and average price of products that are less than the average price returned by the subquery.
+--You can place subqueries inside UPDATE and DELETE statements.
+UPDATE employees
+SET salary =
+	(SELECT AVG(high_salary)
+	FROM salary_grades)
+WHERE employee_id = 4;  --The update increases employee #4’s salary from $500,000 to $625,000. ($625,000 is the average of the high salaries from the salary_grades table.)
+DELETE FROM employees
+WHERE salary >
+	(SELECT AVG(high_salary)
+	FROM salary_grades);  --the following DELETE statement removes the employee whose salary is greater than the average of the high salary grades returned by a subquery
+--You can place subqueries inside a WITH clause and reference those subqueries outside of the WITH clause. This is known as subquery factoring.
+select cu.customer_id, sum(pr.price * pu.quantity) as purchase_total
+from customers cu, purchases pu, products pr
+where cu.customer_id = pu.customer_id
+and pu.product_id = pr.product_id
+group by cu.customer_id;
+with
+	customer_purchases as (
+		select cu.customer_id, sum(pr.price * pu.quantity) as purchase_total
+		from customers cu, purchases pu, products pr
+		where cu.customer_id = pu.customer_id
+		and pu.product_id = pr.product_id
+		group by cu.customer_id)
+select *
+from customer_purchases
+order by customer_id;
+--RM:  the with was unnecessary.  SQL code above returns same result.
+with
+	customer_purchases as (
+		select cu.customer_id, sum(pr.price * pu.quantity) as purchase_total
+		from customers cu, purchases pu, products pr
+		where cu.customer_id = pu.customer_id
+		and pu.product_id = pr.product_id
+		group by cu.customer_id),
+	average_purchase as (
+		select sum(purchase_total)/count(*) as average
+		from customer_purchases)
+select *
+from customer_purchases
+where purchase_total <
+	(select average
+	from average_purchase)
+order by customer_id;  --The customer_purchases subquery retrieves the customer IDs, the sum total of their purchases, and the average of the totals. The main query outside of the WITH clause returns the customer ID and purchase total for the customers whose purchase total is less than the average of the purchase totals.
+
+--CHAPTER 7 ADVANCED QUERIES page 195
+/*
+UNION ALL Returns all the rows retrieved by the queries, including duplicate rows
+UNION Returns all non-duplicate rows retrieved by the queries
+INTERSECT Returns rows that are retrieved by both queries
+MINUS Returns the remaining rows when the rows retrieved by the second query are subtracted from the rows retrieved by the first query
+*/
+select product_id, product_type_id, name
+from products;
+select prd_id, prd_type_id, name
+from more_products;
+select product_id, product_type_id, name
+from products
+union all
+select prd_id, prd_type_id, name
+from more_products;
+select product_id, product_type_id, name
+from products
+union
+select prd_id, prd_type_id, name
+from more_products;
+select product_id, product_type_id, name
+from products
+intersect
+select prd_id, prd_type_id, name
+from more_products;
+select product_id, product_type_id, name
+from products
+minus
+select prd_id, prd_type_id, name
+from more_products;  --The rows from more_products are subtracted from products
+select product_id, product_type_id, name
+from product_changes;
+	(SELECT product_id, product_type_id, name
+	FROM products
+	UNION
+	SELECT prd_id, prd_type_id, name
+	FROM more_products)
+INTERSECT
+SELECT product_id, product_type_id, name
+FROM product_changes;  --UNION combines results from products and more_products.  INTERSECT combine results from previous UNION with results from product_changes.  Parentheses indicate order of evaluation.
+SELECT product_id, product_type_id, name
+FROM products
+UNION
+	(SELECT prd_id, prd_type_id, name
+	FROM more_products
+	INTERSECT
+	SELECT product_id, product_type_id, name
+	FROM product_changes);  --parentheses set so that the INTERSECT is performed first. Different results are returned by the query compared with the previous example
+--The CASE expression performs if then else if else if-then-else logic.  Simple CASE expressions, which use expressions to determine the returned value.  Searched CASE expressions, which use conditions to determine the returned value.
+select product_id, product_type_id, case product_type_id when 1 then 'Book' when 2 then 'Video' when 3 then 'DVD' when 4 then 'CD' else 'Magazine' end as "simple case alias"
+from products;
+select product_id, product_type_id, case when product_type_id=1 then 'Book' when product_type_id=2 then 'Video' when product_type_id=3 then 'DVD' when product_type_id=4 then 'CD' else 'Magazine' end as "searched case alias"
+from products;
+select product_id, price, case when price > 15 then 'Expensive' else 'Cheap' end as "operators searched case alias"
+from products;
+--start page 208
