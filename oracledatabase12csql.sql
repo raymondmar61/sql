@@ -748,11 +748,196 @@ UNION
 	INTERSECT
 	SELECT product_id, product_type_id, name
 	FROM product_changes);  --parentheses set so that the INTERSECT is performed first. Different results are returned by the query compared with the previous example
---The CASE expression performs if then else if else if-then-else logic.  Simple CASE expressions, which use expressions to determine the returned value.  Searched CASE expressions, which use conditions to determine the returned value.
+--The CASE expression performs if then else or if else or if-then-else logic.  Simple CASE expressions, which use expressions to determine the returned value.  Searched CASE expressions, which use conditions to determine the returned value.
 select product_id, product_type_id, case product_type_id when 1 then 'Book' when 2 then 'Video' when 3 then 'DVD' when 4 then 'CD' else 'Magazine' end as "simple case alias"
 from products;
 select product_id, product_type_id, case when product_type_id=1 then 'Book' when product_type_id=2 then 'Video' when product_type_id=3 then 'DVD' when product_type_id=4 then 'CD' else 'Magazine' end as "searched case alias"
 from products;
 select product_id, price, case when price > 15 then 'Expensive' else 'Cheap' end as "operators searched case alias"
 from products;
---start page 208
+--You can use the CONNECT BY and START WITH clauses of a SELECT statement to perform hierarchy or hierarchical queries.
+select *
+from more_employees;
+select employee_id, manager_id, first_name, last_name
+from more_employees;
+select employee_id, manager_id, first_name, last_name
+from more_employees
+start with employee_id = 1
+connect by prior employee_id = manager_id;
+select level, employee_id, manager_id, first_name, last_name
+from more_employees
+start with employee_id = 1
+connect by prior employee_id = manager_id
+order by level, employee_id;  --LEVEL is a pseudo column that indicates the level of the tree. LEVEL returns 1 for a root node, 2 for a child of the root, and so on.
+--You can format the results from a hierarchical query using LEVEL and the LPAD() function.  LPAD() left-pads values with characters.  The following query uses LPAD(' ', 2 * LEVEL - 1) to left-pad a total of 2 * LEVEL - 1 spaces. This indents an employee’s name with spaces based on their LEVEL. LEVEL 1 isn’t padded, LEVEL 2 is padded by two spaces, LEVEL 3 by four spaces, and so on.
+SET PAGESIZE 999
+COLUMN employee FORMAT A25
+SELECT LEVEL, LPAD(' ', 2 * LEVEL - 1) || first_name || ' ' || last_name AS employee
+FROM more_employees
+START WITH employee_id = 1
+CONNECT BY PRIOR employee_id = manager_id;
+SELECT LEVEL, LPAD(' ', 2 * LEVEL - 1) || first_name || ' ' || last_name AS employee
+FROM more_employees
+START WITH last_name = 'Jones'
+CONNECT BY PRIOR employee_id = manager_id;  --Starts with Susan Jones. Notice that LEVEL returns 1 for Susan Jones, 2 for Jane Brown, and so on.
+SELECT LEVEL, LPAD(' ', 2 * LEVEL - 1) || first_name || ' ' || last_name AS employee
+FROM more_employees
+START WITH employee_id = 
+	(SELECT employee_id
+	FROM more_employees
+	WHERE first_name = 'Kevin'
+	AND last_name = 'Black')
+CONNECT BY PRIOR employee_id = manager_id;  --You can use a subquery in a START WITH clause. The following example uses a subquery to select the employee_id whose name is Kevin Black.
+SELECT LEVEL, LPAD(' ', 2 * LEVEL - 1) || first_name || ' ' || last_name AS employee
+FROM more_employees
+START WITH last_name = 'Blue'
+CONNECT BY PRIOR manager_id = employee_id;  --You can traverse a tree upward from child to parent. You do this by switching the child and parent columns in the CONNECT BY PRIOR clause.
+SELECT LEVEL, LPAD(' ', 2 * LEVEL - 1) || first_name || ' ' || last_name AS employee
+FROM more_employees
+WHERE last_name != 'Johnson'
+START WITH employee_id = 1
+CONNECT BY PRIOR employee_id = manager_id;  --You can eliminate a particular node from a query tree using a WHERE clause. The following query eliminates Ron Johnson from the results using WHERE last_name != 'Johnson'.
+SELECT LEVEL, LPAD(' ', 2 * LEVEL - 1) || first_name || ' ' || last_name AS employee
+FROM more_employees
+START WITH employee_id = 1
+CONNECT BY PRIOR employee_id = manager_id
+AND last_name != 'Johnson';  --To eliminate an entire branch of nodes from the results of a query, you add an AND clause to the CONNECT BY PRIOR clause. The following example uses AND last_name != 'Johnson'.
+SELECT LEVEL, LPAD(' ', 2 * LEVEL - 1) || first_name || ' ' || last_name AS employee, salary
+FROM more_employees
+WHERE salary <= 50000
+START WITH employee_id = 1
+CONNECT BY PRIOR employee_id = manager_id;  --You can include other conditions in a hierarchical query using a WHERE clause. The following example uses a WHERE clause to show only employees whose salaries are less than or equal to $50,000
+--RM Skipped Using Recursive Subquery Factoring to Query Hierarchical Data Page 215.  It's better than CONNECT BY.  Place a subquery inside a WITH clause.
+select *
+from divisions;
+select *
+from jobs;
+select *
+from employees2;
+select division_id, sum(salary)
+from employees2
+group by division_id;
+select division_id, sum(salary)
+from employees2
+group by rollup(division_id);  --the additional row at the end of the output, which shows the total salaries for all groups or adds the rows add rows.  Subtotals row subtotal rows.
+select division_id, job_id, sum(salary)
+from employees2
+group by rollup(division_id, job_id);  --ROLLUP returns a row with the sum of the salaries in each division_id, plus a grand total of salaries at the end of the result set
+select division_id, job_id, avg(salary)
+from employees2
+group by rollup(division_id, job_id);  --You can use any of the aggregate functions with ROLLUP.  Example use avg()
+select division_id, job_id, sum(salary)
+from employees2
+group by cube(division_id, job_id)
+order by division_id, job_id;  --The CUBE clause extends GROUP BY to return rows containing a subtotal for all combinations of columns, plus a row containing the grand total.  RM: order by makes query easier to read.
+--The GROUPING() function accepts a column and returns 0 or 1. GROUPING() returns 1 when the column value is null and returns 0 when the column value is non-null. GROUPING() is used only in queries that use ROLLUP or CUBE. GROUPING() is useful when you want to display a value when a null would otherwise be returned.
+select division_id, sum(salary)
+from employees2
+group by rollup(division_id);
+select grouping(division_id), division_id, sum(salary)
+from employees2
+group by rollup(division_id);  --GROUPING() returns 0 for the rows that have non-null division_id values and returns 1 for the last row that has a null division_id.
+select case grouping(division_id) when 1 then 'All divisions' else division_id end as div, sum(salary)
+from employees2
+group by rollup(division_id);
+select case grouping(division_id) when 1 then 'All divisions' else division_id end as div, case grouping(job_id) when 1 then 'All jobs' else job_id end as job, sum(salary)
+from employees2
+group by rollup(division_id, job_id);  --Replaces null values in a ROLLUP containing multiple columns division_id and job_id
+select case grouping(division_id) when 1 then 'All divisions' else division_id end as div, case grouping(job_id) when 1 then 'All jobs' else job_id end as job, sum(salary)
+from employees2
+group by cube(division_id, job_id)
+order by division_id, job_id;  --Replaces null values in a CUBE containing multiple columns division_id and job_id
+--You use the GROUPING SETS clause to obtain the subtotal rows. The following example uses GROUPING SETS to obtain the subtotals for salaries by division_id and job_id.  RM:  There are no subtotal breakdowns.  No grand total.
+select division_id, job_id, sum(salary)
+from employees2
+group by grouping sets(division_id, job_id)
+order by division_id, job_id;  --Only the subtotals for the division_id and job_id columns are returned.
+--RM:  In lament terms, use grouping_id() to filter rows not null.  Use grouping_id() in the having clause.  Exclude rows without a subtotal or total.
+select division_id, job_id, grouping_id(division_id, job_id) as groupid, sum(salary)
+from employees2
+group by cube(division_id, job_id)
+having grouping_id(division_id, job_id) > 0
+order by division_id, job_id;
+--You can use a column many times in a GROUP BY clause. This allows you to reorganize your data or report on different groupings of data. The following query contains a GROUP BY clause that uses division_id twice, once to group by division_id and again in a ROLLUP
+SELECT division_id, job_id, SUM(salary)
+FROM employees2
+GROUP BY division_id, ROLLUP(division_id, job_id);
+--You can use the GROUP_ID() function to remove duplicate rows returned by a GROUP BY clause.  If n duplicates exist for a particular grouping, GROUP_ID() returns numbers in the range 0 to n – 1.
+SELECT division_id, job_id, GROUP_ID(), SUM(salary)
+FROM employees2
+GROUP BY division_id, ROLLUP(division_id, job_id);
+SELECT division_id, job_id, GROUP_ID(), SUM(salary)
+FROM employees2
+GROUP BY division_id, ROLLUP(division_id, job_id);  --The duplicate rows group_id() returns 1
+SELECT division_id, job_id, GROUP_ID(), SUM(salary)
+FROM employees2
+GROUP BY division_id, ROLLUP(division_id, job_id)
+HAVING GROUP_ID() = 0;  --Set group_id() = 0 in having statement remove duplicate rows
+--New for Oracle Database 12c are CROSS APPLY and OUTER APPLY, which compare the rows returned by two SELECT statements and return the matching rows in one merged result set.
+select *
+from divisions;
+select *
+from employees3;
+select *
+from divisions d, employees3 e
+where d.division_id = e.division_id;
+select *
+from divisions d
+cross apply
+	(select *
+	from employees3 e
+	where e.division_id = d.division_id);
+--OUTER APPLY returns a merge of the rows from two SELECT statements, including non-matching rows returned by the outer SELECT.
+select *
+from divisions;
+select *
+from employees3;
+select *
+from divisions d left outer join employees3 e
+on d.division_id = e.division_id;
+select *
+from divisions d
+outer apply
+	(select *
+	from employees3 e
+	where e.division_id = d.division_id);
+--New for Oracle Database 12c is LATERAL, which provides a subquery as an inline view. An inline view retrieves data from one or more tables to produce a temporary table that an outer SELECT can use as a source of data.  LATERAL cannot provide null columns for non-matching rows, used with PIVOT AND UNPIVOT, and contain a left correlation to the first table in a right outer join or full outer join.
+select *
+from divisions d,
+lateral
+	(select *
+	from employees3 e
+	where e.division_id = d.division_id);  --note the comma after from divisions d
+
+--CHAPTER 8 ANALYZING DATA page 237
+--RM:  There are many analytic functions.  I make a judgement call practice the common analytic functions.  Also, take it slow.
+select *
+from all_sales;
+--RANK() and DENSE_RANK() rank items in a group. The difference between these two functions is in the way they handle items that tie: RANK() leaves a gap in the sequence when there is a tie, but DENSE_RANK() leaves no gaps.
+select prd_type_id, sum(amount), rank() over (order by sum(amount) desc) as rank
+from all_sales
+where amount is not null
+group by prd_type_id;
+select prd_type_id, sum(amount), rank() over (order by sum(amount) desc nulls last) as rank
+from all_sales
+group by prd_type_id;  --null values are lowest rank
+--You use the PARTITION BY clause with the analytic functions when you need to divide the groups into subgroups.
+select prd_type_id, month, sum(amount), rank() over (partition by month order by sum(amount) desc) as rank
+from all_sales
+where amount is not null
+group by prd_type_id, month;
+--The ROLLUP, CUBE, and GROUPING SETS operators can be used with the analytic functions.
+select prd_type_id, sum(amount), rank() over (order by sum(amount) desc) as rank
+from all_sales
+where amount is not null
+group by rollup(prd_type_id);  --rollup from chapter 7.  The additional row at the end of the output, which shows the total salaries for all groups or adds the rows add rows.  Subtotals row subtotal rows.
+select prd_type_id, emp_id, sum(amount), rank() over (order by sum(amount) desc) as rank
+from all_sales
+group by cube(prd_type_id, emp_id)
+order by prd_type_id, emp_id; --uses CUBE and RANK() to get all rankings of sales by product type ID and
+employee ID
+select prd_type_id, emp_id, sum(amount), rank() over (order by sum(amount) desc) as rank
+from all_sales
+group by grouping sets(prd_type_id, emp_id)
+order by prd_type_id, emp_id;
+--start page 246.
