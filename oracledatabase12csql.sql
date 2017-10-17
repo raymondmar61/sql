@@ -940,4 +940,112 @@ select prd_type_id, emp_id, sum(amount), rank() over (order by sum(amount) desc)
 from all_sales
 group by grouping sets(prd_type_id, emp_id)
 order by prd_type_id, emp_id;
---start page 246.
+select month, sum(amount), sum(sum(amount)) over (order by month rows between unbounded preceding and current row) as cumulativesum
+from all_sales
+group by month
+order by month;  --cumulative sum
+select month, sum(amount), avg(sum(amount)) over (order by month rows between 3 preceding and current row) as threemonthmovingaverage
+from all_sales
+group by month
+order by month;  --moving average three months
+select month, sum(amount), avg(sum(amount)) over (order by month rows between 1 preceding and 1 following) as monthmovingaverage
+from all_sales
+group by month
+order by month;  --moving average previous month, current month, and next month
+select month, sum(amount) as currentmonth, first_value(sum(amount)) over (order by month rows between 1 preceding and 1 following) as previousmonth, last_value(sum(amount)) over (order by month rows between 1 preceding and 1 following) as nextmonth
+from all_sales
+group by month
+order by month;  --get first rows and last row and current row or get previous row and get next row
+select month, sum(amount) as currentmonth, sum(amount)/first_value(sum(amount)) over (order by month rows between 1 preceding and 1 following) as currentdividepreviousmonth, sum(amount)/last_value(sum(amount)) over (order by month rows between 1 preceding and 1 following) as currentdividenextmonth
+from all_sales
+group by month
+order by month;  --divides current month's sales/previous month's sales and divides current month's sales/next month's sales
+select month, prd_type_id, sum(sum(amount)) over (partition by month) as totalmonthsum, sum(sum(amount)) over (partition by prd_type_id) as totalproducttypeamount
+from all_sales
+group by month, prd_type_id
+order by month, prd_type_id;  --sum sales and sum by product type all by month
+select month, prd_type_id, sum(amount) as producttypeamount, ratio_to_report(sum(amount)) over (partition by month) as producttyperatio
+from all_sales
+group by month, prd_type_id
+order by month, prd_type_id; --sum of sales and the ratio of sales to the sum of sales by month
+/*
+The MODEL clause enables you to perform interrow calculations. The MODEL clause allows you to access a column in a row like a cell in an array. This provides the ability to perform calculations in a similar manner to spreadsheet
+calculations.
+*/
+-- For example, the all_sales table contains sales information for the months in 2003. You can use the MODEL clause to calculate sales in future months based on sales in 2003.  Retrieves the sales amount for each month in 2003 made by employee #21 for product types #1 and #2 and predicts sales for January, February, and March of 2004 based on sales in 2003.
+select prd_type_id, year, month, sales_amount
+from all_sales
+where prd_type_id between 1 and 2
+and emp_id = 21
+model
+partition by (prd_type_id)
+dimension by (month, year)
+measures (amount sales_amount)
+	(sales_amount[1, 2004] = sales_amount[1, 2003],
+	sales_amount[2, 2004] = sales_amount[2, 2003] + sales_amount[3, 2003], 
+	sales_amount[3, 2004] = round(sales_amount[3, 2003] * 1.25, 2)
+)
+order by prd_type_id, year, month;
+--You can also use symbolic notation to explicitly indicate the meaning of the dimensions. For example, sales_amount[month=1, year=2004]
+select prd_type_id, year, month, sales_amount
+from all_sales
+where prd_type_id between 1 and 2
+and emp_id = 21
+model
+partition by (prd_type_id)
+dimension by (month, year)
+measures (amount sales_amount)
+	(sales_amount[month = 1, year = 2004] = sales_amount[month = 1, year = 2003],
+	sales_amount[month = 2, year = 2004] = sales_amount[month = 2, year = 2003] + sales_amount[month = 3, year = 2003], 
+	sales_amount[month = 3, year = 2004] = round(sales_amount[month = 3, year = 2003] * 1.25, 2)
+)
+order by prd_type_id, year, month;  --no 2004 data.  I don't know why.
+--You can access a range of cells using the BETWEEN and AND keywords. For example, the following expression sets the sales amount for January 2004 to the rounded average of the sales between January and March 2003
+select prd_type_id, year, month, sales_amount
+from all_sales
+where prd_type_id between 1 and 2
+and emp_id = 21
+model
+partition by (prd_type_id)
+dimension by (month, year)
+measures (amount sales_amount)
+	(sales_amount[month = 1, year = 2004] = round(avg(sales_amount)[month between 1 and 3, year = 2003], 2)
+)
+order by prd_type_id, year, month;  --no 2004 data.  I don't know why.
+--You can access all cells in an array using the ANY and IS ANY predicates. You use ANY with positional notation and IS ANY with symbolic notation. For example, the following expression sets the sales amount for January 2004 to the rounded sum of the sales for all months and years
+select prd_type_id, year, month, sales_amount
+from all_sales
+where prd_type_id between 1 and 2
+and emp_id = 21
+model
+partition by (prd_type_id)
+dimension by (month, year)
+measures (amount sales_amount)
+	(sales_amount[month = 1, year = 2004] = round(sum(sales_amount)[any, year is any], 2)
+)
+order by prd_type_id, year, month;  --no 2004 data.  I don't know why.
+--The CURRENTV() function returns the current value of a dimension. For example, the following expression sets the sales amount for the first month of 2004 to 1.25 times the sales of the same month in 2003. Notice the use of CURRENTV() to get the current month, which is 1.
+select prd_type_id, year, month, sales_amount
+from all_sales
+where prd_type_id between 1 and 2
+and emp_id = 21
+model
+partition by (prd_type_id)
+dimension by (month, year)
+measures (amount sales_amount)
+	(sales_amount[month = 1, year = 2004] = round(sales_amount[currentv(), 2003] * 1.25, 2)
+)
+order by prd_type_id, year, month;  --no 2004 data.  I don't know why.
+--You can access cells using a FOR loop. For example, the following expression sets the sales amount for the first three months of 2004 to 1.25 times the sales of the same months in 2003. Notice the use of the INCREMENT keyword, which specifies the amount to increment month by during each iteration of the loop.
+select prd_type_id, year, month, sales_amount
+from all_sales
+where prd_type_id between 1 and 2
+and emp_id = 21
+model
+partition by (prd_type_id)
+dimension by (month, year)
+measures (amount sales_amount)
+	(sales_amount[for month from 1 to 3 increment 1, year = 2004] = round(sales_amount[currentv(), 2003] * 1.25, 2)
+)
+order by prd_type_id, year, month;  --no 2004 data.  I don't know why.
+--start page 266
