@@ -1048,4 +1048,235 @@ measures (amount sales_amount)
 	(sales_amount[for month from 1 to 3 increment 1, year = 2004] = round(sales_amount[currentv(), 2003] * 1.25, 2)
 )
 order by prd_type_id, year, month;  --no 2004 data.  I don't know why.
---start page 266
+sales_amount[currentv(), 2003] is present --IS PRESENT returns true if the row specified by the cell reference existed prior to the execution of the MODEL clause
+sales_amount[FOR month FROM 1 TO 3 INCREMENT 1, 2004] =
+	CASE WHEN sales_amount[CURRENTV(), 2003] IS PRESENT THEN
+		ROUND(sales_amount[CURRENTV(), 2003] * 1.25, 2)
+ELSE
+	0
+END  --sets the sales amount for the first three months of 2004 to 1.25 multiplied by the sales of the same months in 2003
+--The following query shows the use of this expression
+SELECT prd_type_id, year, month, sales_amount
+FROM all_sales
+WHERE prd_type_id BETWEEN 1 AND 2
+AND emp_id = 21
+MODEL
+PARTITION BY (prd_type_id)
+DIMENSION BY (month, year)
+MEASURES (amount sales_amount) (
+	sales_amount[FOR month FROM 1 TO 3 INCREMENT 1, 2004] =
+	CASE WHEN sales_amount[CURRENTV(), 2003] IS PRESENT THEN
+		ROUND(sales_amount[CURRENTV(), 2003] * 1.25, 2)
+	ELSE
+		0
+	END
+)
+ORDER BY prd_type_id, year, month;
+PRESENTV(sales_amount[CURRENTV(), 2003], ROUND(sales_amount[CURRENTV(), 2003] * 1.25, 2), 0)  --The PRESENTV(cell, expr1, expr2) function returns the expression expr1 if the row specified by the cell reference existed prior to the execution of the MODEL clause. If the row doesn’t exist, the expression expr2 is returned.
+--The following query shows the use of this expression
+SELECT prd_type_id, year, month, sales_amount
+FROM all_sales
+WHERE prd_type_id BETWEEN 1 AND 2
+AND emp_id = 21
+MODEL
+PARTITION BY (prd_type_id)
+DIMENSION BY (month, year)
+MEASURES (amount sales_amount) (
+	sales_amount[FOR month FROM 1 TO 3 INCREMENT 1, 2004] =
+		PRESENTV(sales_amount[CURRENTV(), 2003],
+			ROUND(sales_amount[CURRENTV(), 2003] * 1.25, 2), 0)
+)
+ORDER BY prd_type_id, year, month;
+PRESENTNNV(sales_amount[CURRENTV(), 2003], ROUND(sales_amount[CURRENTV(), 2003] * 1.25, 2), 0) --The PRESENTNNV(cell, expr1, expr2) function returns the expression expr1 if the row specified by the cell reference existed prior to the execution of the MODEL clause and the cell value is not null. If the row doesn’t exist or the cell value is null, the expression expr2 is returned.
+/*
+By default, the MODEL clause treats a cell that is missing a value as if it had a null value. A cell with a null value is also treated as a null value. You can change this default behavior by using IGNORE NAV, which returns one of the following values:
+*0 for a cell with a missing or null numeric value
+*An empty string for a cell with a missing or null string value
+*01-JAN-2000 for a cell with a missing or null date value
+*Null for a cell with a missing or null value of any other database type
+You can also explicitly specify KEEP NAV, which is the default behavior. KEEP NAV returns null for a cell with a missing or null value.
+*/
+SELECT prd_type_id, year, month, sales_amount
+FROM all_sales
+WHERE prd_type_id BETWEEN 1 AND 2
+AND emp_id = 21
+MODEL IGNORE NAV
+PARTITION BY (prd_type_id)
+DIMENSION BY (month, year)
+MEASURES (amount sales_amount) (
+  sales_amount[FOR month FROM 1 TO 3 INCREMENT 1, 2004] =
+    ROUND(sales_amount[CURRENTV(), 2003] * 1.25, 2)
+)
+ORDER BY prd_type_id, year, month;
+--By default, if the cell referenced on the left side of an expression exists, then it is updated. If the cell doesn’t exist, then a new row in the array is created. You can change this default behavior using RULES UPDATE, which specifies that if the cell doesn’t exist, a new row will not be created.  The following query shows the use of RULES UPDATE:
+SELECT prd_type_id, year, month, sales_amount
+FROM all_sales
+WHERE prd_type_id BETWEEN 1 AND 2
+AND emp_id = 21
+MODEL
+PARTITION BY (prd_type_id)
+DIMENSION BY (month, year)
+MEASURES (amount sales_amount)
+RULES UPDATE (
+  sales_amount[FOR month FROM 1 TO 3 INCREMENT 1, 2004] =
+    ROUND(sales_amount[CURRENTV(), 2003] * 1.25, 2)
+)
+ORDER BY prd_type_id, year, month;  --Because cells for 2004 don’t exist and RULES UPDATE is used, no new rows are created in the array for 2004. Therefore, the query doesn’t return rows for 2004.
+--PIVOT rotates rows into columns in the output from a query and runs an aggregation function on the data. UNPIVOT does the opposite of PIVOT. UNPIVOT rotates columns into rows.
+--The following query shows the total sales amount of product types #1, #2, and #3 for the first four months in 2003. The cells in the result set show the sum of the sales amounts for each product type in each month.
+SELECT *
+FROM (
+	SELECT month, prd_type_id, amount
+	FROM all_sales
+	WHERE year = 2003
+	AND prd_type_id IN (1, 2, 3)
+)
+PIVOT (
+	SUM(amount) FOR month IN (1 AS JAN, 2 AS FEB, 3 AS MAR, 4 AS APR)
+)
+ORDER BY prd_type_id;
+/*
+SELECT *
+FROM (
+	inner_query
+)
+PIVOT (
+	aggregate_function FOR pivot_column IN (list_of_values)
+)
+ORDER BY ...;
+*There is an inner and outer query. The inner query gets the month, product type, and amount from the all_sales table and passes the results to the outer query.
+*SUM(amount) FOR month IN (1 AS JAN, 2 AS FEB, 3 AS MAR, 4 AS APR) is the line within the PIVOT clause.  The SUM() function adds up the sales amounts for the product types in the first four months (the months are listed in the IN part). Instead of returning the months as 1, 2, 3, and 4 in the output, the AS part renames the numbers to JAN, FEB, MAR, and APR to make the months more readable in the output.  The month column from the all_sales table is used as the pivot column. This means that the months appear as columns in the output. The rows are rotated—or pivoted—to view the months as columns.
+*At the very end of the example, the ORDER BY prd_type_id line orders the results by the product type.
+*/
+--To pivot on multiple columns, you place the columns in the FOR part of the PIVOT. The following example pivots on both the month and prd_type_id columns, which are referenced in the FOR part. The list of values in the IN part of the PIVOT contains a value for the month and prd_type_id columns.
+SELECT *
+FROM (
+	SELECT month, prd_type_id, amount
+	FROM all_sales
+	WHERE year = 2003
+	AND prd_type_id IN (1, 2, 3)
+)
+PIVOT (
+	SUM(amount) FOR (month, prd_type_id) IN ( (1, 2) AS JAN_PRDTYPE2, (2, 3) AS FEB_PRDTYPE3, (3, 1) AS MAR_PRDTYPE1, (4, 2) AS APR_PRDTYPE2)
+);
+--In the following example, the values of the product types are changed in the IN part to get the sales for those product types for the specified months
+SELECT *
+FROM (
+	SELECT month, prd_type_id, amount
+	FROM all_sales
+	WHERE year = 2003
+	AND prd_type_id IN (1, 2, 3)
+)
+PIVOT (
+	SUM(amount) FOR (month, prd_type_id) IN ((1, 1) AS JAN_PRDTYPE1, (2, 2) AS FEB_PRDTYPE2, (3, 3) AS MAR_PRDTYPE3, (4, 1) AS APR_PRDTYPE1)
+);
+--You can use multiple aggregate functions in a pivot. For example, the following query uses SUM() to get the total sales for the product types in January and February and AVG() to get the averages of the sales
+SELECT *
+FROM (
+	SELECT month, prd_type_id, amount
+	FROM all_sales
+	WHERE year = 2003
+	AND prd_type_id IN (1, 2, 3)
+)
+PIVOT (
+	SUM(amount) AS sum_amount, AVG(amount) AS avg_amount FOR (month) IN (1 AS JAN, 2 AS FEB))
+ORDER BY prd_type_id;
+--The UNPIVOT clause rotates columns into rows. UNPIVOT does the opposite of PIVOT.
+SELECT *
+FROM pivot_sales_data;
+SELECT *
+FROM pivot_sales_data
+UNPIVOT (
+	amount FOR month IN (JAN, FEB, MAR, APR)
+)
+ORDER BY prd_type_id;  --The monthly sales totals are shown vertically in this result set. Compare this result set to the result set from the previous query, in which the monthly sales totals are shown horizontally.
+/* Performing Top-N Queries.  A new feature in Oracle Database 12c is native support for performing top-N queries. Top-N queries contain a row-limiting clause. A row-limiting clause allows you to limit the retrieval of rows by specifying the following */
+SELECT employee_id, first_name, last_name
+FROM more_employees
+ORDER BY employee_id DESC
+FETCH FIRST 5 ROWS ONLY;  --FETCH FIRST to retrieve the five employees with the highest employee_id
+SELECT employee_id, first_name, last_name
+FROM more_employees
+ORDER BY employee_id DESC
+OFFSET 5 ROWS FETCH NEXT 5 ROWS ONLY;  --You use the OFFSET clause to specify the number of rows to skip before row limiting begins. The query retrieves employees with employeed_id values starting at 8 and ending at 4 from the more_employees table.
+SELECT product_id, name, price
+FROM products
+ORDER BY price DESC
+FETCH FIRST 20 PERCENT ROWS ONLY;  --You use the PERCENT clause to specify the percentage of the total number of selected rows to return. The query retrieves the 20 percent of the products with the highest price from the products table.
+SELECT employee_id, first_name, last_name, salary
+FROM more_employees
+ORDER BY salary
+FETCH FIRST 10 PERCENT ROWS WITH TIES;  --Use WITH TIES to include additional rows with the same sort key value as the last row fetched.  The query retrieves the 10 percent of the employees with the lowest salary from the more_employees table using WITH TIES. The sort key is the salary column.  RM:  in lament terms, ties are included or all results with same salary included.
+--RM:  Skipped A new feature in Oracle Database 12c is native support for finding patterns in data using the MATCH_RECOGNIZE clause. Finding patterns in data is useful in a variety of situations. For example, finding patterns in data is useful for finding trends in sales, detecting fraudulent credit card transactions, and discovering network intrusions. The examples in this section show how to find V-shaped and W-shaped patterns in the sales for a product over a period of days.
+
+--CHAPTER 9 CHANGING TABLE CONTENTS page 285
+insert into customers (customer_id, first_name, last_name, dob, phone)
+values (6, 'Fred','Brown','JAN-01-1970','800-555-1215');
+insert into customers
+values (7, 'Jane','Green','JAN-01-1970','800-555-1216');  --When you omit the column list, the order of the values must match the order of the columns.
+insert into customers
+values (8, 'Sophie','White',null, null);
+insert into customers
+values (9, 'Kyle','O''Malley',null, null);
+insert into products
+values (13, 1, 'The ''Great'' Gatsby',null, 12.99);  --'Great' in table
+insert into products
+values (14, 1, 'The "Great" Gatsby',null, 12.99);  --"Great" in table
+insert into customers (customer_id, first_name, last_name)
+select 10, first_name, last_name
+from customers
+where customer_id = 1;  --copy row from one table to another.  In the example copy row from one table to same table and assigning customer_id to 10.
+update customers
+set last_name = 'Orange'
+where customer_id = 2;
+update products
+set price = price * 1.20, name = lower(name)
+where price >= 20;
+--Oracle Database 10g introduced the RETURNING clause to return the value from an aggregate function such as AVG().
+variable averageproductprice number
+update products
+set price = price * 0.75
+returning avg(price) into :averageproductprice;  --RM  error message
+delete from customers
+where customer_id = 10;
+create table order_status (order_status_id integer constraint defaultexamplepk primary key, status varchar2(20) default 'Order placed' not null, last_modified date default sysdate);
+insert into order_status (order_status_id)
+values (11);  --status column is default Order placed.  last_modified column is default today's date.
+insert into order_status (order_status_id, status, last_modified)
+values (2, 'Order shipped', 'JUN-10-2004');  --status column is default Order shipped.  last_modified column is JUN-10-2004
+update order_status
+set status = default
+where order_status_id = 2;  --You can set a column back to the default using the DEFAULT keyword in an UPDATE statement
+--The MERGE statement allows you to merge rows from one table into another. For example, you might want to merge changes to products listed in one table into the products table.  Combine rows one table to another table.
+select product_id, product_type_id, name, price
+from product_changes;
+--you want to merge the rows from the product_changes table into the products table.
+merge into products p
+using product_changes pc
+on (p.product_id = pc.product_id)
+when matched then
+	update
+	set p.product_type_id = pc.product_type_id,
+	p.name = pc.name,
+	p.description = pc.description, 
+	p.price = pc.price
+when not matched then
+	insert (p.product_id, p.product_type_id, p.name, p.description, p.price)
+	values (pc.product_id, pc.product_type_id, pc.name, pc.description, pc.price);
+--To permanently record the results made by SQL statements in a transaction, you perform a COMMIT. To undo the results, you perform a ROLLBACK, which resets all the rows back to what they were before the transaction began.
+--You perform a DDL statement, such as a CREATE TABLE statement, which automatically performs a COMMIT.
+--You perform a DCL statement, such as a GRANT statement, which automatically performs a COMMIT.
+--If you exit SQL*Plus normally, by entering the EXIT command, a COMMIT is automatically performed for you.
+--If SQL*Plus terminates abnormally—for example, if the computer on which SQL*Plus was running were to crash—a ROLLBACK is automatically performed.
+--Tip:  It is poor practice not to explicitly commit or roll back your transactions, so perform a COMMIT or ROLLBACK at the end of your transactions.
+--You can set a savepoint at any point within a transaction. This allows you to roll back changes to that savepoint. Savepoints are useful for breaking up very long transactions, because if you make a mistake after you’ve set a savepoint, you don’t have to roll back the transaction all the way to the start. However, you should use savepoints sparingly: it might be better to restructure your transaction into smaller transactions.  The procedure is the following:  SAVEPOINT savepointname;  To roll back to a savepoint established earlier:  ROLLBACK TO SAVEPOINT savepointname;
+/*
+Database theory’s more rigorous definition of a transaction states that a transaction has four fundamental properties, known as ACID properties:
+*Atomic Transactions are atomic, meaning that the SQL statements contained in a transaction make up a single unit of work.
+*Consistent Transactions ensure that the database state remains consistent, meaning that the database is in a consistent state when a transaction begins and the database is in another consistent state when the transaction finishes.
+*Isolated Separate transactions should not interfere with each other.
+*Durable After a transaction is committed, the database changes are preserved, even ifthe computer on which the database software is running crashes later.
+*/
+--RM:  Skipped Transaction Isloation Levels Phantom reads Nonrepeatable reads Dirty Reads, Query Flashbacks.
+--RM:  Skipped Chapter 10 Users Privileges, and Roles
+--Start page 335 Chapter 11
