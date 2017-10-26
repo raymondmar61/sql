@@ -3,6 +3,7 @@
 --Foreign key references a column in another table.  The table containing the foreign key is known as the detail or child table.  The table that is referenced is known as the master or parent table. This type of relationship is known as a master-detail or parentchild relationship.
 --Composite primary key when a primary key consists of multiple columns.  The combination of the multiple columns must be unique for each row.
 --Double quotes for alias; otherwise single quotes.
+--Shift+F4 opens Popup describe or table information window.  Cursor on table name.  Otherwise, click on table name in Connections window.  Click on the individual tabs.
 
 --BONUS
 select *
@@ -1275,8 +1276,119 @@ Database theory’s more rigorous definition of a transaction states that a tran
 *Atomic Transactions are atomic, meaning that the SQL statements contained in a transaction make up a single unit of work.
 *Consistent Transactions ensure that the database state remains consistent, meaning that the database is in a consistent state when a transaction begins and the database is in another consistent state when the transaction finishes.
 *Isolated Separate transactions should not interfere with each other.
-*Durable After a transaction is committed, the database changes are preserved, even ifthe computer on which the database software is running crashes later.
+*Durable After a transaction is committed, the database changes are preserved, even if the computer on which the database software is running crashes later.
 */
 --RM:  Skipped Transaction Isloation Levels Phantom reads Nonrepeatable reads Dirty Reads, Query Flashbacks.
 --RM:  Skipped Chapter 10 Users Privileges, and Roles
---Start page 335 Chapter 11
+
+--CHAPTER 11 CREATING TABLES, SEQUENCES, INDEXES, AND VIEWS 335
+create table order_status2 (id integer constraint order_status2_pk primary key, status varchar2(10), last_modified date default sysdate);
+create global temporary table order_status_temp (id integer, status varchar2(10), last_modified date default sysdate)
+on commit preserve rows; --creates a temporary table named order_status_temp whose rows will be kept until the end of a user session (ON COMMIT PRESERVE ROWS)
+insert into order_status_temp
+values(1,'New',sysdate);
+select table_name, tablespace_name, temporary
+from user_tables
+where table_name in ('ORDER_STATUS2', 'ORDER_STATUS_TEMP');  --table names must be upper case.  Get table information.
+select *
+from all_tables;  --retrieve all table information in database
+select column_name, data_type, data_length, data_precision, data_scale
+from user_tab_columns
+where table_name = 'PRODUCTS';  --table name must be upper case.  Retrieve column information in a table from the user_tab_columns view.
+select *
+from all_tab_columns
+where table_name = 'PRODUCTS';  --table name must be upper case.  retrieve all column information in a table.
+alter table order_status2
+add modified_by integer; --add column modified_by
+alter table order_status2
+add initially_created date default sysdate not null;  --add column initially_created default and not null
+--A virtual column is a column that refers only to other columns already in the table. For example, the following ALTER TABLE statement adds a virtual column named average_salary to the salary_grades table
+alter table salary_grades
+add (average_salary as ((low_salary + high_salary) / 2));  --like a temporary column temp column
+alter table order_status2
+modify status varchar2(15);  --increases the maximum length of the status column to 15 characters or modify table
+alter table order_status2
+modify id number(5); --changes the precision of id column to 5 or modify table
+alter table order_status2
+modify status char(15);  --changes the data type of status column to char or modify table
+alter table order_status2
+modify last_modified default sysdate - 1;  --changes the default value of last_modified column to sysdate-1 or modify table.  The default value applies only to new rows added to the table. New rows will get their last_modified column set to the current date minus one day.
+alter table order_status2
+drop column initially_created;  --delete column
+alter table order_status2
+add constraint order_status2_status_ck
+check (status in ('placed','pending','shipped'));  --update column status for which status column has three choices placed, pending, or shipped.  order_status2_status_ck is the name of the constraint.
+insert into order_status2 (id, status, last_modified, modified_by)
+values (1, 'pending', '01/01/2005',1);
+alter table order_status2
+add constraint order_status2_id_ck check (id > 0); --update column id for which id must be greater than zero.  order_status2_id_ck is the name of the constraint.
+alter table order_status2
+modify status constraint order_status2_status_nn not null;  --update column status for which status must be not null.  order_status2_status_nn is the name of the constraint.
+alter table order_status2
+add constraint order_status_modified_by_fk
+modified_by references employees(employee_id); --add column modified_by with constraint modified_by is a foreign key to employee_id in employees table.  order_status_modified_by_fk is name of the constraint.
+--You use the ON DELETE CASCADE clause with a FOREIGN KEY constraint to specify that when a row in the parent table is deleted, any matching rows in the child table are also deleted.
+alter table order_status2
+add constraint order_status_modified_by_fk
+modified_by references employees(employee_id) on delete cascade;
+--You use the ON DELETE SET NULL clause with a FOREIGN KEY constraint to specify that when a row in the parent table is deleted, the foreign key column for any rows in the child table are set to null.
+alter table order_status2
+add constraint order_status_modified_by_fk
+modified_by references employees(employee_id) on delete set null;
+alter table order_status2
+add constraint order_status2_status_uq unique (status);  --status column has a unique constraint.  Any existing or new rows must always be unique in status column.
+alter table order_status2
+drop constraint order_status2_status_uq;  --delete constraint or remove constraint.  drop the constraint's name.
+--To enable a constraint, all the rows in the table must satisfy the constraint.  You can apply a constraint to new data only by specifying ENABLE NOVALIDATE and the name of the constraint--not name of the column.  Constraint new data.
+alter table order_status2
+enable nonvalidate constraint order_status2_status_uq;
+--You can retrieve information on your constraints by querying the user_constraints view.  Constraints query.  Search constraints.
+select constraint_name, constraint_type, status, deferrable, deferred
+from user_constraints
+where table_name = 'ORDER_STATUS2'
+order by constraint_name;  --table_name must be in upper case.
+select *
+from all_constraints;  --retrieve information on all the constraints you have access to by querying the all_constraints view.  All constraints.
+SELECT constraint_name, column_name
+FROM user_cons_columns
+WHERE table_name = 'ORDER_STATUS2'
+ORDER BY constraint_name;  --retrieve information on the constraints for a column by querying the user_cons_columns view.  Search column constraints.
+SELECT
+ucc.column_name, ucc.constraint_name,
+uc.constraint_type, uc.status
+FROM user_constraints uc, user_cons_columns ucc
+WHERE uc.table_name = ucc.table_name
+AND uc.constraint_name = ucc.constraint_name
+AND ucc.table_name = 'ORDER_STATUS2'
+ORDER BY ucc.constraint_name;  --The next query joins user_constraints and user_cons_columns to get the column_name, constraint_name, constraint_type, and status
+/* Page 342 table 11-3 lists constraint type */
+select *
+from all_cons_columns;  --retrieve information on all the column constraints you have access to
+rename order_status2 to order_state;  --rename table
+comment on table order_status2 is 'order_status2 stores the state of an order';  --add comment to table
+comment on column order_status2.last_modified is 'last_modified stores the date and time the order was modified last';  --add comment to column
+select *
+from user_tab_comments
+where table_name = 'ORDER_STATUS2';  --retrieve table comments
+select *
+from user_col_comments
+where table_name = 'ORDER_STATUS2';  --retrieve column comments
+truncate table order_status2;  --removes all rows and resets the storage area.  Delete all rows.
+/*
+If you need to remove all the rows from a table, you should use TRUNCATE rather than DELETE. This is because TRUNCATE resets the storage area for a table. A TRUNCATE statement doesn’t require any undo space in the database, and you don’t have to run a COMMIT to make the delete permanent. Undo space is an area that the database software uses to record database changes.
+
+New for Oracle Database 12c is the CASCADE clause for TRUNCATE, which truncates the specified table, plus any child tables, grandchild tables, and so on. All tables that reference the specified table using an enabled ON DELETE CASCADE constraint are truncated. For example, if you had a table named parent_table, then TRUNCATE TABLE parent_table CASCADE would truncate any child tables, grandchild tables, and so on.
+*/
+drop table order_status2;  --delete table
+--The DEFAULT ON NULL column clause assigns a default value to a column when an INSERT statement supplies a null value for that column.
+create table tempnulldefault (reference integer, quantity integer default on null 1 not null);
+insert into tempnulldefault
+values (1, 3);
+insert into tempnulldefault
+values (123,null);
+/*
+New for Oracle Database 12c is the ability to define visible and invisible columns in a table. You use VISIBLE to indicate that a column is visible, and INVISIBLE to indicate that a column is invisible. If neither is specified for a column, then the column is visible by default.
+
+RM:  skipped section.
+*/
+--stop page 356.
