@@ -1,5 +1,7 @@
 --Sams Teach Yourself SQL In 10 Minutes by Ben Forta
 --Primary key values can never be reused. (If a row is deleted from the table, its primary key may not be assigned to any new rows in the future.)
+--Appendix A 198 (187) lists the columns for all the tables
+--Appenxis C 218 (207) lists most frequenty SQL statements or SQL operations
 --Appendix E SQL Reserved Words list most common reserved words.
 
 --Lesson 2 Retrieving Data 24 pdf page (13 book page)
@@ -50,7 +52,7 @@ where vend_id not in ('DLL01')  --vend_id <> 'DLL01' also works
 order by prod_name;
 
 --Lesson 6 Using Wildcard Filtering 51 (40)
---Within a search string, % means match any number of occurrences of any character.  RM:  not asterik * for wildcard
+--Within a search string, % means match any number of occurrences of any character.  wild card.  RM:  not asterik * for wildcard
 select prod_id, trim(prod_name)
 from products
 where prod_name like 'Fish%';
@@ -337,7 +339,7 @@ insert into customers(cust_id, cust_name, cust_address, cust_city, cust_state, c
 values('1000000006', 'Toy Land', '123 Any Street', 'New York', 'NY', '11111', 'USA');
 insert into customers(cust_id,cust_contact,cust_email,cust_name,cust_address,cust_city,cust_state,cust_zip,cust_country)
 select cust_id,cust_contact,cust_email,cust_name,cust_address,cust_city,cust_state,cust_zip,cust_country
-from custnew;  --insert select to import all the data from custnew into customers.  WHERE clause can be use to filter data to be inserted.
+from custnew;  --insert select to import all the data from custnew into customers.  WHERE clause can be use to filter data to be inserted.  Insert data from one table to another table.  Insert data into a table from another table.
 --To copy the contents of a table into a brand new table (one that is created on-the-fly) you can use the SELECT INTO statement.
 select *
 into custcopy
@@ -376,4 +378,152 @@ alter table vendors
 drop column vend_phone;  --delete column
 drop table custcopy;  --delete table
 --Rename table is supported differently by each DBMS. There is no hard and fast standard for this operation. DB2, MySQL, Oracle, and PostgreSQL users can use the RENAME statement.
---start page 154
+
+--Lesson 18 Using Views 154 (143)
+--Views are virtual tables.  Views simply contain queries that dynamically retrieve data when used.
+select cust_name, cust_contact
+from customers, orders, orderitems
+where customers.cust_id = orders.cust_id
+and orderitems.order_num = orders.order_num
+and prod_id = 'RGAN01';
+/*
+Imagine that you could wrap that entire query in a virtual table called ProductCustomers.  ProductCustomers is a view, and as a view, it does not contain any columns or data. Instead it contains a query—the same query used above to join the tables properly.
+*/
+select cust_name, cust_contact
+from productcustomers
+where prod_id = 'RGAN01';
+--Before you create views yourself, there are some restrictions of which you should be aware. Unfortunately, the restrictions tend to be very DBMS specific, so check your own DBMS documentation before proceeding.  RM:  Page 156 (145) the restriction list is long.
+create view productcustomers as
+select cust_name, cust_contact, prod_id
+from customers, orders, orderitems
+where customers.cust_id = orders.cust_id
+and orderitems.order_num = orders.order_num;
+select *
+from productcustomers;
+select cust_name, cust_contact
+from productcustomers
+where prod_id = 'RGAN01';
+--Another common use of views is for reformatting retrieved data.
+select trim(vend_name) || '(' || trim(vend_country) || ')' as vend_title
+from vendors
+order by vend_name;  --RM:  Oracle concatenate or combine text is ||, not +
+--Suppose that you regularly needed results in this format. Rather than perform the concatenation each time it was needed, you could create a view and use that instead.
+create view vendorlocations as
+select trim(vend_name) || '(' || trim(vend_country) || ')' as vend_title
+from vendors;
+--This statement creates a view using the exact same query as the previous SELECT statement. To retrieve the data to create all mailing labels, simply do the following:
+select *
+from vendorlocations;
+create view customeremaillist as
+select trim(cust_id) as "must name", trim(cust_name) as "expression", trim(cust_email) as "column alias"
+from customers
+where cust_email is not null;  --RM:  it seems column alias required when filtering data
+select *
+from customeremaillist;
+select prod_id, quantity, item_price, quantity*item_price as expanded_price
+from orderitems
+where order_num = 20008;
+create view orderitemsexpanded as
+select order_num, prod_id, quantity, item_price, quantity*item_price as expanded_price
+from orderitems;
+select *
+from orderitemsexpanded
+where order_num = 20008;
+--To remove a view, the DROP statement is used. The syntax is simply DROP VIEW viewname;. To overwrite (or update) a view you must first DROP it and then recreate it.  Delete view.
+
+--Lesson 19 Working With Stored Procedures 164 (153)
+--Stored procedures are simply collectionsof one or more SQL statements saved for future use. You can think of them as batch files, although in truth they are more than that.
+/* 
+There’s a Lot More to It. Stored procedures are complex, and full coverage of the subject requires more space than can be allocated here. This lesson will not teach you all you need to know about stored procedures. Rather, it is intended simply to introduce the subject so that you are familiar with what they are and what they can do. As such, the examples presented here provide syntax for Oracle and SQL Server only.
+*/
+--Stored procedure example below named AddNewProduct is executed adds a new product to the Products table.
+execute AddNewProduct('JTS01', 'Stuffed Eiffel Tower', 6.49, 'Plush stuffed toy with the text La Tour Eiffel in red white and blue')
+--To ensure that primary key numbers are generated properly, it is safer to have that process automated (and not rely on end users).
+--writing a stored procedure is not trivial. To give you a taste for what is involved, let’s look at a simple example—a stored procedure that counts the number of customers in a mailing list who have email addresses.
+create procedure mailinglistcount
+(listcount out number)
+is
+begin
+select *
+from customers
+where not cust_email is null;
+listcount := sql%rowcount;
+end;  --RM: error message appeared
+
+--Lesson 20 Managing Transaction Processing 172 (161)
+--Transaction Processing is a mechanism used to manage sets of SQL operations that must be executed in batches so as to ensure that databases never contain the results of partial operations. With Transaction Processing, you can ensure that sets of operations are not aborted midprocessing—-they either execute in their entirety or not at all (unless explicitly instructed otherwise).
+/*
+When working with transactions and transaction processing, there are a few keywords that’ll keep reappearing. Here are the terms you need to
+know:
+• Transaction: A block of SQL statements
+• Rollback: The process of undoing specified SQL statements
+• Commit:  Writing unsaved SQL statements to the database tables
+• Savepoint: A temporary placeholder in a transaction set to which you can issue a rollback (as opposed to rolling back an entire transaction)
+*/
+--Oracle is savepoint samepointname;
+--Oracle is rollback to samepointname;
+--The More Savepoints the Better. You can have as many savepoints as you’d like within your SQL code, and the more the better. Why? Because the more savepoints you have the more flexibility you have in managing rollbacks exactly as you need them.
+
+--Lesson 21 Using Cursors 179 (168)
+/*
+Sometimes there is a need to step through rows forward or backward and one or more at a time. This is what cursors are used for. A cursor is a
+database query stored on the DBMS server—not a SELECT statement, but the result set retrieved by that statement. Once the cursor is stored, applications can scroll or browse up and down through the data as needed.
+*/
+DECLARE CURSOR CustCursor
+IS
+SELECT * FROM Customers
+WHERE cust_email IS NULL; --error message
+--RM:  skipped rest of lesson.
+
+--Lesson 22 Understanding Advanced SQL Features 185 (174)
+/* Constraints Rules that govern how database data is inserted or manipulated. */
+/* A primary key is a special constraint that is used to ensure that values in a column (or set of columns) are unique and never change, in other words, a column (or columns) in a table whose values uniquely identify each row in the table. Side note:  Primary key values can never be reused. If a row is deleted from the table, its primary key must not be assigned to any new rows.*/
+create table vendors
+(vend_id char(10) not null primary key, vend_name char(50) not null, vend_address char(50) null, vend_city char(50) null, vend_state char(5) null, 
+vend_zip char(10) null, vend_country char(50) null);
+alter table vendors
+add constraint primary key (vend_id);
+/* A foreign key is a column in a table whose values must be listed in a primary key in another table. Foreign keys are an extremely important part
+of ensuring referential integrity. */
+create table orders
+(order_num integer not null primary key, order_date datetime not null, cust_id char(10) not null references customers(cust_id));  --the REFERENCES keyword to state that any values in cust_id must be in cust_id in the Customers table.
+alter table customers
+add constraint foreign key (cust_id) references customers (cust_id);  --the REFERENCES keyword to state that any values in cust_id must be in cust_id in the Customers table.
+/* Unique constraints are used to ensure that all data in a column (or set of columns) is unique. Null values are okay.  e.g. social security numbers.  The syntax for unique constraints is similar to that for other constraints.  Either the UNIQUE keyword is defined in the table definition or a separate CONSTRAINT is used. */
+/* Check constraints are used to ensure that data in a column (or set of columns) meets a set of criteria that you specify. It's like a column restriction, data requirement, column requirement, column constraint. */
+--The following example applies a check constraint to the OrderItems table to ensure that all items have a quantity greater than 0:
+create table orderitems
+(order_num integer not null, order_item integer not null, prod_id varchar(10) not null, quantity integer not null check (quantity > 0), item_price integer not null);
+add constraint check (gender like '[mf]');  --column name gender contains only m or f in an alter table statement
+/* Indexes are used to sort data logically to improve the speed of searching and sorting operations. The best way to understand indexes is to envision the index at the back of a book (this book, for example). You may define an index on one or more columns so that the DBMS keeps a sorted list of the contents for its own use. After an index is defined, the DBMS uses it in much the same way as you would use a book index. It searches the sorted index to find the location of any matches and then retrieves those specific rows.*/
+create index prod_name_ind
+on products (prod_name);  --Every index must be uniquely named. Here the name prod_name_ind is defined after the keywords CREATE INDEX. ON is used to specify the table being indexed, and the columns to include in the index (just one in this example) are specified in parentheses after the table name.
+/* Triggers are special stored procedures that are executed automatically when specific database activity occurs. Triggers might be associated with
+INSERT, UPDATE, and DELETE operations (or any combination thereof) on specific tables. e.g. converting all state
+names to uppercase during an INSERT or UPDATE operation, making sure a customer’s available credit has not been exceeded and blocking the insertion if it has, calculating computed column values or updating timestamps */
+create trigger customer_state
+after insert or update
+for each row
+begin
+update customers
+set cust_state = upper(cust_state)
+where customers.cust_id = :old.cust_id
+end;
+--Constraints Are Faster Than Triggers. As a rule, constraints are processed more quickly than triggers, so whenever possible, use constraints instead.  RM:  which explains past SQL tutorials triggers not taught.
+
+--Appenxis C 218 (207) lists most frequenty SQL statements or SQL operations
+/*
+alter table
+commit
+create index
+create procedure
+create table
+create view
+delete
+drop
+insert
+insert select
+rollback
+select
+update
+*/
