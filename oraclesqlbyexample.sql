@@ -11,6 +11,7 @@
 --F8 is SQL History.  Can search history.
 --The Single Record View window allows you to examine one record at a time and scroll through the records.  Right mouse click anywhere in Query Results.
 --The Auto-fit menu options are very useful for formatting the Results window according to the length of the data cells or the length of the column name.  Right mouse click columns at Query Results.
+--Comments --for single line /* ... */ for multi-line
 
 --CHAPTER 1 SQL AND DATA 1 book page (44 pdf page)
 --A table may have only one primary key, which consists of one or more columns. If the primary key contains multiple columns, it is referred to as a composite primary key, or concatenated primary key.
@@ -40,4 +41,84 @@ from instructor;
 select unique zip
 from instructor;
 --Skipped An Introduction to SQL*Plus 81 (124)
---Start Page 101 (144)
+
+--CHAPTER 3 THE WHERE AND ORDER BY CLAUSES 101 (144)
+select first_name, last_name, phone
+from instructor
+where last_name = 'Schorin';
+select first_name, last_name, phone
+from instructor
+where last_name <> 'Schorin';  --not equal <> or != works Oracle
+select description, cost
+from course
+where cost >= 1195;
+select description, cost
+from course
+where cost between 1000 and 1100;  --between is inclusive
+select description, cost
+from course
+where cost in (1095,1595);
+select first_name, last_name, phone
+from instructor
+where last_name like 'S%';
+select first_name, last_name, phone
+from instructor
+where last_name like '_o%';  --% is like * and _ is single character
+--RM:  reminder There is no rule about columns in the where clause having to exist in the select list.
+select description, prerequisite
+from course
+where prerequisite is null;
+select description, prerequisite
+from course
+where cost = 1095 and description like 'I%';
+select description, cost, prerequisite
+from course
+where cost = 1195 and (prerequisite = 20 or prerequisite = 25);
+--You can apply the BETWEEN functions to text columns which utilizes the BETWEEN operator with text literals W and Z
+select student_id, last_name
+from student
+where last_name between 'W' and 'Z';
+--same as
+select student_id, last_name
+from student
+where last_name between 'W%' and 'Z%';
+select description
+from grade_type
+where description between 'Midterm' and 'Project';
+--same as
+select description
+from grade_type
+where description >= 'Midterm' and description <= 'Project';
+select rownum, last_name, student_id
+from student
+where rownum <=10; --The rownum pseudocolumn is useful if you want to limit the number of rows returned by a query.
+select distinct cost
+from course
+where prerequisite is null;
+select course_no, description
+from course
+where prerequisite is null
+order by description desc;
+select first_name, last_name
+from student
+where zip = '10025'
+order by student_id;  --it is also possible to use ORDER BY on columns that are not selected.  
+select distinct first_name, last_name, student_id
+from student
+where zip = '10025'
+order by student_id;  --However, If the select list contains distinct, the column(s) the keyword pertains to must also be listed in the order by clause.
+select distinct cost
+from course
+order by cost;
+--You can change the ordering of the nulls with the nulls first or nulls last option in the ORDER BY clause.  nulls on top nulls top.
+select distinct cost
+from course
+order by cost nulls first;
+select first_name first, first_name as "First"
+from student
+order by "First";  --column alias. can even sort by column alias
+select salutation, first_name, last_name
+from student
+where last_name = 'Grant'
+order by salutation desc, first_name asc;
+--start page 133
