@@ -210,4 +210,20 @@ SELECT student_id, employer
 FROM student
 WHERE employer LIKE '%B\_B%' ESCAPE '\';
 */
---start page 158
+select (-29), abs(-29)
+from dual; --absolute value
+select -14, sign(-14), sign (14), sign(0)
+from dual; --sign function tells you the sign. 1 for positive, -1 for negative, 0 for zero
+select 222.34501, round(222.34501,1) as "222.3", round(222.34501,2) as "222.35", round(222.34501,3) as "222.345", round(222.34501,4) as "222.345", trunc(222.34501, 2) as "222.34", trunc(222.34501, 0) as "222"
+from dual;  --round and trunicate
+select 222.34501, round(222.34501,-1) as "220", round(222.34501,-2) as "200", trunc(222.34501, -1) as "220", trunc(222.34501, -2) as "200"
+from dual;  --round and trunicate can be used to affect the left side of the decimal as well by passing a negative number as a parameter.
+select 22.5, floor(22.5) as "22", ceil(22.5) as "23", trunc(22.5) as "22", round(22.5) as "23"
+from dual;  --ceiling and floor
+select mod(23,8) as "7"
+from dual;  --modulus or remainder of a value divided by another value.  mod(value,divisor) 23/8=2 remainder 7
+select distinct cost, cost+10, cost-10, cost*10, cost/10
+from course;
+select distinct cost, cost + (cost * .10)
+from course;
+--start page 167
