@@ -226,4 +226,25 @@ select distinct cost, cost+10, cost-10, cost*10, cost/10
 from course;
 select distinct cost, cost + (cost * .10)
 from course;
---start page 167
+--The nvl function replaces a NULL value with a default value.  When you substitute a value, the data type of the substituted value must agree with the data type of the input parameter.  Use to_char to convert to varchar2.  nvl(input_expression, substitution_expression).
+select prerequisite, nvl(prerequisite,0)
+from course;
+select course_no, description, nvl(to_char(prerequisite),'Not Applicable') as prerequisite
+from course;
+--The coalesce function is similar to the nvl function.  You can optionally evaluate multiple substitution columns or substitution expressions. The syntax is as follows:  coalesce(input_expression, substitution_expression_1,[, substitution_expression_n])
+select student_id, midterm_grade, finalexam_grade, quiz_grade, coalesce(midterm_grade, finalexam_grade, quiz_grade) "coalesce column"
+from grade_summary;
+--The nvl2 function ichecks for both not null and null values and has three parameters versus nvl’s two parameters. The syntax for the function is as follows:  nvl2(input_expr, not_null_substitution_expr, null_substitution_expr)
+select prerequisite, nvl2(to_char(prerequisite), 'Yes there''s prereq', 'No prereq')  --escape for single quotes use double quotes
+from course;
+--The lnnvl function can be used only in the WHERE clause of a SELECT statement. It returns either true or false. It returns true and therefore a result if the condition is either false or unknown.  RM:  lnnvl returns the oppposite or null.
+select course_no, cost
+from course
+where lnnvl(cost < 1500);  --returns cost greater than 1500 or null
+--The nullif function is unique in that it generates null values. The function compares two expressions; if the values are equal, the function returns a null; otherwise, the function returns the first expression.  nullif(expression1, equal_expression2)
+select student_id, to_char(created_date, 'dd-mon-yy hh24:mi:ss') "created", to_char(modified_date, 'dd-mon-yy hh24:mi:ss') "modified", nullif(created_date, modified_date) "null two dates are equal"
+from student;
+--The decode function substitutes values based on a condition, using if-then-else logic. If a value is equal to another value, the substitution value is returned. If the value compared is not equal to any of the listed expressions, an optional default value can be returned. The syntax code for the decode function is as follows. decode(if_expr, equals_search, then_result [,else_default]).  If then else.  If else.  The search and result values can be repeated.
+select distinct state, decode(state, 'NY', 'new york', 'NJ', 'new jersey') as "null when not NY NJ", decode(state, 'NY', 'new york', 'NJ', 'new jersey', 'otherdefault') as "otherdefault when not NY NJ"
+from zipcode;
+--start page 173
