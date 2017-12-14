@@ -12,7 +12,7 @@
 --F8 is SQL History.  Can search history.
 --The Single Record View window allows you to examine one record at a time and scroll through the records.  Right mouse click anywhere in Query Results.
 --The Auto-fit menu options are very useful for formatting the Results window according to the length of the data cells or the length of the column name.  Right mouse click columns at Query Results.
---View-->Snippets.  Snippets is a window contianing SQL functions or syntax examples.  Hovering over the function reveals a brief description of the function.  Drag the SQL to the Worksheet.  
+--View-->Snippets.  Snippets is a window contianing SQL functions or syntax examples.  Hovering over the function reveals a brief description of the function.  Drag the SQL to the Worksheet.  e,g, Date/Time Functions.  The Snippets window lists commonly used functions, expressions, and code fragments. It does not provide a complete list of all available functions and syntax options in Oracle SQL. You can customize the snippets and add frequently used code fragments or functions.
 --Comments --for single line /* ... */ for multi-line
 
 --CHAPTER 1 SQL AND DATA 1 book page (44 pdf page)
@@ -244,7 +244,138 @@ where lnnvl(cost < 1500);  --returns cost greater than 1500 or null
 --The nullif function is unique in that it generates null values. The function compares two expressions; if the values are equal, the function returns a null; otherwise, the function returns the first expression.  nullif(expression1, equal_expression2)
 select student_id, to_char(created_date, 'dd-mon-yy hh24:mi:ss') "created", to_char(modified_date, 'dd-mon-yy hh24:mi:ss') "modified", nullif(created_date, modified_date) "null two dates are equal"
 from student;
---The decode function substitutes values based on a condition, using if-then-else logic. If a value is equal to another value, the substitution value is returned. If the value compared is not equal to any of the listed expressions, an optional default value can be returned. The syntax code for the decode function is as follows. decode(if_expr, equals_search, then_result [,else_default]).  If then else.  If else.  The search and result values can be repeated.
+--The decode function substitutes values based on a condition, using if-then-else logic. If a value is equal to another value, the substitution value is returned. If the value compared is not equal to any of the listed expressions, an optional default value can be returned. The syntax code for the decode function is as follows. decode(if_expr, equals_search, then_result [,else_default]).  If then else.  If else.  The search and result values can be repeated.  RM:  like a replace also replace null.  RM::case better than decode.
 select distinct state, decode(state, 'NY', 'new york', 'NJ', 'new jersey') as "null when not NY NJ", decode(state, 'NY', 'new york', 'NJ', 'new jersey', 'otherdefault') as "otherdefault when not NY NJ"
 from zipcode;
---start page 173
+select zip, decode(zip, null, 'no zipcode', zip) as "no zipcode when null"
+from instructor;
+--The decode function does not allow greater than or less than comparisons; however, combining the decode function with the sign function overcomes this shortcoming.
+/*The following select statement combines the decode and sign functions to display the course cost as 500 for courses that cost less than 1195. If the course cost is greater than or equal to 1195, the actual cost is displayed. The calculation of the value in the cost column minus 1195 results in a negative number, a positive number, a zero, or null. The sign function determines the sign of the calculation and returns, respectively, –1, +1, 0, or null. The decode function checks whether the result equals –1. If it does, this indicates that the cost is less than 1195, and the decode function returns 500; otherwise, the regular cost is shown.*/
+select course_no, cost, sign(cost-1195), decode(sign(cost-1195),-1,500,cost) as "sign-1 then 500 otherwise cost"
+from course;  --if sign=-1, then 500; otherwise cost
+--same as
+select course_no, cost, case when cost < 1195 then 500 else cost end as "test case"
+from course;
+--case expression if-then-else if then else if else logic.  Each case expression starts with the keyword case and ends with the keyword end.
+select course_no, cost, case
+	when cost < 1100 then 1000
+	when cost >= 1000 and cost < 1500 then cost * 1.1
+	when cost is null then 0
+	else cost
+  	end as "test case"
+from course;
+select course_no, cost, prerequisite, case
+	when cost < 1100 then
+		case
+			when prerequisite in (10,50) then cost/2
+			else cost
+		end
+	when cost >= 1100 and cost < 1500 then cost*1.1
+	when cost is null then 0
+	else cost
+	end as "test case"
+from course;
+select capacity, location
+from section
+where capacity*case
+	when substr(location,1,1)='L' then 2
+	when substr(location,1,1)='M' then 1.5
+	else null
+	end
+>30;
+select section_id, capacity, case
+	when capacity >=15 then to_char(capacity)
+	when capacity < 15 then 'Room too small'
+	end as "Capacity"
+from section;  --use to_char to match data types as characters or convert numbers to character or string
+select course_no, cost, case
+	when cost = 1095 then cost / 2
+	when cost = 1195 then cost * 1.1
+	when cost = 1595 then cost
+	else cost * 0.5
+	end as "any cost adjustment"
+from course;
+--same as
+select course_no, cost, case cost
+	when 1095 then cost / 2
+	when 1195 then cost * 1.1
+	when 1595 then cost
+	else cost * 0.5
+	end as "any cost adjustment"
+from course;
+/* Summary page 178 RM:  short answer is if then else if-then-else if else SQL statements
+NVL(input_expression, substitution_expression) Null value replacement.
+COALESCE(input_expression, substitution_expression_1, [, substitution_expression_n]) Null value replacement with multiple substitution expressions.
+NVL2(input_expr, not_null_substitution_expr, null_substitution_expr) Null and not null substitution replacement.
+LNNVL(condition) Returns true if the condition is false or unknown. Returns false if the condition is true.
+NULLIF(expression1, equal_expression2) Returns null if the value of two expressions are identical; otherwise, returns first expression.
+NANVL(input_value, substitution_value) Returns a substitution value in the case of NAN (not a number) value.
+DECODE (if_expr, equals_search, then_result [,else_default]) Substitution function based on if-then-else logic.
+CASE {WHEN cond THEN return_expr [WHEN cond THEN return_ expr]…} [ELSE else_expr] END Searched CASE expression. It allows for testing of null values and other comparisons.
+CASE {expr WHEN expr THEN return_expr [WHEN expr THEN return_expr]…} [ELSE else_expr] END The simple CASE expression tests for equality only.No greater than, less than, or IS NULL comparisons are allowed.
+*/
+
+--CHAPTER 5 DATE AND CONVERSION FUNCTIONS 189 (232)
+/* to_char(date [,format mask]) converts all datetime-related data types into varchar2 to display in a different format
+to_date(char [,format mask]) converts text to a date data type. */
+select last_name, registration_date
+from student;  --RM:  my Oracle displays mm/dd/yyyy
+select last_name, registration_date, to_char(registration_date, 'mm/dd') as "date 01/22"
+from student;  --The to_char conversion function changes the date data type into text and applies a format mask.
+--The to_date function does just the opposite of the to_char function: It converts a text literal into a date data type.
+select last_name, to_char(registration_date, 'Dy') as "1.day", to_char(registration_date, 'Dy') as "2.day", to_char(registration_date, 'Month DD, YYYY') as "look at the month", to_char(registration_date, 'HH:MI PM') as "time"
+from student;
+--Here is a more elaborate example, which uses the fm mask to eliminate the extra spaces between the month and the date in the second column of the following result set. In addition, this format mask uses the th suffix on the day (dd) mask, to include the st, nd, rd, and th in lowercase after each number. The third and last column spells out the date using the sp format parameter, with the first letter capitalized by using the Dd format. Also, you can add a text literal, as in this case with the "of" text.
+select last_name, to_char(registration_date, 'fmMonth ddth, YYYY') "eliminating spaces", to_char(registration_date, 'Ddspth "of" fmMonth') "spelled out"
+from student;
+--date search or search date
+select last_name, registration_date
+from student
+where registration_date = to_date('22-jan-2007','dd-mon-yyyy');
+--also
+select last_name, registration_date
+from student
+where registration_date = '01/22/2007'  --RM:  my Oracle displays mm/dd/yyyy
+/*  Check your Oracle date settings using the query below
+select sys_context ('userenv', 'nls_date_format')
+from dual;
+*/
+--The next query illustrates how a two-digit year gets interpreted with the RR format mask. The text literals '17-OCT-67' and '17-OCT-17' are converted to a date data type with the format mask DD-MON-RR. Then the to_char function converts the date data type back to text, but this time with a four-digit year. Effectively, the two-digit year 67 is interpreted as 1967, and the two-digit year literal 17 is interpreted as 2017.
+select to_char(to_date('17-oct-67','DD-MON-RR'),'YYYY') "1900", to_char(to_date('17-oct-17','DD-MON-RR'),'YYYY') "2000"
+from dual;
+--The Oracle date data type includes the time. You can query records for a specific time or ignore the time altogether. The next SQL statement displays the time as part of the result set.  If no time component was included when the data was entered, Oracle assumes that the time is midnight, which is 12:00:00 AM, or 00:00:00 military time (HH24 time format mask).
+select last_name, to_char(registration_date, 'DD-MON-YYYY hh24:mi:ss') as "22-JAN-2007 00:00:00"
+from student;
+select student_id, to_char(enroll_date, 'dd-mon-yyyy hh24:mi:ss')
+from enrollment
+where enroll_date >= date'2007-02-07'
+and enroll_date < date '2007-02-08';  --specify a date format and time format in select and where clauses
+--or
+select student_id, enroll_date
+from enrollment
+where enroll_date >= '02/07/2007'
+and enroll_date < '02/08/2007';  --RM:  remember the single quotes
+--also when time is important
+select student_id, to_char(enroll_date, 'dd-mon-yyyy hh24:mi:ss')
+from enrollment
+where enroll_date >= timestamp '2007-02-07 10:00:00'
+and enroll_date < timestamp '2007-02-08 11:00:00';
+--The SYSDATE function returns the computer operating system’s current date and time and does not take any parameters.
+select sysdate, to_char(sysdate, 'DD-MM-YYYY HH24:MI') as "day-month-year 12:46"
+from dual;
+select sysdate, trunc(sysdate) as "12/14/2017"
+from dual;
+select sysdate, to_date('01/01/2017')-sysdate, trunc(to_date('01/01/2017')-sysdate) as "days remove decimal"
+from dual;  
+--To perform any date calculation, the column or text literal must be converted to the Oracle DATE data type.  RM:  for my Oracle, date can be MM/DD/YYYY format.
+select sysdate, sysdate+3 as "three days later", to_date(sysdate+3/24, 'MM/DD/YYYY HH:MI') as "three hours later no time", to_char(sysdate+3/24, 'MM/DD/YYYY HH:MI') as "three hours later yes time", to_char(sysdate+1.5, 'MM/DD/YYYY HH24:MI') as "36 hours later"
+from dual;  --date calculation.  Can't use to_date to display the time.  Use to_char.
+--The extract function extracts the year, month, or day from a column of the date data type column. The next example shows rows with April values in the start_date_time column and how the various elements of the date data type can be extracted. Valid keyword choices are year, month, and day. You cannot extract hours, minutes, or seconds from the date data type.
+select start_date_time, extract(month from start_date_time) as "month", extract(year from start_date_time) as "year", extract(day from start_date_time) as "day"
+from section
+where extract(month from start_date_time) = 4;  --RM added where clause to demonstrate narrowing results
+--RM:  page 213 table 5.6 lists common date functions such as add-months(), months_between().  Also author suggests using snippets View-->Snippets to see Date/Time Functions.  RM:  Of course.
+--RM:  skipped Lab 5.3 TIMESTAMP and TIME ZONE page 217
+/* to_char(date [,format mask]) converts all datetime-related data types into varchar2 to display in a different format
+to_date(char [,format mask]) converts text to a date data type. */
+--start page 239
