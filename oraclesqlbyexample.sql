@@ -378,4 +378,115 @@ where extract(month from start_date_time) = 4;  --RM added where clause to demon
 --RM:  skipped Lab 5.3 TIMESTAMP and TIME ZONE page 217
 /* to_char(date [,format mask]) converts all datetime-related data types into varchar2 to display in a different format
 to_date(char [,format mask]) converts text to a date data type. */
---start page 239
+--RM:  skipped Lab 5.4 INTERVAL YEAR TO MONTH and INTERVAL DAY TO SECOND page 236
+select *
+from conversion_example
+where course_no = '123';
+--same as
+select *
+from conversion_example
+where course_no = to_char(123);  --you may encounter cases in which you do not have control over the literal or in which you are comparing one table’s column against another table’s column.  use to_char()
+--The cast function converts from one data type to another.  The syntax for the cast function is as follows. cast(expression AS data type)
+select *
+from conversion_example
+where course_no = cast(123 as varchar2(3));
+select 'Mar/29/2009', cast('Mar/29/2009' as date) as dt, cast('29-mar-09' as timestamp with local time zone) as tz
+from dual;  --return Mar/29/2009; 03/29/2009; 29-MAR-09 12.00.00.000000000 AM
+select section_id, start_date_time, to_char(start_date_time, 'DD-MM-YYYY')
+from section
+where start_date_time >= cast('01-Jul-2007' as date)
+and start_date_time < cast('01-Aug-2007' as date);  --error message.  RM:  my pc date jul/1/2007 not 01-jul-2007
+select section_id, start_date_time, to_char(start_date_time, 'DD-MM-YYYY')
+from section
+where start_date_time >= cast('jul/1/2007' as date)
+and start_date_time < cast('aug/1/2007' as date);
+select course_no, cost, to_char(cost, '999,999') as costwithcommas
+from course;
+--RM:  Table 5.16 page 255 common to_char number format models
+
+--CHAPTER 6 AGGREGATE FUNCTIONS, GROUP BY, AND HAVING CLAUSES
+--Aggregate functions allow you to generate summary data for a group of rows to obtain totals, averages, counts, minimum values, and maximum values.  Aggregate functions group together data to produce a single result.
+select count(*)
+from enrollment; #print 226
+--count(*) counts rows that contain null values, whereas count with a column excludes rows that contain nulls.
+select count(final_grade) as "1 row has a value", count(section_id), count(*)
+from enrollment; #print 1; 226; 226
+select count(distinct section_id), count(section_id)
+from enrollment; #print 64; 226
+select sum(capacity)
+from section; #print 1652
+select avg(capacity) as averagenullsareignred, avg(nvl(capacity,0)) as averageifnullthenzero
+from section; #print 21.179487; 21.179487 nulls are ignored calculating average
+select min(capacity), max(capacity)
+from section; #print 10; 25
+select min(registration_date) as "first date", max(registration_date) as "last date"
+from student #print 01/22/2007; 02/23/2007
+--A less frequently used data type for the min and max functions is the varchar2 data type
+select min(description) as "first alphabeticaly", max(description) as "last alphabeticaly"
+from course; #print Advanced Java Programming; Unix Tips and Techniques
+--All aggregate functions learned so far ignores null values except count(*).  Use nvl or coalesce function to substitute for any null values.
+--example below if then else aggregate if else aggregate if then aggregate
+select avg(case 
+	when prerequisite is null then cost*1.1
+	when prerequisite = 20 then cost*1.2
+	else cost
+	end) as "avg based on conditions"
+from course; #print 1256.13793
+--The distinct keyword used for avg, sum, and count functions.
+--The group by and having clauses allow you to categorize and aggregate data further.  The group by clause determines how rows are grouped.
+select distinct location
+from section;
+--same as
+select location
+from section
+group by location;
+select location, count(*)
+from section
+group by location; #print how many times each group by location is listed in section table
+select location, count(*), sum(capacity), min(capacity), max(capacity)
+from section
+group by location; #For each distinct location, you see the capacities aggregate functions
+select location, instructor_id, count(*), sum(capacity), min(capacity), max(capacity)
+from section
+group by location, instructor_id
+order by location; #The aggregate functions to the distinct values of the location and the instructor_id columns
+--Every column you list in the select list, except the aggregate function column itself, must be repeated in the group by clause.  The columns used in the ORDER BY clause must appear in the SELECT list, which is unlike the normal use of order by when sorting.
+--The purpose of the having clause is to eliminate groups, just as the where clause is used to eliminate rows.
+select location, instructor_id, count(location), sum(capacity)
+from section
+group by location, instructor_id
+having sum(capacity) > 50
+order by sum(capacity) desc; #having clause restricts the result set to locations with a total capacity value of more than 50 students
+select location, instructor_id, count(location) "Total Locations", sum(capacity) "Total Capacity"
+from section
+where section_no in (2, 3)
+group by location, instructor_id
+having sum(capacity) > 50; #The where clause is executed by the database first, narrowing the result set to rows in the section table where section_no equals either 2 or 3 (that is, the second or third section of a course). The next step is to group the results by the columns listed in the group BY clause and to apply the aggregate functions. Finally, the having condition is tested against the groups. Only rows with a total capacity of greater than 50 are returned in the result.
+--Either the columns used in the having clause must be found in the group by clause or they must be aggregate functions.
+--In the following example, the aggregate count function is not mentioned in the select list, yet the having clause refers to it. The second condition of the having clause chooses only location groups with a starting value of L5. In this particular example, it is preferable to move this condition to the WHERE clause because doing so eliminates the rows even before the groups are formed, and the statement will therefore execute faster.
+select location, sum(capacity) "Total Capacity"
+from section
+where section_no = 3
+group by location
+having (count(location) > 3 and location like 'L5%'); #Either the columns used in the having clause must be found in the group by clause or they must be aggregate functions.
+--same as
+select location, sum(capacity) as "Total Capacity"
+from section
+where section_no = 3 and location like 'L5%'
+group by location
+having count(location) > 3; #Either the columns used in the having clause must be found in the group by clause or they must be aggregate functions.
+#Any constant, such as a text or number literal or a function that does not take any parameters, such as the sysdate function, may be listed in the select list without being repeated in the group by clause.  The following query shows the text literal 'Hello', the number literal 1, and the sysdate function in the select list of the query. These expressions do not need to be repeated in the group by clause.
+select 'Hello', 1, sysdate, course_no "Course #", count(*)
+from section
+group by course_no
+having count(*) = 5;
+--Aggregate functions can be nested.
+select section_id, count(*)
+from enrollment
+group by section_id
+order by count(*) desc;
+--better
+select max(count(*))
+from enrollment
+group by section_id; #print 12
+--start page 285
