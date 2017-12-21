@@ -14,6 +14,7 @@
 --The Auto-fit menu options are very useful for formatting the Results window according to the length of the data cells or the length of the column name.  Right mouse click columns at Query Results.
 --View-->Snippets.  Snippets is a window contianing SQL functions or syntax examples.  Hovering over the function reveals a brief description of the function.  Drag the SQL to the Worksheet.  e,g, Date/Time Functions.  The Snippets window lists commonly used functions, expressions, and code fragments. It does not provide a complete list of all available functions and syntax options in Oracle SQL. You can customize the snippets and add frequently used code fragments or functions.
 --Comments --for single line /* ... */ for multi-line
+--When you define a table alias in SQL Developer, any subsequent reference of the alias brings up a list of columns for the table, helping you remember the column names and avoid column misspellings (see Figure 7.4 page 289).
 
 --CHAPTER 1 SQL AND DATA 1 book page (44 pdf page)
 --A table may have only one primary key, which consists of one or more columns. If the primary key contains multiple columns, it is referred to as a composite primary key, or concatenated primary key.
@@ -489,4 +490,133 @@ order by count(*) desc;
 select max(count(*))
 from enrollment
 group by section_id; #print 12
---start page 285
+
+--CHAPTER 7 EQUIJOINS 285 (328)
+--The equijoin, the most common join, allows you to connect two or more tables. Equijoins are based on equality of values in one or more columns.
+/*
+First choose the columns you want to include in the result. Next, determine the tables to which the columns belong. Then identify the common columns between the tables. Finally, determine whether there is a one-to-one or a one-to-many relationship among the column values. Joins are typically used to join between the primary key and the foreign key
+*/
+select course_no, description
+from course;
+select course_no, section_no, location, instructor_id
+from section;
+select first_name, last_name
+from instructor;
+select course.course_no, section.section_no, course.description, section.location, section.instructor_id
+from course, section
+where course.course_no = section.course_no;
+--same as
+select c.course_no, s.section_no, c.description, s.location, s.instructor_id
+from course c, section s
+where c.course_no = s.course_no;
+--When you define a table alias in SQL Developer, any subsequent reference of the alias brings up a list of columns for the table, helping you remember the column names and avoid column misspellings (see Figure 7.4 page 289).
+--In an equijoin, a null value in the common column has the effect of not including the row in the result.
+select course_no, s.section_no, c.description, s.location, s.instructor_id
+from course c join section s
+using (course_no);  --there is no c. in course_no and in using(course_no)
+--same as
+select course_no, s.section_no, c.description, s.location, s.instructor_id
+from course c inner join section s
+using (course_no);  --there is no c. in course_no and in using(course_no)
+--same as
+select c.course_no, s.section_no, c.description, s.location, s.instructor_id
+from course c join section s
+on c.course_no = s.course_no;
+select c.course_no, s.section_no, c.description, s.location, s.instructor_id
+from course c join section s
+on c.course_no = s.course_no
+where description like 'B%';
+select course_no, s.section_no, c.description, s.location, s.instructor_id
+from course c natural join section s;  --instructor recommends avoid natural join.  there is no c. in course_no
+--To include the instructor’s first and last names, you can expand this statement to join to a third table, the instructor table.
+select c.course_no, s.section_no, c.description, s.location, s.instructor_id, i.last_name, i.first_name
+from course c, section s, instructor i
+where c.course_no = s.course_no
+and s.instructor_id = i.instructor_id;
+--same as
+select c.course_no, s.section_no, c.description, s.location, s.instructor_id, i.last_name, i.first_name
+from course c join section s
+on (c.course_no = s.course_no)
+join instructor i
+on (s.instructor_id = i.instructor_id);
+--same as
+select course_no, s.section_no, c.description, s.location, instructor_id, i.last_name, i.first_name
+from course c inner join section s
+using (course_no)
+join instructor i
+using (instructor_id);  --there is no c. in course_no and in using(course_no).  Also no i. in instructor_id and in using(instructor_id)
+select g.student_id, g.section_id, g.grade_type_code type, g.grade_code_occurrence no, g.numeric_grade indiv_gr,
+to_char(e.enroll_date, 'MM/DD/YY') enrolldt
+from grade g, enrollment e
+where g.student_id = 220
+and g.section_id = 119
+and g.student_id = e.student_id
+and g.section_id = e.section_id;
+--same as
+select g.student_id, g.section_id, g.grade_type_code type, g.grade_code_occurrence no, g.numeric_grade indiv_gr,
+to_char(e.enroll_date, 'MM/DD/YY') enrolldt
+from grade g join enrollment e
+on (g.student_id = e.student_id and g.section_id = e.section_id)
+where g.student_id = 220 and g.section_id = 119;
+--same as
+select student_id, section_id, grade_type_code type, grade_code_occurrence no, numeric_grade indiv_gr,
+to_char(enroll_date, 'MM/DD/YY') enrolldt
+from grade join enrollment
+using (student_id, section_id)
+where student_id = 220 and section_id = 119;
+/*
+Joining across multiple tables involves repeating the same steps of a two-join or three-join table: You join the first two tables and then join the result to each subsequent table, using the common column(s). You repeat this until all the tables are joined.
+
+To join n tables together, you need at least n–1 join conditions. For example, to join five tables, you need at least four join conditions. If your join deals with tables containing multicolumn keys, you will obviously need to include these multiple columns as part of the join condition.
+
+Although the traditional join syntax, with the columns separated by commas in the from clause and the join condition listed in the where clause, may become the old way of writing sql, you must nevertheless familiarize yourself with ansi syntax of using because millions of sql statements already use it, and it clearly performs its intended purpose.
+*/
+
+--CHAPTER 8 SUBQUERIES 323 (366)
+select min(cost)
+from course; #return 1095
+select *
+from course;
+select *
+from course
+where cost = 
+	(select	min(cost)
+	from course);
+select *
+from course
+where cost in 
+	(select	cost
+	from course
+	where prerequisite = 20);  --find courses the cost is courses prerequisite = 20
+--not same as
+select *
+from course
+where prerequisite = 20;
+select last_name, first_name
+from student
+where student_id in
+	(select student_id
+	from enrollment
+	where section_id in
+		(select section_id
+		from section
+		where section_no = 8
+		and course_no = 20));  --get students enrolled in section 8 and course number 20
+/* The innermost nested subquery, the last subquery in the example, is executed first; it determines
+the section_id for section number 8 and course number 20. The surrounding query uses this
+resulting section_id in the where clause to select student IDs from the enrollment
+table. These student_id rows are fed to the outermost select statement, which then
+displays the first and last names from the student table. */
+--A subquery that uses the in or = operator can often be expressed as an equijoin if the subquery does not contain an aggregate function.  RM:  lesson learned at Sams Teach Yourself SQL in 10 Minutes.  Aggregate function use subquery.
+select course_no, description
+from course
+where course_no in
+	(select course_no
+	from section
+	where location = 'L211');
+--same as
+select c.course_no, c.description
+from course c, section s
+where c.course_no = s.course_no
+and s.location = 'L211';
+--start page 329
