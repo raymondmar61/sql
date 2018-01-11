@@ -619,4 +619,43 @@ select c.course_no, c.description
 from course c, section s
 where c.course_no = s.course_no
 and s.location = 'L211';
---start page 329
+select student_id, section_id, numeric_grade
+from grade
+where grade_type_code = 'PJ'
+and (section_id, numeric_grade) in
+	(select section_id, max(numeric_grade)
+	from grade
+	where grade_type_code = 'PJ'
+	group by section_id);  --get students with highest grades in project PJ
+/* any null in subqueries return no records.  Also, order by clause is not allow inside a subquery. */
+--Correlated subqueries allow you to reference columns from the outer query in the subquery. Second, they execute the inner query repeatedly once for each row in the outer query.
+select student_id, section_id, numeric_grade
+from grade outer
+where grade_type_code = 'PJ'
+and numeric_grade = 
+	(select max(numeric_grade)
+	from grade
+	where grade_type_code = outer.grade_type_code
+	and section_id = outer.section_id);  --get students with highest grades in project PJ.  outer is the grade table alias
+--Not all subqueries can be transformed into joins; for example, a subquery containing an aggregate function cannot be transformed into a join.
+--RM:  skipped Inline Views and Scalar Subquery Expressions page 355
+/* The ANY, SOME, and ALL operators are related to the IN operator as they also compare against a list of values. In addition, these operators allow >, <, >=, and <= comparisons. */
+select section_id, numeric_grade
+from grade
+where section_id = 84
+and numeric_grade < any (80, 90);
+--same as
+select section_id, numeric_grade
+from grade
+where section_id = 84
+and numeric_grade < 90;
+select section_id, numeric_grade
+from grade
+where section_id = 84
+and numeric_grade < all (80, 90);
+--same as
+select section_id, numeric_grade
+from grade
+where section_id = 84
+and numeric_grade < 80;
+--start page 377
