@@ -12,7 +12,7 @@
 --F8 is SQL History.  Can search history.
 --The Single Record View window allows you to examine one record at a time and scroll through the records.  Right mouse click anywhere in Query Results.
 --The Auto-fit menu options are very useful for formatting the Results window according to the length of the data cells or the length of the column name.  Right mouse click columns at Query Results.
---View-->Snippets.  Snippets is a window contianing SQL functions or syntax examples.  Hovering over the function reveals a brief description of the function.  Drag the SQL to the Worksheet.  e,g, Date/Time Functions.  The Snippets window lists commonly used functions, expressions, and code fragments. It does not provide a complete list of all available functions and syntax options in Oracle SQL. You can customize the snippets and add frequently used code fragments or functions.
+--View-->Snippets.  Snippets is a window containing SQL functions or syntax examples.  Hovering over the function reveals a brief description of the function.  Drag the SQL to the Worksheet.  e,g, Date/Time Functions.  The Snippets window lists commonly used functions, expressions, and code fragments. It does not provide a complete list of all available functions and syntax options in Oracle SQL. You can customize the snippets and add frequently used code fragments or functions.
 --Comments --for single line /* ... */ for multi-line
 --When you define a table alias in SQL Developer, any subsequent reference of the alias brings up a list of columns for the table, helping you remember the column names and avoid column misspellings (see Figure 7.4 page 289).
 
@@ -658,4 +658,75 @@ select section_id, numeric_grade
 from grade
 where section_id = 84
 and numeric_grade < 80;
---start page 377
+
+--CHAPTER 9 SET OPERATORS 377 (420)
+--Oracle has four set operators.  The UNION and UNION ALL operators combine results. The INTERSECT operator  determines common rows. The MINUS operator shows differences between sets of rows.
+select first_name, last_name
+from instructor;
+select first_name, last_name
+from student;
+select first_name, last_name
+from instructor
+union
+select first_name, last_name
+from student;
+--UNION operator shows only distinct rows, duplicate row appears once.  UNION ALL includes any duplicates when sets of data are added.
+select instructor_id, first_name, last_name, phone
+from instructor
+union
+select student_id, first_name, last_name, phone
+from student
+order by last_name;
+--The MINUS operator returns the difference between two sets. Effectively, you use it to subtract one set from another set.
+select instructor_id
+from instructor  --returns the complete list of instructors
+minus
+select instructor_id
+from section;  --if instructor_id in section is also in instructor, minus it or don't show it in results.
+--The INTERSECT operator determines the common values between two sets.
+select created_by
+from enrollment
+intersect
+select created_by
+from course;  --distinct values where the two sets overlap or intersect are returned
+
+--CHAPTER 10 COMPLEX JOINS 399 (442)
+--ANSI outer join syntax below
+select c.course_no, c.description, s.section_id, s.course_no
+from course c left outer join section s
+on c.course_no = s.course_no
+order by c.course_no;
+--same as
+select c.course_no, c.description, s.section_id, s.course_no
+from section s right outer join course c
+on c.course_no = s.course_no
+order by c.course_no;
+--same as
+select course_no, description, section_id
+from section right outer join course
+using (course_no)
+order by course_no;
+--RM:  skipped Oracle's outer join operator (+) p403
+--A full outer join includes rows from both tables
+select col1, col2
+from t1 full outer join t2
+on t1.col1 = t2.col2;  --made up tables in book
+--An equijoin always joins one or multiple tables. A self-join joins a table to itself by pretending there are different tables involved.  One table has one alias and the same table has another alias.  Oracle treats the two tables as two different tables.  Join same table.
+select course_no, description, prerequisite
+from course;
+--I want to see the prerequisite description.  Run a self-join.
+select c1.course_no, c1.description as "course description", c1.prerequisite as "prerequisite", c2.description as "prerequisite description"
+from course c1 join course c2
+on c1.prerequisite = c2.course_no
+order by c1.prerequisite, c1.course_no;  --You join the prerequisite column of table c1 with the course_no column of table c2, if matching records are found, the description of the prerequisite is displayed.
+--Occasionally, you need to construct joins that are not based on equality of values. The following query illustrates such an example, using the BETWEEN operator, where you have values that fall into a range.  Equijoin based on range of values.
+select grade_type_code, numeric_grade, letter_grade
+from grade g join grade_conversion c
+on (g.numeric_grade between c.min_grade and c.max_grade)
+order by grade_type_code, numeric_grade desc;  --The BETWEEN operator checks for each value in the NUMERIC_GRADE column to see if the individual grade is between the values found in the columns MIN_GRADE and MAX_GRADE of the GRADE_CONVERSION table. If a match is found, the corresponding letter grade is returned. For example, the first row of the result shows the value 76 in the NUMERIC_GRADE column for a final examination. The appropriate letter grade for the value 76 is C.
+--same as
+select grade_type_code, numeric_grade, letter_grade, min_grade, max_grade
+from grade g, grade_conversion c
+where g.numeric_grade between c.min_grade and c.max_grade
+order by grade_type_code, numeric_grade desc;
+--start page 429
