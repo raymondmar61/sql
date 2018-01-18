@@ -729,4 +729,109 @@ select grade_type_code, numeric_grade, letter_grade, min_grade, max_grade
 from grade g, grade_conversion c
 where g.numeric_grade between c.min_grade and c.max_grade
 order by grade_type_code, numeric_grade desc;
---start page 429
+
+--CHAPTER 11 INSERT, UPDATE, AND DELETE 429 (472)
+--INSERT, UPDATE, DELETE, and MERGE statements, which are known as Data Manipulation Language (DML)
+insert into zipcode
+values ('11111','Westerly','MA',user,to_date('18-JAN-2010','DD-MON-YYYY'),user, sysdate);  --The values are in the same order as the columns when you use the DESCRIBE command on the ZIPCODE table.
+--It is good practice to include a column list, though, in case of future table changes.
+insert into zipcode (zip, city, state, created_by, created_date, modified_by, modified_date)
+values ('11111','Westerly','MA',user,to_date('18-JAN-2010','DD-MON-YYYY'),user, sysdate);
+--When you are not inserting data into all columns of a table, you must explicitly name the columns to insert data into.
+insert into zipcode (zip, created_by, created_date, modified_by, modified_date)
+values ('11111',user,sysdate,user, sysdate);
+--Another method for inserting data is to select data from another table via a subquery. The subquery may return one or multiple rows; thus, the INSERT statement inserts one or multiple rows at a time.
+insert into introcoursetablemadeup (course_no, description, cost, prereq_no, created_by, created_date, modified_by, modified_date)
+select course_no, description, cost, prerequisite, created_by, created_date, 'Melanie', to_date('01-JAN-2008','DD-MON-YYYY')
+from course
+where prerequisite is null;
+--inserting into multiple tables
+insert all
+	into section_history
+	values (section_id, start_date_time, course_no, section_no)
+	into capacity_history
+	values (section_no, location, capacity)
+select section_id, start_date_time, course_no, section_no, location, capacity
+from section
+where trunc(start_date_time) < trunc(sysdate)-365;
+--inserting into multiple tables with conditions
+insert all
+	when section_id between 100 and 400 then
+	into section_history
+	values (section_id, start_date_time, course_no, section_no)
+	when capacity >=25 then
+	into capacity_history
+	values (section_no, location, capacity)
+select section_id, start_date_time, course_no, section_no, location, capacity
+from section
+where trunc(start_date_time) < trunc(sysdate)-365;
+--The INSERT FIRST statement evaluates the WHEN clauses in order; if the first condition is true, the row is inserted, and subsequent conditions are no longer tested. For example, with a SECTION_ID value of 130 and a capacity of 25, the statement inserts the row in the SECTION_ HISTORY tables only because the first condition of the WHEN clause is satisfied. You can have an optional ELSE condition in case none of the conditions are true.
+insert first
+	when section_id between 100 and 400 then
+	into section_history
+	values (section_id, start_date_time, course_no, section_no)
+	when capacity >=25 then
+	into capacity_history
+	values (section_no, location, capacity)
+select section_id, start_date_time, course_no, section_no, location, capacity
+from section
+where trunc(start_date_time) < trunc(sysdate)-365;
+--The pivoting INSERT ALL statement is just like the unconditional INSERT ALL statement: It inserts the rows into multiple tables, and it also does not have a WHEN condition. The following is an example of pivoting a table (that is, flipping it on its side).
+insert all
+	into gradedistributionnormalized
+	values(section_id, 'A', grade_a)
+	into gradedistributionnormalized
+	values(section_id, 'B', grade_b)
+	into gradedistributionnormalized
+	values(section_id, 'C', grade_c)
+	into gradedistributionnormalized
+	values(section_id, 'D', grade_d)
+	into gradedistributionnormalized
+	values(section_id, 'F', grade_f)
+select section_id, grade_a, grade_b, grade_c, grade_d, grade_f
+from gradedistribution;
+/*
+The COMMIT command makes a change to data permanent.  The effect of the COMMIT command is that it allows other sessions to see the data.  Commit locks for the changed rows are released, and other users can perform changes on the rows.  Data Definition Language (DDL) statements, such as the CREATE TABLE command, or Data Control Language (DCL) statements, such as the GRANT command, implicitly issue a COMMIT to the database; there is no need to issue a COMMIT command.
+The ROLLBACK command undoes any DML statements back to the last COMMIT command issued. Any pending changes are discarded, and any locks on the affected rows are released.  E.g. insert three rows to zipcode table.  Type rollback.  the three rows are removed from zipcode table.
+The SAVEPOINT command allows you to save the results of DML transactions temporarily. The ROLLBACK command can then refer to a particular SAVEPOINT and roll back the transaction up to that point; any statements issued after the SAVEPOINT are rolled back.
+*/
+update enrollment
+set final_grade = 90
+where enroll_date >= to_date('01/01/2007', 'MM/DD/YYYY') and enroll_date < ('02/01/2007');
+update enrollment
+set final_grade = null;
+--A column may have a default value defined; this value is entered when an INSERT statement did not specify an explicit value for a column.
+update grade
+set numeric_grade = default  --The numeric_grade default value is 0.  Set the numeric_grade to default 0.
+where student_id = 211
+	and section_id = 141
+	and grade_type_code = 'HM'
+	and grade_code_occurrence = 1;
+--CASE expressions can be used anywhere expressions are allowed.  It's like if-then if then statement.
+update enrollment
+set final_grade = case
+	when final_grade <=80 then final_grade+5
+	when final_grade >80 then final_grade+10
+	end;
+--An update can occur based on data from other tables, using a subquery.
+update instructor
+set zip = (select zip
+	from zipcode
+	where state = 'FL')
+where instructor_id = 108;
+--The following subquery returns multiple zip codes for the state of Connecticut.  You can use max or min function or any aggregate function guarantees the return of a single row.
+update instructor
+set zip = (select max(zip)
+	from zipcode
+	where state = 'CT')
+where instructor_id = 108;
+--The following statement updates the FINAL_GRADE column to 90 and the MODIFIED_DATE column to March 13, 2009, for those sections taught by the instructor Hanks.  Correlated subquery.
+--RM:  skipped rest of correlated subquery p461.
+update enrollment e
+set final_grade = 90, modified_date = to_date('13-MAR-2009', 'DD-MON-YYYY')
+where exists (select '*'
+	from section s, instructor i
+	where e.section_id = s.section_id
+	and s.instructor_id = i.instructor_id
+	and i.last_name = 'Hanks')
+--start page 465
