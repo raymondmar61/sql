@@ -15,6 +15,7 @@
 --View-->Snippets.  Snippets is a window containing SQL functions or syntax examples.  Hovering over the function reveals a brief description of the function.  Drag the SQL to the Worksheet.  e,g, Date/Time Functions.  The Snippets window lists commonly used functions, expressions, and code fragments. It does not provide a complete list of all available functions and syntax options in Oracle SQL. You can customize the snippets and add frequently used code fragments or functions.
 --Comments --for single line /* ... */ for multi-line
 --When you define a table alias in SQL Developer, any subsequent reference of the alias brings up a list of columns for the table, helping you remember the column names and avoid column misspellings (see Figure 7.4 page 289).
+--Right mouse click select Split Vertically or Split Horizontally split displays multiple views.  e.g. see multiple views same table.  See a table and SQL query builder.  Page 494.
 
 --CHAPTER 1 SQL AND DATA 1 book page (44 pdf page)
 --A table may have only one primary key, which consists of one or more columns. If the primary key contains multiple columns, it is referred to as a composite primary key, or concatenated primary key.
@@ -834,4 +835,45 @@ where exists (select '*'
 	where e.section_id = s.section_id
 	and s.instructor_id = i.instructor_id
 	and i.last_name = 'Hanks')
---start page 465
+--You can perform combined INSERT, UPDATE, and DELETE operations with the MERGE command.  Adding selected data from one table.  Merge selected data from one table.  Merge data.  Merge rows, merge selected rows.
+merge into employee e
+using (select employee_id, salary, title, name
+	from employee_change) c
+	on (e.employee_id = c.employee_id)
+when matched then
+	update set e.salary = c.salary, e.title = c.title
+when not matched then
+	insert (e.employee_id, e.salary, e.title, e.name)
+	values (c.employee_id, c.salary, c.title, c.name);
+--The MERGE syntax contains an optional DELETE condition to the WHEN MATCHED THEN UPDATE clause. It allows you to remove rows from the table during this operation. The only rows deleted are the ones that satisfy both the DELETE and the ON conditions. The DELETE condition evaluates the rows based on the values after the update—not the original values.
+merge into employee e
+using (select employee_id, salary, title, name
+	from employee_change) c
+	on (e.employee_id = c.employee_id)
+when matched then
+	update set e.salary = c.salary, e.title = c.title
+	delete where salary = 6000
+when not matched then
+	insert (e.employee_id, e.salary, e.title, e.name)
+	values (c.employee_id, c.salary, c.title, c.name);
+--remove data, delete data with delete statement.  Delete all rows or specific rows.
+delete from grade;
+/*
+If you issue a DELETE on a parent table with associated child records, and the foreign key constraint is set to ON DELETE CASCADE, the children are automatically deleted. If the foreign key constraint is set to ON DELETE SET NULL, the child rows are updated to a null value, provided that the foreign key column of the child table allows nulls. The default option for a foreign key constraint with respect to DELETEs is RESTRICT. It disallows the deletion of a
+parent if child rows exist. In this case, you must delete the child rows first, before you delete the parent row.
+*/
+--Truncate deletes all rows.  No where clause allowed.  Automatically issues a commit.  Rows are deleted.  Can't rollback.  Truncate faster than delete command.
+truncate table class;
+--RM:  skipped Triggers and DML Commands p 470.  Triggers are written in the PL/SQL language and can perform sophisticated actions (for example, recording changes to another table for auditing purpose or updating summary values on derived columns).
+
+--CHAPTER 12 CREATE, ALTER, AND DROP TABLES 503 (546)
+--Chapter introduces you to the Data Definition Language (DDL) commands associated with tables, the type of database object most frequently used and following chapters:  table, view, index, sequence, synonym, directory, trigger, function, procedure, package.
+--DDL statements automatically issues an implicit commit.
+create table toy (toy_id number(10), description varchar2(15) not null, last_purchase_date date, remaining_quantity number(6));
+--number(p,s) is number(precision or total number of digits, scale number of digits to the right of the deciaml place out of total number of digits). e.g. number(5,2) is -999.99 to 999.99 inclusive.  1,000 is rejected.  80.999 is rounded up to 81.00.
+--The following CREATE TABLE statement creates a table called TAB1 with several types of constraints.
+create table tab1 (col1 number(10) primary key, col2 number(4) not null, col3 varchar2(5) references zipcode(zip) on delete cascade, col4 date default sysdate, col5 varchar2(20) unique, col6 number check(col6<100));
+--col6 above is a check constraint.  Another example check constraint state varchar2(20) check(state in ('NY','NJ','CT','FL','CA'))
+--naming constraints below.  Some of the constraint names are next to each column; these are column-level constraints. The constraint names at the end of the statement are table-level constraints. Constraint names cannot exceed 30 characters and must be unique within the user’s schema. In this example, the constraint names consist of the name of the table and column (or an abbreviated version) and a two-letter abbreviation that identifies the type of constraint.
+create table tab1 (col1 number(10), col2 number(4) constraint tab1_col2_nn not null, col3 varchar2(5), col4 date default sysdate, col5 varchar2(20), col6 number, constraint tab1_pk primary key(col1), constraint tab1_zipcode_fk foreign key(col3) references zipcode(zip), constraint tab1_col5_col6_uk unique(col5, col6), constraint tabl_col6_ck check (col6 < 100), constraint tab1_col2_col6_ck check (col2 > 100 and col6 > 20));
+--start page 517
