@@ -15,7 +15,7 @@
 --View-->Snippets.  Snippets is a window containing SQL functions or syntax examples.  Hovering over the function reveals a brief description of the function.  Drag the SQL to the Worksheet.  e,g, Date/Time Functions.  The Snippets window lists commonly used functions, expressions, and code fragments. It does not provide a complete list of all available functions and syntax options in Oracle SQL. You can customize the snippets and add frequently used code fragments or functions.
 --Comments --for single line /* ... */ for multi-line
 --When you define a table alias in SQL Developer, any subsequent reference of the alias brings up a list of columns for the table, helping you remember the column names and avoid column misspellings (see Figure 7.4 page 289).
---Right mouse click select Split Vertically or Split Horizontally split displays multiple views.  e.g. see multiple views same table.  See a table and SQL query builder.  Page 494.
+--Right mouse click select Split Vertically or Split Horizontally split displays multiple views.  e.g. see multiple views same table.  See a table and SQL query builder.  Also New Document Tab Group.  Page 494.
 
 --CHAPTER 1 SQL AND DATA 1 book page (44 pdf page)
 --A table may have only one primary key, which consists of one or more columns. If the primary key contains multiple columns, it is referred to as a composite primary key, or concatenated primary key.
@@ -876,4 +876,49 @@ create table tab1 (col1 number(10) primary key, col2 number(4) not null, col3 va
 --col6 above is a check constraint.  Another example check constraint state varchar2(20) check(state in ('NY','NJ','CT','FL','CA'))
 --naming constraints below.  Some of the constraint names are next to each column; these are column-level constraints. The constraint names at the end of the statement are table-level constraints. Constraint names cannot exceed 30 characters and must be unique within the user’s schema. In this example, the constraint names consist of the name of the table and column (or an abbreviated version) and a two-letter abbreviation that identifies the type of constraint.
 create table tab1 (col1 number(10), col2 number(4) constraint tab1_col2_nn not null, col3 varchar2(5), col4 date default sysdate, col5 varchar2(20), col6 number, constraint tab1_pk primary key(col1), constraint tab1_zipcode_fk foreign key(col3) references zipcode(zip), constraint tab1_col5_col6_uk unique(col5, col6), constraint tabl_col6_ck check (col6 < 100), constraint tab1_col2_col6_ck check (col2 > 100 and col6 > 20));
---start page 517
+--create table based on an existing table or tables.  Can include the data or not.
+create table jan_07_enrollment as
+	select *
+	from enrollment
+	where enroll_date >= '01/01/2007' and enroll_date <= '02/01/2007';
+descrbe jan_07_enrollment;
+select *
+from jan_07_enrollment;
+create table jan_07_enrollment as
+	select *
+	from enrollment
+	where rownum < 1;  --create table without data
+rename jan_07_enrollment to jan_07_newtable; --rename table
+--same as
+alter table jan_07_enrollment rename to jan_07_newtable; --rename table
+drop table jan_07_newtable; --delete table no longer needed.  Drop table data are removed.  If you do not want to place the table in the recycle bin, use the PURGE syntax option drop table *tablename* PURGE.  If you want to remove the foreign key constraints, use CASCADE CONSTRAINTS drop table *tablename* CASCADE CONSTRAINTS
+flashback table jan_07_newtable to before drop;  --restore drop table, undelete drop table, recover delete table
+--RM:  skipped temporary tables, index-organized tables, and external tables page 524
+alter table toy
+add (manufacturer varchar2(30) constraint toy_manufacturer_nn not null);  --add column naming the constraint
+alter table toy
+drop (last_purchase_date, remaining_quantity);  --delete column, delete columns
+alter table toy
+set unused (last_purchase_date); --make column no longer visible yet keep the column and its data.  To delete unused column, alter table *tablename* drop unused columns
+alter table toy rename column description to description_tx;  --rename column
+alter table toy modify (description_tx varchar2(25));  --modify description_tx column length from 15 to 25
+alter table toy modify (remaining_quantity varchar2(6) constraint remain_qt_nn_constraintname not null);  --change data type from number to varchar2 and is now not null.  SQL statement successful because the table contains no data.  The sql statement can be execuited separately one for varchar2 and second for not null.
+alter table toy drop constraint toy_pk;  --remove constraint by specifying constraint name toy_pk after constraint
+alter table toy drop primary key;  --remove primary key constraint
+alter table toy add constraint toy_pk_constraintname primary key(toy_id);  --add primary key constraint on toy_id column
+alter table grade add constraint gr_enr_fk foreign key (student_id, section_id) references enrollment (student_id, section_id);  --add foreign key
+alter table section add constraint sect_sect2_uk unique (section_no, course_no);  --add a unique index
+alter table zipcode add constraint zipcode_zip_ck check (translate(zip, '1234567890', '9999999999') = '99999');  --add constraint.  The TRANSLATE function converts each entered digit into a 9 and then checks whether the format equals 99999. Any nonnumeric digits are not translated; therefore, the result of TRANSLATE is unequal to 99999, and the value is rejected.
+alter table zipcode add constraint zipcode_zip_ck check (to_number(zip)>0 and length(zip)= 5);  --add constraint another example
+alter table instructor add constraint instructor_salutation_ck check (salutation in ('Dr', 'Hon', 'Mr', 'Ms', 'Rev') or salutation is null);  --add constraint another example
+alter table section rename constraint sect_crse_fk to sect_fk_crse;  --rename constraint
+alter table toy disable constraint toy_pk;  --disable constraint
+alter table toy disable constraint toy_pk keep index;  --disable constraint preserve index of a unique or primary key
+alter table toy enable primary key;  --enable primary key
+alter table toy enable constraint toy_pk;  --enable constraint name toy_pk
+alter table section disable constraint sect_crse_fk;  --disable constraint name sect_crse_fk foreign key
+alter table section 
+disable constraint sect_crse_fk
+disable constraint sect_inst_fk;  --disable multiple constraints no commas separating disable clauses
+--start page 571
+--RM:  quick view Chapter 13 Indexes, Sequences, and Views more database theory and less on SQL.  make the judgement call how to learn the chapter.
