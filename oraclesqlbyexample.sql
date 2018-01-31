@@ -920,5 +920,23 @@ alter table section disable constraint sect_crse_fk;  --disable constraint name 
 alter table section 
 disable constraint sect_crse_fk
 disable constraint sect_inst_fk;  --disable multiple constraints no commas separating disable clauses
---start page 571
---RM:  quick view Chapter 13 Indexes, Sequences, and Views more database theory and less on SQL.  make the judgement call how to learn the chapter.
+
+--CHAPTER 13 INDEXES, SEQUENCES, AND VIEWS 572 (615)
+--RM:  More database theory and less on SQL.  Make the judgement call how to learn the chapter.
+--create an index named sect_location_i on location column in section table
+create index sect_location_i
+on section(location);
+--A composite index or concatenated index is an index based on multiple columns.  Index named course_description_cost_i on description column and cost column in course table.  description, the first column of the index, is also called the leading edge of the index.
+create index course_description_cost_i
+on course(description, cost);
+--delete index
+drop index sect_location_i;
+--Sequences are Oracle database objects that allow you to generate unique integers.  Sequences are typically incremented by 1, but other increments can be specified. You can also start sequences at a specific number.  Basing the name of the sequence on the name of the column for which you want to use it is helpful for identification, but it does not associate the sequence with a particular column or table. The START WITH clause starts the sequence with the number 1.The NOCACHE keyword indicates that sequence numbers should not be kept in memory, so that when the system shuts down, you do not lose any cached numbers.
+create sequence student_id_seq_new start with 1 nocache;
+--A view is a virtual table that consists of columns and rows, but it is only the SELECT statement that is stored, not a physical table with data. A view’s SELECT query may reference one or multiple tables, called base tables. The base tables are typically actual tables or other views.
+
+--CHAPTER 14 THE DATA DICTIONARY, SCRIPTING, AND REPORTING 615 (658)
+--CHAPTER 15 SECURITY 661 (704)
+--CHAPTER 16 REGULAR EXPRESSIONS AND HIERARCHICAL QUERIES 695 (738)
+--CHAPTER 17 EXPLORING DATA WAREHOUSING FEATURES 741 (784)
+--RM: take chapter 17 slow.  Advanced SQL and analytical functions
