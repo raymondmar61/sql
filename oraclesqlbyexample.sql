@@ -1,7 +1,7 @@
 --Oracle SQL by Example by Alice Rischert
 --RM:  close file at top to review Oracle commands and shortcuts.
 --Ctrl+D clear
---Shift+F4 opens Popup Describe window on an object
+--Shift+F4 opens Popup Describe window on an object.  Similarily, hold Ctrl and double click object to view object information.
 --Ctrl+F7 quick syntax formatting
 --Ctrl+Shift+Quote toggle uppecase and lowercase
 --Ctrl+Shift+Enter appears to show query builder only
@@ -940,3 +940,88 @@ create sequence student_id_seq_new start with 1 nocache;
 --CHAPTER 16 REGULAR EXPRESSIONS AND HIERARCHICAL QUERIES 695 (738)
 --CHAPTER 17 EXPLORING DATA WAREHOUSING FEATURES 741 (784)
 --RM: take chapter 17 slow.  Advanced SQL and analytical functions
+select to_char(start_date_time, 'DY') as threedigitday, count(*) as numberofclasses
+from section
+group by to_char(start_date_time, 'DY')
+order by numberofclasses;
+--You can transpose the result producing a cross-tab displaying the result horizontally, with the days of the week as columns and a count below. You do this by nesting the DECODE function in the COUNT function.
+select count(decode(to_char(start_date_time, 'DY'), 'MON', 1)) MON,
+	count(decode(to_char(start_date_time, 'DY'), 'TUE', 1)) TUE,
+	count(decode(to_char(start_date_time, 'DY'), 'WED', 1)) WED,
+	count(decode(to_char(start_date_time, 'DY'), 'THU', 1)) THU,
+	count(decode(to_char(start_date_time, 'DY'), 'FRI', 1)) FRI,
+	count(decode(to_char(start_date_time, 'DY'), 'SAT', 1)) SAT,
+	count(decode(to_char(start_date_time, 'DY'), 'SUN', 1)) SUN
+from section;
+/*
+When each row of the expression TO_CHAR(start_date_time, ‘DY’) is evaluated, Oracle returns the day of the week, in the format DY, which is MON for Monday, TUE for Tuesday, and so on. If the DECODE expression is equal to the search value, the value 1 is returned. Because no ELSE
+condition is specified, a NULL value is returned. 
+The COUNT function without an argument does not count NULL values; NULLs are counted only with the wildcard COUNT(*). Therefore, when the COUNT function is applied to the result of either NULL or 1, it counts only records with NOT NULL values. Alternatively, you can also use the SUM function.
+*/
+/*
+The syntax of the DECODE function is as follows.
+DECODE (if_expr, equals_search, then_result [,else_default])
+*/
+--Use CASE instead of DECODE.
+select count(case when to_char(start_date_time, 'DY') = 'MON' then 1 end) MON,
+	count(case when to_char(start_date_time, 'DY') = 'TUE' then 1 end) TUE,
+	count(case when to_char(start_date_time, 'DY') = 'WED' then 1 end) WED,
+	count(case when to_char(start_date_time, 'DY') = 'THU' then 1 end) THU,
+	count(case when to_char(start_date_time, 'DY') = 'FRI' then 1 end) FRI,
+	count(case when to_char(start_date_time, 'DY') = 'SAT' then 1 end) SAT,
+	count(case when to_char(start_date_time, 'DY') = 'SUN' then 1 end) SUN
+from section;
+--The new PIVOT clause in Oracle 11g greatly simplifies the writing of cross-tab queries. It rotates the rows into columns.
+select * from (
+	select to_char(start_date_time, 'DY') as threedigitday, count(*) as numberofclasses
+	from section
+	group by to_char(start_date_time, 'DY')
+	) didntneednamehere
+pivot (sum(numberofclasses)  --can't use count because we add threedigitday?
+for threedigitday in ('MON','TUE','WED','THU','FRI','SAT','SUN'));
+--The following statement creates a table called LOCATION_BY_DATE. The difference from the previous query is that this example also includes the LOCATION column in the inner query. Now the cross-tabulated result is computed not only by the days of the week but also by the location. Another difference is the removal of quotes in the column heading; the columns shown in the IN list have an alias.
+create table location_by_day as
+select * from (
+	select to_char(start_date_time, 'DY') as threedigitday, s.location, count(*) as numberofclasses
+	from section s
+	group by to_char(start_date_time, 'DY'), location
+	) didntneednamehere
+pivot (sum(numberofclasses) 
+for threedigitday in ('MON' as MON,'TUE' as TUE,'WED' as WED,'THU' as THU,'FRI' as FRI,'SAT' as SAT,'SUN' as SUN));
+select *
+from location_by_day;
+--Using the LOCATION_BY_DAY table as a source, the UNPIVOT clause allows the rotation of columns back to rows.  The default option of the UNPIVOT clause is EXCLUDE NULLS, but in this example you see the inclusion of null values through the use of the INCLUDE NULLS option.
+select *
+from location_by_day
+unpivot include nulls (numberofclasses
+for threedigitday in (mon, tue, wed, thu, fri, sat, sun));
+--For very difficult queries, where the result cannot be performed using any of the previously mentioned solutions, you might want to consider creating a temporary table to hold intermediate results.  RM:  chapter 12 create temporary tables for which I skipped page 524.
+/*
+Oracle includes a number of very useful functions that allow you to analyze, aggregate, and rank vast amounts of stored data.  Although this lab does not discuss all the available analytical functions, it does provide an overview of the most commonly used functions.  The general syntax of analytical functions is as follows:  analytic_function([arguments]) OVER (analytic_clause).  The OVER keyword indicates that the function operates after the results of the FROM, WHERE, GROUP BY, and HAVING clauses have been formed.  ANALYTIC_CLAUSE can contain three other clauses: QUERY_PARTITIONING, ORDER_BY, or WINDOWING.  [query_partition_clause] [order_by_clause [windowing_clause]]
+
+You perform query processing with analytical functions in several steps (see Figure 17.1). First, joins, WHERE, GROUP BY, and HAVING clauses are carried out. The analytical functions then use these results. If any partitioning clause is listed, the rows are split into the appropriate partitions. These partitions are formed after the GROUP BY clause, so you may be able to analyze data by partition, not just the expressions of the GROUP BY clause. If a windowing clause is involved, it determines the ranges of sliding windows of rows. The analytical functions are based
+against the specified window and allow moving averages, sums, and so on. Analytical functions may have an ORDER BY clause as part of the function specification that allows you to order the result before the analytical function is applied. Finally, if an ORDER BY clause is present at the
+end of the statement, the result set is sorted accordingly.
+
+Analytical functions can be categorized into various types; Table 17.1 provides an overview of the different types page 748.
+*/
+select student_id, section_id, numeric_grade
+from grade;
+select student_id, section_id, numeric_grade, dense_rank() over (order by numeric_grade) as ranknumericgradelowesthighest
+from grade;  --If you want the highest grade to have rank number 1, use DESCENDING in the ORDER BY clause (order by numeric_grade desc). The default is ASCENDING.
+select *
+from (select student_id, section_id, numeric_grade, dense_rank() over (order by numeric_grade) as ranknumericgradelowesthighest
+  from grade)
+where ranknumericgradelowesthighest <=3;  --To find out the three lowest grades of the student, rather than all the grades, you can modify the query by using the ranking function and an inline view
+select student_id, section_id, numeric_grade, rank() over (order by numeric_grade) as ranknumericgrade, dense_rank() over (order by numeric_grade) as denseranknumericgrade, row_number() over (order by numeric_grade) as rownumbernumericgrade
+from grade;  --The RANK function assigns each row a unique number. However, duplicate rows receive the identical ranking, and a gap appears in the sequence before the next rank.  The ranking function DENSE_RANK assigns duplicate values the same rank.
+select student_id, section_id, numeric_grade, rank() over (partition by section_id order by numeric_grade) as ranknumericgrade, dense_rank() over (partition by section_id order by numeric_grade) as denseranknumericgrade, row_number() over (partition by section_id order by numeric_grade) as rownumbernumericgrade
+from grade; --The optional partitioning clause lets you create independent rankings and resets the rank whenever the partitioned values change.  The example is partitioning section_id.  Each section_id has its own rankings.  
+select student_id, section_id, numeric_grade, rank() over (partition by student_id, section_id order by numeric_grade) as ranknumericgrade, dense_rank() over (partition by student_id, section_id order by numeric_grade) as denseranknumericgrade, row_number() over (partition by student_id, section_id order by numeric_grade) as rownumbernumericgrade
+from grade;  --You can partition over multiple values/columns by listing each individual expression and separating them with commas in the partitioning clause.  Table and index partitioning functionality is beyond the scope of this book and independent of analytical functions discussed in this lab.
+--The NTILE function is another ranking function you can use to divide data into buckets of fourth, thirds, or any other groupings. The next SELECT statement shows the result split into four buckets (four quartiles, or 4 × 25 percent buckets).
+select student_id, section_id, numeric_grade, ntile(4) over (order by numeric_grade) as byfoursnumericgrade
+from grade;
+select rank(99) within group (order by numeric_grade desc) as "Hypothetical Rank"
+from grade;  --You can perform this type of what-if analysis with the hypothetical ranking syntax, which uses the WITHIN GROUP keywords. The query determines the rank of the value 99 if it was present in the numeric-grade column of the grade table.  The syntax for hypothetical ranking is as follows. [RANK|DENSE_RANK|PERCENT_RANK|CUME_DIST](constant[, ...]) WITHIN GROUP (order_by_clause)
+--start page 754
