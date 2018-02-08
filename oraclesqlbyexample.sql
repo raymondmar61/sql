@@ -1022,6 +1022,75 @@ from grade;  --You can partition over multiple values/columns by listing each in
 --The NTILE function is another ranking function you can use to divide data into buckets of fourth, thirds, or any other groupings. The next SELECT statement shows the result split into four buckets (four quartiles, or 4 × 25 percent buckets).
 select student_id, section_id, numeric_grade, ntile(4) over (order by numeric_grade) as byfoursnumericgrade
 from grade;
-select rank(99) within group (order by numeric_grade desc) as "Hypothetical Rank"
-from grade;  --You can perform this type of what-if analysis with the hypothetical ranking syntax, which uses the WITHIN GROUP keywords. The query determines the rank of the value 99 if it was present in the numeric-grade column of the grade table.  The syntax for hypothetical ranking is as follows. [RANK|DENSE_RANK|PERCENT_RANK|CUME_DIST](constant[, ...]) WITHIN GROUP (order_by_clause)
---start page 754
+select rank(99) within group (order by numeric_grade desc) as "rank 99 top to bottom"
+from grade;  --You can perform this type of what-if analysis with the hypothetical ranking syntax, which uses the WITHIN GROUP keywords. The query determines the rank of the value 99 if it was present in the numeric-grade column of the grade table.  The syntax for hypothetical ranking is as follows. [RANK|DENSE_RANK|PERCENT_RANK|CUME_DIST](constant[, ...]) WITHIN GROUP (order_by_clause).  Find out how a specific data value would rank if it were part of the result set.
+select count(*), min(numeric_grade), max(numeric_grade), count(*) keep (dense_rank first order by numeric_grade) as "dense_rank first order lowest", count(*) keep (dense_rank last order by numeric_grade) as "dense_rank last order highest"
+from grade;  --The FIRST and LAST functions operate on a set of values to show the lowest or highest value within a result. The syntax of these functions is as follows:  aggregate_function KEEP (DENSE_RANK {LAST|FIRST} order_by_clause) [OVER query_partitioning_clause].  Lowest grade is 70.  Highest grade is 99.  Six grade rows exist for lowest grade 70.  159 rows exist for highest grade 99.  We are counting count(*) as the aggregate function.
+--same as
+SELECT numeric_grade, COUNT(*)
+FROM grade
+where (numeric_grade IN (SELECT MAX(numeric_grade)
+							FROM grade)		
+	or
+		numeric_grade IN (SELECT MIN(numeric_grade)
+							FROM grade))
+group by numeric_grade;
+select grade_type_code, median(numeric_grade)
+from grade
+group by grade_type_code;  --The MEDIAN function returns the median, or middle, value. This function has the following syntax:  MEDIAN (expression) [OVER (query_partitioning_clause)]
+select student_id, section_id, grade_type_code, numeric_grade
+from grade;
+select student_id, section_id, grade_type_code, numeric_grade, median(numeric_grade) over (partition by grade_type_code) as "median by grade_type_code"
+from grade;  --MEDIAN displays the median of the NUMERIC_GRADE column, partitioned by GRADE_TYPE_CODE.
+--stats_mode returns the value that occurs with the greatest frequency.  Most common.  It's the mode.
+select cost
+from course;
+select stats_mode(cost)
+from course;  --print 1195
+select cost, count(*)
+from course
+group by cost
+order by count(*) --count all data or group by count
+--another example
+select numeric_grade
+from grade;
+select stats_mode(numeric_grade)
+from grade;  --print 161
+select numeric_grade, count(*)
+from grade
+group by numeric_grade
+order by count(*) desc;
+--The reporting functionality allows you to compute aggregates for a row in a partition. The syntax is as follows: {SUM|AVG|MAX|MIN|COUNT|STDDEV|VARIANCE} ([ALL|DISTINCT] {expression|*}) OVER ([PARTITION BY expression2[,...]])
+select numeric_grade, grade_type_code, avg(numeric_grade) over (partition by grade_type_code) as "avg numericg per gradetypec"
+from grade;  --lists the individual grades and the grade type and displays the grade average for each or per grade type
+select numeric_grade, grade_type_code, avg(numeric_grade) over () as "avg numericg all gradetypec"
+from grade;  --lists the individual grades and the grade type and displays the grade average all grade type
+--The RATIO_TO_REPORT function is a reporting function that computes the ratio of a value to the sum of a set of values. The syntax is as follows:  RATIO_TO_REPORT(expression) OVER ([query_partition_clause])
+select course_no, cost, ratio_to_report(cost) over () as "cost ratio per course_no"
+from course;
+--The WINDOWING clause allows you to compute cumulative, moving, and centered aggregates.  A window has a defining starting point and ending point. The parameters in the windowing clause are always relative to the current row. A sliding window changes the starting point or ending point, depending on the definition of the window. A window that defines a cumulative sum starts with the first row and then slides forward with each subsequent row. A moving average has sliding starting and ending rows for a constant logical or physical range.  Moving sum.  Moving average.
+select course_no, cost, avg(cost) over (order by course_no rows between unbounded preceding and current row) as "moving cost average", sum(cost) over (order by course_no rows between unbounded preceding and current row) as "moving cost sum"
+from course;
+select course_no, cost, avg(cost) over (order by course_no rows between 1 preceding and 1 following) as "moving cost center avg", avg(cost) over (order by course_no rows 1 preceding) as "moving cost last two avg", avg(cost) over (order by course_no rows between unbounded preceding and current row) as "moving cost avg"
+from course;  --moving average center, one above one below; moving average last two; moving average all rows
+/*
+You can expand this functionality for any of the aggregate functions. This allows you to compute moving sums, centered sums, moving min and max values, and so on.
+
+The syntax of the windowing clause is as follows.
+order_by_clause {ROWS|RANGE}
+{BETWEEN
+{UNBOUNDED PRECEDING|CURRENT ROW|
+expression {PRECEDING|FOLLOWING}}
+AND
+{UNBOUNDED FOLLOWING|CURRENT ROW|
+expression {PRECEDING|FOLLOWING}}|
+{UNBOUNDED PRECEDING|CURRENT ROW|
+expression PRECEDING}}
+
+The ROWS and RANGE keywords allow you to define a window, either physically through the number of rows or logically, such as a time interval or a positive numeric value in the RANGE keyword. The BETWEEN…AND clause defines the starting and ending points of the window, and if none are specified, Oracle defaults to RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW.
+
+UNBOUNDED PRECEDING indicates that the window starts at the first row of the partition, and UNBOUNDED FOLLOWING indicates that the window ends at the last row of the partition.
+
+Besides the aggregate functions, such as AVG, COUNT, MIN, MAX, SUM, STDDEV, and VARIANCE, you can use the FIRST_VALUE and LAST_VALUE functions, which return the first value and last value in the window, respectively.
+*/
+--start page 761
