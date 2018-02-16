@@ -1190,5 +1190,41 @@ group by rollup(gender, semester_year, semester_month);  --the formation of subt
 select gender, semester_year as year, semester_month as month, sum(num_of_students) as total
 from instructor_summary
 group by cube(gender, semester_year, semester_month);  --You see a subtotal for GENDER and SEMESTER_MONTH, another for SEMESTER_YEAR and SEMESTER_MONTH, and another for SEMESTER_YEAR only; you also see a total by SEMESTER_MONTH.
---start page 788 grouping sets
+/*Computing and displaying only selective results can actually be simplified with the GROUPING SETS extension of the GROUP BY clause. You explicitly state which summaries you want to generate.*/
+select gender, semester_year as year, semester_month as month, sum(num_of_students) as "total students"
+from instructor_summary
+group by grouping sets ((gender, semester_year), (semester_month), ());
+--The query produces three sets: one for the GENDER and SEMESTER_YEAR columns, a second for SEMESTER_MONTH, and the last one for the grand total. Each individual set must be enclosed in parentheses; the empty set of parentheses indicates the grand total.
+/*
+If you have many hierarchy groupings, you may not want to specify all the different groupings individually. You can combine multiple GROUPING SETS clauses to generate yet more combinations. 
 
+The following example lists two GROUPING SETS clauses in the GROUP BY clause.
+GROUP BY GROUPING SETS (year, month),
+		GROUPING SETS (week, day)
+
+The cross-product results in the following equivalent groupings.
+GROUP BY GROUPING SETS ((year, week),
+(year, day),
+(month, week),
+(month, day))
+*/
+--One of the purposes of the GROUPING function is that it helps you distinguish summary rows from any rows that are a result of null values.
+select semester_year as year, campus, sum(num_of_classes) as num_of_classes, grouping (semester_year) gp_year, grouping (campus) gp_campus
+from instructor_summary
+group by cube (semester_year, campus)
+order by 1;  --Whenever you see a value of 1 in a column where the GROUPING function is applied, it indicates a super aggregate row, such as a subtotal or grand total row created by the ROLLUP or CUBE operator.
+/*
+If a query includes many GROUPING functions, you might want to consider consolidating the columns with the GROUPING_ID function. This function is not only similar in name and functionality to GROUPING, it also allows multiple columns as a parameter; it returns a number indicating the level of aggregation in the rollup or cube.
+The GROUPING_ID function returns a single number that identifies the exact aggregation level of every row.
+*/
+select semester_year as year, campus, sum(num_of_classes) as num_of_classes, grouping (semester_year) gp_year, grouping (campus) gp_campus, grouping_id(semester_year, campus) as grouping_id
+from instructor_summary
+group by cube (semester_year, campus);
+/*
+The GROUP_ID function lets you distinguish among duplicate groupings; they may be generated as a result of combinations of columns listed in the GROUP BY clause. GROUP_ID returns the number 0 to the first row in the set that is not yet duplicated; any subsequent duplicate grouping row receives a higher number, starting with the number 1.
+*/
+select semester_year as year, campus, sum(num_of_classes) as num_of_classes, grouping_id(semester_year, campus) grouping_id, group_id()
+from instructor_summary
+group by grouping sets (semester_year, rollup(semester_year, campus));
+--RM:  I speed read the grouping sets
+--RM:  Satisifed Oracle SQL by Example.  It's time to review the SQL basics.
