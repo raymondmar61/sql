@@ -559,6 +559,13 @@ from customers
 where salesdate between '01/01/2015' and '6/30/2015'
 order by salesdate;
 
+select distinct country
+from customers;
+
+select productname, cost, price
+from products
+where (productid = 101 or productid = 110) and cost > 50;
+
 select customerid, productid, revenue
 from customers
 where country in ('USA','GBR')
@@ -587,6 +594,10 @@ select customerid
 from customers
 where productid = (select productid from products where productname in ('DVD','cookies','zebra');  --Nested select statements. Not a join. invalid ORA-01427: single-row subquery returns more than one row.
 
+select customerid, productid, quantity || ' * ' || price || ' = ' || revenue as "show math"
+from customers
+where customerid between 10 and 20;  --concatenate.  CONCAT() two parameters only.
+
 select customerid
 from customers
 where productid in (
@@ -601,6 +612,21 @@ where country = 'HUN';
 select count(*) as "customers sale outside NA"
 from customers
 where country not in ('USA','CAN');
+select count(*) as "customers sale outside NA"
+from customers
+where country <> 'USA' and country <>'CAN';
+
+select sum(revenue), customerid
+from customers
+group by customerid;
+select customerid, sum(revenue)
+from customers
+group by customerid;
+
+select productid, count(*)
+from customers
+group by productid
+order by productid;
 
 select count(distinct customerid)
 from customers;  --Use distinct keyword
@@ -611,17 +637,81 @@ select *
 from customers
 where price = (select max(price) from customers); --Nested select statements using =.  Find highest price records.
 
-select productid, count(*)
+select max(count(*))
 from customers
-group by productid
-order by productid;
-
+group by customerid;  --print 16
+select customerid, max(count(*))
+from customers
+group by customerid;  --error ORA-00937: not a single-group group function
 select customerid, count(*)
 from customers
 group by customerid
-order by count(*) desc;  --get highest count customerid
+order by count(*) desc;  --get highest count customerid which are 6 and 10
 select *
 from customers
 where customerid in (6,10);  --RM: how to combine to one sql statement?
+select customerid, count(*)
+from customers
+where count(*) = (
+	select max(count(*))
+	from customers)
+group by customerid;  --error ORA-00934: group function is not allowed here
 
---RM:  Start Portnov line 269 insert, delete update.
+--RM:  Start Portnov line 269 insert, delete, update on 02/23/2018
+insert into customers values (502,100,101,'02/23/2018','USA',1,null,null);
+select *
+from customers
+where salesid = 502;
+insert into customers values((select max(salesid)+1 from customers),101,102,null,'CAN',null,null,null);  --salesdate field null is null. Oracle doesn't add sysdate today's date by default
+insert into customers values((select max(salesid)+1 from customers),101,102,(select sysdate from dual),'CAN',null,null,null);  --salesdate field today's date from select sysdate from dual. Oracle doesn't add sysdate today's date by default
+rollback;
+
+update products
+set cost = 1.00
+where productid = 109;
+update products
+set price = cost/.8
+where productid = 109;
+rollback;
+
+update customers
+set quantity = 500
+where customerid = 9 and productid = 122;
+update customers
+set revenue = quantity * price
+where customerid = 9 and productid = 122;
+rollback;
+
+--JOIN.  Getting information from related tables is called JOIN operation.
+--Step 1 start with fields to see in our result table.  Template-->tablename.tablefieldname
+--Step 2 specify where we like to retrieve the information or specify the tables.
+--Step 3 match or equate the fields in tables to connect the tables
+select customers.customerid, customers.productid, products.productname, customers.quantity, customers.revenue
+from customers, products
+where customers.productid = products.productid;
+--same as
+select c.customerid, c.productid, p.productname, c.quantity, c.revenue
+from customers c, products p
+where c.productid = p.productid;
+
+select c.customerid, c.productid, p.productname, c.quantity, c.revenue
+from customers c left outer join products p
+on c.productid = p.productid;  --returns 501 records including customerid 51 purchased nothing
+
+select c.customerid, c.productid, p.productname, c.quantity, c.revenue
+from customers c right outer join products p
+on c.productid = p.productid;  --returns 500 records excluding customerid 51 purchased nothing
+
+--Notice difference joins use on sql command; comma joins use where sql command
+select p.productname as "Products", count(c.productid) as "Number Customers Purchased"
+from products p right outer join customers c
+on p.productid = c.productid
+having count(c.productid) > 0
+group by p.productname;
+select p.productname as "Products", sum(c.quantity) as "Number Products Sold"
+from products p, customers c
+where p.productid = c.productid
+group by p.productname
+order by sum(c.quantity) desc;
+
+--buckymysql.sql start line 144 UPPER
