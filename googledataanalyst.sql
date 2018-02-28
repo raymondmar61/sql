@@ -552,6 +552,7 @@ insert into customer values (498,8,100,'1/28/2017','CZE',2,30.29,60.58);
 insert into customer values (499,29,117,'10/6/2015','FRA',2,47.38,94.76);
 insert into customer values (500,3,124,'7/7/2015','NLD',1,108.54,108.54);
 insert into customer (salesid,customerid,country) values (501,51,'HUN');
+insert into customer (salesid,customerid,country) values (502,52,'USA'),(503,53,'CAN');  --SQL Error: ORA-00933: SQL command not properly ended
 
 --basic SQL statements
 select *
@@ -612,6 +613,7 @@ where country = 'HUN';
 select count(*) as "customers sale outside NA"
 from customers
 where country not in ('USA','CAN');
+--same as
 select count(*) as "customers sale outside NA"
 from customers
 where country <> 'USA' and country <>'CAN';
@@ -619,6 +621,7 @@ where country <> 'USA' and country <>'CAN';
 select sum(revenue), customerid
 from customers
 group by customerid;
+--same as
 select customerid, sum(revenue)
 from customers
 group by customerid;
@@ -628,8 +631,15 @@ from customers
 group by productid
 order by productid;
 
+select country, count(country), sum(revenue), round(avg(revenue),2), max(revenue), min(revenue)
+from customers
+group by country
+order by sum(revenue) desc;
+
+select count(customerid)
+from customers  --return 501
 select count(distinct customerid)
-from customers;  --Use distinct keyword
+from customers;  --return 51.  Use distinct keyword
 select count(distinct productid)
 from customers;  --Use distinct keyword
 
@@ -637,12 +647,20 @@ select *
 from customers
 where price = (select max(price) from customers); --Nested select statements using =.  Find highest price records.
 
+select *
+from customers
+where price >= (select avg(price) from customers); --Nested select statements using =.  Find greater than average price records.  average avg() ignores null data.  0 date is included.
+
 select max(count(*))
 from customers
 group by customerid;  --print 16
 select customerid, max(count(*))
 from customers
 group by customerid;  --error ORA-00937: not a single-group group function
+select customerid, count(*)
+from customers
+group by customerid
+having count(*) = max(count(*));  --error ORA-00935: group function is nested too deeply
 select customerid, count(*)
 from customers
 group by customerid
@@ -656,6 +674,22 @@ where count(*) = (
 	select max(count(*))
 	from customers)
 group by customerid;  --error ORA-00934: group function is not allowed here
+select customerid, count(customerid)
+from customers
+group by customerid
+having count(customerid) = (
+	select max(count(*))
+	from customers
+	group by customerid);  --the solution is having having and group by and no where clause.  from joeybluesql.sql.
+/*  where clause filters the initial set of data.  Some data are removed for which it should have been included.  Having clause filters after the group by or the grouping.  */
+select customerid, count(customerid)
+from customers
+where country = 'CAN'
+group by customerid
+having count(customerid) = (
+	select max(count(*))
+	from customers
+	group by customerid);
 
 --RM:  Start Portnov line 269 insert, delete, update on 02/23/2018
 insert into customers values (502,100,101,'02/23/2018','USA',1,null,null);
@@ -706,7 +740,7 @@ on c.productid = p.productid;  --returns 500 records excluding customerid 51 pur
 select p.productname as "Products", count(c.productid) as "Number Customers Purchased"
 from products p right outer join customers c
 on p.productid = c.productid
-having count(c.productid) > 0
+having count(c.productid) > 0  --It's like a WHERE clause.  Using HAVING when using GROUP BY
 group by p.productname;
 select p.productname as "Products", sum(c.quantity) as "Number Products Sold"
 from products p, customers c
@@ -714,4 +748,67 @@ where p.productid = c.productid
 group by p.productname
 order by sum(c.quantity) desc;
 
---buckymysql.sql start line 144 UPPER
+--buckymysql.sql start line 144 UPPER on 02/27/18
+select productname, upper(productname), lower(productname)
+from products;
+
+/* Instructor says UNION good for more complex filtering.  Important the columns must be the same implying the tables must be the same.  UNION removes duplicate entries.  */
+select customerid, productid, revenue
+from customers
+where country='USA' or quantity >=4;
+--not same as because top query can include duplicates such as customerid #3 purchased same productid #115 same revenue 90.20 at different dates 07/19/2016 and 02/26/2015
+select customerid, productid, revenue
+from customers
+where country = 'USA'
+union
+select customerid, productid, revenue
+from customers
+where quantity >=4
+order by customerid, productid;
+select customerid, productid, revenue
+from customers
+where country = 'USA'
+union all  --union all includes duplicate entries such as customerid #5 purchased productid #113 same revenue 39.56 country USA and quantity >=4
+select customerid, productid, revenue
+from customers
+where quantity >=4
+order by customerid, productid;
+
+create table practicecustomers (salesid integer, customerid integer not null, productid integer not null, salesdate date default sysdate, country varchar(3) default 'USA' not null, quantity integer, price float, revenue float, constraint salesidpractice_pk primary key (salesid), constraint productidpractice_fk foreign key (productid) references products(productid));
+insert into practicecustomers (salesid, customerid, productid, salesdate, country, quantity, price, revenue)
+select salesid, customerid, productid, salesdate, country, quantity, price, revenue
+from customers
+where country = 'GBR' or country = 'FRA';
+--same as when all columns are included in order
+insert into practicecustomers
+select *
+from customers
+where country = 'GBR' or country = 'FRA';
+delete from practicecustomers;  --delete data only
+delete from practicecustomers
+where country = 'FRA';  --delete FRA data only
+alter table practicecustomers add addnewcolumn varchar(10);  --add column
+alter table practicecustomers drop column addnewcolumn;  --delete column
+rename practicecustomers to nopracticecustomers;  --rename table
+drop table practicecustomers;  --delete table
+
+--Views are temporary tables.  It's like a dynamic table because the view updates when source table updates.  View don't require additional memory.
+create view viewcustomers as (
+	select *
+	from customers
+	where salesdate >= '01/01/2017' and salesdate <='12/31/2017');
+select *
+from viewcustomers
+where revenue >=100;
+
+--buckymysql.sql finish 02/27/18.  joeybluesql.sql start 02/27/18.
+select *
+from customers
+where revenue > 0
+order by 8 desc, 2, 4 desc;  --sort by column numbers are valid. 8 is revenue, 2 is customerid, 4 is salesdate.
+
+select customerid, revenue, revenue*.10 as "discount", revenue*.90 as "10% discount $250 or greater"
+from customers
+where revenue >=250;
+
+--start joeybluesql.sql line 175 inner join
