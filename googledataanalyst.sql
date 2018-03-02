@@ -807,8 +807,27 @@ from customers
 where revenue > 0
 order by 8 desc, 2, 4 desc;  --sort by column numbers are valid. 8 is revenue, 2 is customerid, 4 is salesdate.
 
-select customerid, revenue, revenue*.10 as "discount", revenue*.90 as "10% discount $250 or greater"
+select customerid, revenue, revenue*.10 as "discount", round(revenue*.10,2) as "discount rounded two", revenue*.90 as "10% discount $250 or greater", round(revenue*.90,3) as "10% discount rounded three"
 from customers
 where revenue >=250;
 
+select customerid, revenue, cast(revenue as int) as "integer with rounding", round(cast(revenue*.10 as float),2) as "10% discount float rounded 2"
+from customers;  --cast convert data type or data type convert
+
+select customerid, revenue, revenue*.10, round(revenue*.10,2), round(CAST((revenue*.10) as decimal(20, 2)),2) as "no always two decimal", to_char((revenue*.10), '9,999,999.99') as "always two decimal", cast(to_char((revenue*.10), '9,999,999.99') as float) as "no always two decimal"
+from customers;  --two decimal use to_char 9,999,999.99
+
 --start joeybluesql.sql line 175 inner join
+select *  --columns from customers table appear first then columns from products table appear second
+from customers c inner join products p  --customer.c and products.p error message no periods after table alias
+on c.productid = p.productid;
+--same as
+select *
+from customers c, products p
+where c.productid = p.productid;
+select c.customerid as "customer", p.productname as "product name"
+from customers c, products p
+where c.productid = p.productid;
+
+select productname, length(productname)
+from products;  --length len
