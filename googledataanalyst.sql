@@ -831,3 +831,6 @@ where c.productid = p.productid;
 
 select productname, length(productname)
 from products;  --length len
+
+--finish joeybluesql.sql 03/02/18.  start learningsql.sql Learning SQL Access 03/06/18.
+--RM:  03/06/18 import Access student.mdb to oracle.  filename studentaccess.sql.  Pluggable database name studentaccess.  Admin studentaccess.  Password is password.
