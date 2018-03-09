@@ -318,7 +318,7 @@ insert into section values (145,'COSC1310','SPRING',99,'JONES',79,179);
 insert into section values (158,'MATH2410','SPRING',98,'',36,123);
 insert into section values (201,'CHEM2001','FALL',99,'',58,114);
 insert into section values (202,'CHEM3001','SPRING',00,'CARNEAU',58,'');  --null number field two single quotes denote null number is valid
-create table student (stno integer, sname varchar2(20), major varchar2(4),class integer, bdate date);
+create table student (stno integer, sname varchar2(20), major varchar2(4), class integer, bdate date);
 insert into student values (2,'Lineas','ENGL',1,'04/15/1980');
 insert into student values (3,'Mary','COSC',4,'07/06/1978');
 insert into student values (5,'Zelda','COSC','','02/12/1978');
@@ -409,4 +409,33 @@ from room;
 select count(distinct((bldg)))
 from room;
 
---start chapter 3 line 96 learningsql.sql
+--start chapter 3 line 96 learningsql.sql 03/06/18
+create table employees (name varchar2(20), address varchar2(20), employee_number integer, salary number(8,2));
+--number(p,s) is number(precision or total number of digits 1-38, scale number of digits to the right of the deciaml place out of total number of digits). e.g. number(5,2) is -999.99 to 999.99 inclusive.  1,000 is rejected.  80.999 is rounded up to 81.00.
+create table employees (name varchar2(20), address varchar2(20), employee_number integer, salary float(8,2));  --Oracle 12C doesn't like float(,)
+insert into employees values ('Joe Smith', '123 4th St.', 101, 2500.49);
+insert into employees values ('R Mar','202122 23rd St.', null, 100000.01);
+insert into employees (name, address, salary)
+values ('R Mar','789 10th St.',500000.39);
+insert into employees(name, employee_number)
+select sname, stno
+from student
+where stno > 100;  
+insert into emp2
+select *
+from emp1
+where employee_number >= 100; --if employees table and student table columns match left to right both tables, then no need to mention column names.
+update employees
+set salary = employee_number+500;
+delete from employees;  --delete data delete rows
+drop table employees;  --delete table
+--start chapter 3 line 136 learningsql.sql 03/08/18
+alter table employees
+add major varchar2(40);  --add column
+alter table employees
+modify major varchar2(4);  --edit column varchar2(40) to varchar2(4)
+alter table employees
+drop column major;  --delete column
+delete from employees
+where name = 'R Mar' and address = '202122 23rd St.';  --delete rows with criteria
+--start chapter 4 line 205 learningsql.sql 03/08/18
