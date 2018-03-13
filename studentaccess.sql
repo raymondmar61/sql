@@ -417,6 +417,9 @@ insert into employees values ('Joe Smith', '123 4th St.', 101, 2500.49);
 insert into employees values ('R Mar','202122 23rd St.', null, 100000.01);
 insert into employees (name, address, salary)
 values ('R Mar','789 10th St.',500000.39);
+insert into employees values ('B Posey','2323 Willie Mays Pl',23,null);
+insert into employees values ('     MadBum','2323 Willie Mays Pl',40,null);
+insert into employees values ('HPence   right  ','2323 Willie Mays Pl',9,null);
 insert into employees(name, employee_number)
 select sname, stno
 from student
@@ -439,3 +442,65 @@ drop column major;  --delete column
 delete from employees
 where name = 'R Mar' and address = '202122 23rd St.';  --delete rows with criteria
 --start chapter 4 line 205 learningsql.sql 03/08/18
+select *
+from course inner join prereq
+on course.course_number = prereq.course_number;
+--same as
+select *
+from course, prereq
+where course.course_number=prereq.course_number;
+select c.course_name, c.course_number, c.credit_hours, c.offering_dept, p.prereq
+from course c inner join prereq p
+on c.course_number = p.course_number;
+select c.course_name, c.course_number, d2m.dname
+from department_to_major d2m inner join
+	(course c inner join prereq p
+	on c.course_number=p.course_number)
+on c.offering_dept=d2m.dcode;  --join multiple tables using nested inner join or multiple inner join
+select c.course_name, c.course_number, d.dname
+from course c, prereq p, department_to_major d
+where c.course_number=p.course_number and c.offering_dept=d.dcode;  --join multiple tables using from
+select *
+from course left join prereq
+on course.course_number=prereq.course_number;
+--same as 
+select *
+from course left outer join prereq
+on course.course_number=prereq.course_number;
+/* It seems the outer in left outer join and right outer join is optional */
+select count(*) as "count excludes null values"
+from grade_report;
+select sum(salary), min(salary), max(salary), avg(salary)
+from employees;
+select name, salary, round((salary/3), 4) as "salary/3 four decimal places"
+from employees;
+select name, salary, nvl(salary,0) as "if salary null then 0"
+from employees;
+/*
+select name, nz(wage,2)*nz(hours,40) as [wage*hours, 80 if null]
+from employee; /* if null, update wage to 2 and hours to 40.  2*40=80 in results */
+-- RANK() leaves a gap in the sequence when there is a tie, but DENSE_RANK() leaves no gaps.
+select salary, rank() over (order by salary desc)
+from employees
+where salary is not null;
+select salary, rank() over (order by salary desc nulls last)
+from employees;  --if null rows, then they're rank at bottom.
+select name, salary
+from employees;
+select name || ', Esq.' as "Concatenate field with ||"
+from employees;
+select '.....' || name as "Concatenate name field"  --.....Joe Smith
+from employees;
+select sname, substr(sname,2,4) as "start 2nd return 4 characters"
+from student;  --substring.  Extract middle string or part of string.
+select sname, substr(sname,-4) as "start end return 4 characters"
+from student;  --like right() in Excel
+select sname, instr(sname,'e') as "position # for e"
+from student;
+select name, substr(name,instr(name,' ')+1,length(name))
+from employees;  --extract string after first space or print last name
+select name, ltrim(name), rtrim(name), trim(name)
+from employees;
+select name, upper(name), lower(name), length(name)
+from employees;  --upper case and lower case and length of name or len of name; string length
+--start Chapter 5 line 392 03/12/18
