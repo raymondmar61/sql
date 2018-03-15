@@ -365,8 +365,7 @@ insert into student values (157,'Stephanie','MATH','','04/16/1981');
 insert into student values (158,'Thornton','','','10/15/1979');
 insert into student values (160,'Gus','ART',3,'10/15/1978');
 insert into student values (161,'Benny','CHEM',4,'06/10/1980');
-insert into student values (163,'Lionel','','','10/15/1979');
-insert into student values (191,'Jake','MATH',2,'06/10/1980');
+insert into student values (163,'Lionel','','','10/15/1979');insert into student values (191,'Jake','MATH',2,'06/10/1980');
 create table room (bldg integer, room integer, capacity integer, ohead varchar2(1));
 insert into room values (13,101,85,'Y');
 insert into room values (36,120,25,'N');
@@ -378,6 +377,12 @@ insert into room values (58,112,40,'');
 insert into room values (58,114,60,'');
 insert into room values (79,174,22,'N');
 insert into room values (79,179,35,'Y');
+create table datetable (birthdate date, k5date date, name varchar2(15));
+insert into datetable values ('01/01/2001','12/01/2006','Mala Sinha');
+insert into datetable values ('02/01/2002','03/02/2006','Mary Spencer');
+insert into datetable values ('10/02/2002','02/04/2005','Bill Cox');
+insert into datetable values ('12/29/1998','05/05/2004','Jamie Runner');
+insert into datetable values ('06/16/1999','03/03/2003','Seema Kapoor');
 
 --review from learningsql.sql
 select *
@@ -408,7 +413,6 @@ select count(bldg)
 from room;
 select count(distinct((bldg)))
 from room;
-
 --start chapter 3 line 96 learningsql.sql 03/06/18
 create table employees (name varchar2(20), address varchar2(20), employee_number integer, salary number(8,2));
 --number(p,s) is number(precision or total number of digits 1-38, scale number of digits to the right of the deciaml place out of total number of digits). e.g. number(5,2) is -999.99 to 999.99 inclusive.  1,000 is rejected.  80.999 is rounded up to 81.00.
@@ -467,6 +471,16 @@ on course.course_number=prereq.course_number;
 select *
 from course left outer join prereq
 on course.course_number=prereq.course_number;
+select student.sname, grade_report.section_id, grade_report.grade
+from student right outer join grade_report
+on student.stno = grade_report.student_number
+where grade_report.grade in ('A','B');
+select st.sname, st.stno, sec.section_id, g.grade
+from student st right outer join 
+	(grade_report g left outer join section sec
+	on g.section_id = sec.section_id)
+on st.stno = g.student_number
+where st.class in (3,4) and g.grade = 'A';
 /* It seems the outer in left outer join and right outer join is optional */
 select count(*) as "count excludes null values"
 from grade_report;
@@ -485,8 +499,6 @@ from employees
 where salary is not null;
 select salary, rank() over (order by salary desc nulls last)
 from employees;  --if null rows, then they're rank at bottom.
-select name, salary
-from employees;
 select name || ', Esq.' as "Concatenate field with ||"
 from employees;
 select '.....' || name as "Concatenate name field"  --.....Joe Smith
@@ -504,3 +516,73 @@ from employees;
 select name, upper(name), lower(name), length(name)
 from employees;  --upper case and lower case and length of name or len of name; string length
 --start Chapter 5 line 392 03/12/18
+select sname
+from student
+where sname like '%smith%';  --wildcard
+select student_number, grade
+from grade_report
+where substr(grade,1,1) between 'C' and 'F';  --find a range of characters C, D, E, F
+select student_number, grade
+from grade_report
+where substr(grade,1,1) not between 'C' and 'F';  --find a range of characters not C, D, E, F
+select *
+from student
+where sname like '%m_t%';  --find rows sname has m_any one character_t; underscore one character
+select *
+from grade_report
+where student_number like '13%';  --find rows student_number begins with 13.  Yes on single quotes wild card numbers.
+select k5date, to_char(k5date,'yyyy') as "year", name
+from datetable;  --get year using to_char()
+select k5date, extract(year from k5date) as "year", name
+from datetable;  --get year using extract() which is better
+select k5date, birthdate, to_char(k5date,'yyyy')-to_char(birthdate,'yyyy'), name
+from datetable;
+--same as
+select k5date, birthdate, extract(year from k5date)-extract(year from birthdate), name
+from datetable;
+select birthdate, to_char(birthdate, 'mm') as "double number text", to_char(birthdate, 'mm')+6, name
+from datetable;
+--kinda same as
+select birthdate, extract(month from birthdate) as "single number number", extract(month from birthdate)+6, name
+from datetable;
+select birthdate, to_char(birthdate, 'd') as "number day 1 is Sun 7 is Sat"
+from datetable;
+select birthdate, extract(day from birthdate) as "day"
+from datetable;
+select *
+from datetable
+where extract(month from birthdate) >=5;  --return rows birthdate May and later
+
+create table yummy (todaydate date);
+insert into yummy values (sysdate); --insert today's date
+--same as
+insert into yummy values (CURRENT_TIMESTAMP);
+select todaydate, extract(month from todaydate), to_char(todaydate, 'YYYY-MM-DD HH24:MI:SS') as "all", to_char(todaydate, 'HH12:MI') as "normal time text format"
+from yummy;  --last column return normal time
+
+select count(section_id) as "count all section_id"
+from grade_report;
+select count(distinct section_id) as "count each section_id"
+from grade_report;
+
+select *
+from (select stno, bdate, dense_rank() over (order by bdate) as rankbdatelowesttohighest
+from student)
+where rankbdatelowesttohighest <=5;  --top five rank lowest to highest
+select *
+from (select stno, bdate, dense_rank() over (order by bdate desc) as rankbdatehighesttolowest
+from student)
+where rankbdatehighesttolowest <=5;  --top five rank highest to lowest
+
+select count(*) over ()
+from student;  --returns the number of rows for each row; e.g. if there's 48 rows, each row returns 48.
+select stno, row_number() over (order by stno desc)
+from student;  --returns the row number for the stno column; in this case the highest stno is row number one
+with percentrows as (
+	select stno, sname, row_number() over (order by stno desc) as rownumber, count(*) over() as totalrows
+  from student)
+select stno, sname
+from percentrows
+where rownumber <= round(totalrows*45/100)
+order by stno desc;  --returns top 45 percent
+--start learningsql.sql Chapter 6 492 03/14/18
