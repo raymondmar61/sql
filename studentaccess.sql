@@ -482,6 +482,17 @@ from student st right outer join
 on st.stno = g.student_number
 where st.class in (3,4) and g.grade = 'A';
 /* It seems the outer in left outer join and right outer join is optional */
+select *
+from student stu, grade_report g
+where stu.major = 'COSC'
+and stu.stno = g.student_number
+and g.grade = 'B';
+--same as
+select *
+from student s inner join grade_report g
+on s.stno = g.student_number
+where s.major = 'COSC'
+and g.grade = 'B';
 select count(*) as "count excludes null values"
 from grade_report;
 select sum(salary), min(salary), max(salary), avg(salary)
@@ -586,3 +597,138 @@ from percentrows
 where rownumber <= round(totalrows*45/100)
 order by stno desc;  --returns top 45 percent
 --start learningsql.sql Chapter 6 492 03/14/18
+create global temporary table temp3 as  --temporary table temp table
+select s.sname, s.stno, d.dname, s.class
+from student s, department_to_major d
+where s.major = d.dcode
+and (s.class = 1 or s.class = 2)
+and s.major = 'COSC';
+select *
+from temp3;  --RM:  no data in temp3
+
+select sname
+from student
+where major = "COSC"
+union
+select sname
+from student
+where major = 'MATH';
+select sname, major
+from student
+where major = 'COSC'
+union all
+select sname, major
+from student
+where major = 'MATH';  --includes duplicates
+select c.*, null
+from course c
+where c.credit_hours = 4
+union all
+select null, p.course_number, null, null, p.prereq
+from prereq p /* use null values in some of the field places a place holders to run union or union all unequal number of fields.  course table fields: course_name, course_number, credit_hours, offering_dept.  prereq table fields: course_number,  prereq.  query fields: course_name, course_number, credit_hours, offering_dept, Expr1001 which is prereq.  In some SQL versions, UNION JOIN is run. */
+--start learningsql.sql Chapter 8 674 03/16/18
+select s.stno, s.sname
+from student s
+where s.stno in (select g.student_number
+	from grade_report g
+	where g.grade in ('A','B'))
+order by s.stno;
+--not same as subquery above returned 31 rows and join below retuned 67 rows.  67 rows contains duplicates.  Use subquery to avoid duplicates.  However, duplicates are okay because list all A's and B's and all students earning A's and B's.  31 rows are distinct students earned an A or a B.
+select s.stno, s.sname
+from student s, grade_report g
+where s.stno=g.student_number
+and g.grade in ('A','B')
+order by s.stno;  --returned 67 rows, yes duplicates
+--Use distinct with join to return 31 rows no duplicates.
+select distinct s.stno, s.sname
+from student s, grade_report g
+where s.stno=g.student_number
+and g.grade in ('A','B')
+order by s.stno;  --returned 31 rows, no duplicates
+select s.stno, s.sname, g.grade, g.section_id
+from student s, grade_report g
+where s.stno=g.student_number
+and g.grade = 'A' or g.grade = 'B'
+order by s.stno desc;  --2,417 rows returned.  cartesian return.
+--not same as
+select s.stno, s.sname, g.grade, g.section_id
+from student s right outer join grade_report g
+on s.stno = g.student_number
+where g.grade = 'A' or g.grade = 'B'
+order by s.stno desc;  --67 rows returned.  duplicates are okay in right outer join because want list all students with A's and B's and their g.section_id.
+select c.offering_dept
+from course c
+where c.course_name like '%INTRO%';  --4 rows.  duplicates included.  One dept offers two intro classes.
+select distinct c.offering_dept
+from course c
+where c.course_name like '%INTRO%';  --3 rows.  duplicates not included.
+select d.dname
+from department_to_major d
+where d.dcode in (select c.offering_dept
+	from course c
+	where c.course_name like '%INTRO%');  --3 rows.  duplicates not included.  Use subquery to avoid duplicates.
+--not same as
+select d.dname, c.course_name
+from course c left outer join department_to_major d
+on c.offering_dept = d.dcode
+where c.course_name like '%INTRO%';  --4 rows.  duplicates included.  One dept offers two intro classes for which class name c.course_name is included.
+select distinct d.dname, c.course_name
+from course c left outer join department_to_major d
+on c.offering_dept = d.dcode
+where c.course_name like '%INTRO%';  --4 rows.  duplicates included.  One dept offers two intro classes for which class name c.course_name is included.
+select distinct d.dname
+from course c left outer join department_to_major d
+on c.offering_dept = d.dcode
+where c.course_name like '%INTRO%';  --3 rows.  duplicates not included.  Exclude class name c.course_name.
+select sec.section_id
+from section sec
+where sec.instructor like '%HERMANO%';  --3 rows.  Section id's taught by Hermano.
+select stu.sname, stu.major, g.section_id
+from student stu, grade_report g
+where g.student_number = stu.stno
+and g.grade = 'C';  --36 rows returned.  Students with C grades in their g.section_id
+--same as 
+select stu.sname, stu.major, g.section_id
+from student stu right outer join grade_report g
+on stu.stno = g.student_number
+where g.grade = 'C';  --36 rows returned.  Students with C grades in their g.section_id
+select stu.sname, stu.major, g.section_id
+from student stu, grade_report g
+where g.student_number = stu.stno
+and g.grade = 'C'
+and g.section_id in (select sec.section_id
+	from section sec
+	where sec.instructor like '%HERMANO%');  --1 row returned.  Students with C grades in their g.section_id instructor Hermano.
+--same as
+select stu.sname, stu.major, g.section_id
+from student stu right outer join grade_report g
+on stu.stno = g.student_number
+where g.grade = 'C'
+and g.section_id in (select sec.section_id
+	from section sec
+	where sec.instructor like '%HERMANO%');  --1 row returned.  Students with C grades in their g.section_id instructor Hermano.
+select stu.sname, stu.major, g.section_id, sec.instructor
+from student stu right outer join grade_report g
+on stu.stno = g.student_number
+where g.grade = 'C'
+and g.section_id in (select sec.section_id
+	from section sec
+	where sec.instructor like '%HERMANO%');  --error message with column name sec.instructor included
+select *
+from room
+where capacity = 25;
+select avg(capacity)
+from room;  --return 39.11
+select *
+from room
+where capacity < (select avg(capacity)
+  from room);  --6 rows returned
+select avg(capacity)
+from room
+where bldg = 36;  --returned 27.5
+select *
+from room
+where capacity < (select avg(capacity)
+  from room
+  where bldg = 36);  --4 rows returned
+--start learningsql.sql Chapter 9 724 03/20/18
