@@ -626,6 +626,7 @@ where c.credit_hours = 4
 union all
 select null, p.course_number, null, null, p.prereq
 from prereq p /* use null values in some of the field places a place holders to run union or union all unequal number of fields.  course table fields: course_name, course_number, credit_hours, offering_dept.  prereq table fields: course_number,  prereq.  query fields: course_name, course_number, credit_hours, offering_dept, Expr1001 which is prereq.  In some SQL versions, UNION JOIN is run. */
+
 --start learningsql.sql Chapter 8 674 03/16/18
 select s.stno, s.sname
 from student s
@@ -731,4 +732,80 @@ from room
 where capacity < (select avg(capacity)
   from room
   where bldg = 36);  --4 rows returned
+
 --start learningsql.sql Chapter 9 724 03/20/18
+--SQL History F8.  ctrl+up arrow or ctrl+down arrow cycles SQL history.
+select count(*)
+from student;  --return 48
+select class, count(*)
+from student
+group by class;  --breakdown count by class
+select class, major, count(*)
+from student
+group by class, major
+order by class, count(*) desc;  --breakdown count by class and by count highest first
+--Having clause is a final filter on the output of a select statement.  It's like a pivot table filter.
+select class, count(*)
+from student
+group by class
+having count(*) > 9;
+select class, major, count(*)
+from student
+where major in('ACCT','COSC')
+group by class, major
+having count(*) > 2;  --return students majoring in ACCT and COSC with three or more students in each class
+select min(count(*))
+from student
+group by class;  --return lowest count grouped by class
+create table salary (name varchar2(10), salary integer);
+insert into salary values ('Joe',1000);
+insert into salary values ('Sam',2000);
+insert into salary values ('Bill',3000);
+insert into salary values ('Jenny',4000);
+insert into salary values ('Sammy',6027);
+insert into salary values ('Beth',5140);
+insert into salary values ('Jo',7666);
+insert into salary values ('Jack',1741);
+select count(*) as "count", avg(salary) as "average salary", sum(salary) as "sum salary", max(salary) as "highest salary", min(salary) as "lowest salary"
+from salary;
+alter table salary
+add ssn varchar2(11);
+delete from salary;
+insert into salary values ('Joe',1000,'294-57-7406');
+insert into salary values ('Sam',2000,'327-75-8088');
+insert into salary values ('Bill',3000,'901-12-3258');
+insert into salary values ('Jenny',4000,'765-73-9234');
+insert into salary values ('Sammy',6027,'106-36-8883');
+insert into salary values ('Beth',5140,'701-77-5427');
+insert into salary values ('Jo',7666,'904-26-7229');
+insert into salary values ('Jack',1741,'856-60-5130');
+/* Indexes and contraints can be added to tables to make tables more efficient and to increase data integrity.  Index speeds up queries and searches and facilitates sorting and grouping operations; however indexes slows down updates on indexed fields.  A constraint is similar to an index, but a constraint can also be used to establish relationships with other tables. */
+create index ssn_index
+on salary (ssn desc);  --create index named ssn_index for ssn column on salary table in descending order
+drop index ssn_index;  --delete index
+create unique index ssn_indexunique
+on salary (ssn asc);  --create unique index named ssn_indexunique for ssn column on salary table in ascending order no duplicates
+drop index ssn_indexunique;  --delete unique index
+alter table salary add constraint ssn_primarykey primary key (ssn);  --add primary key ssn_primarykey for ssn column
+alter table salary drop primary key;  --delete primary key
+alter table salary modify (ssn constraint ssn_notnull not null);  --add not null constraint add constraint not null ssn_notnull for ssn column 
+alter table salary drop constraint ssn_notnull; --delete not null
+
+create table salary2 (name varchar(20), ssn char(9), dept_number integer not null, salary number);  --dept_number attribute has a not null constraint.  dept_number can't be null
+drop table salary2;
+create table xxx (ssn char(9) constraint ssn_pk primary key, name varchar(20));  --primary key constraint added to create table xxx.  ssn_pk is the name of the primary key constraint for ssn.
+drop table xxx;
+create table xxx2 (ssn char(9), salary number, constraint ssn_pk primary key (ssn, salary));  -- two primary key concatenated primary key concatenate primary key multiple primary key.  RM:  I didn't see the concatenation in the xx2 Popup Describe window.
+drop table xxx2;
+create table xxx3 (ssn char(9), salary number);
+alter table xxx3 add constraint ssn_primarykey primary key (ssn, salary); --add primary key ssn_primarykey for ssn column concatenated primary key.  RM:  I didn't see the concatenation in the xx2 Popup Describe window.
+drop table xxx3;
+create table xxx3 (ssn char(9), salary number, dept_number integer not null, constraint dept_number_pk primary key(dept_number));
+drop table xxx3;
+create table xxx4 (empno number, name varchar(20), title varchar(20), dept integer, constraint empno_pk primary key(empno), constraint title_uk unique (title));  --empno column empno_pk constraint name is the primary key.  title column title_uk constraint name is unique.  primary key and unique constraints.  two constraints.
+alter table xxx4 add constraint dept_fk foreign key (dept) references xxx3(dept_number);  --add foreign key dept_fk for dept column referencing xxx3 table primary key dept_number column.  xxx3 table primary key must exist.
+drop table xxx4;
+
+/* to enable a referential integrity constraint for two interrelated tables.  We can enforce a referential integrity constraint.  A foreign key and primary key constraint.  A row in one table foreign key can't exist if a value in the table referring to a value in another table primary key doesn't exist. */
+create table department (deptno number, deptname varchar(20), constraint deptno_pk primary key (deptno));
+create table employee2 (empno number constraint empno_pk primary key, empname varchar(20), dept number constraint dept_fk references department(deptno));  --dept column is a foreign key named dept_fk references department table deptno.  deptno is reference to table department which must be a primary key in department table
