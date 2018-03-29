@@ -215,3 +215,110 @@ select rownum, id, name
 from customers
 where rownum <=10; --The rownum pseudocolumn is useful if you want to limit the number of rows returned by a query.
 --start line 36 buckymysql.sql 03/26/18
+
+select name, id
+from customers
+where rownum = 1;  --Return one row.  No need for rownum in select statement.
+select name, id
+from customers
+where rownum <=10
+order by id desc;  --Return first 10 rows sorted by id desc.  No need for rownum in select statement.
+select id, name
+from customers
+where id between 25 and 30;  --25 and 30 are inclusive
+select city
+from customers
+where city like 'H%d';  --Returns cities begins with capital letter H and ends with lower case letter d
+select name
+from items
+where name like '_ boxes of frogs';  --wild card one character
+--RM:  skipped regular expressions.  Oracledatabase12csql.sql has brief regexp.
+
+select concat(city, state) as "concat two columns only"
+from customers;  --Concatenation operator doesn't permit spaces
+select city || ', ' || state as "concat three", city || ' ' || state || zip as "concat four"
+from customers;
+select name, upper(name)
+from customers;
+select sum(cost), count(cost), max(cost), min(cost), round(avg(cost),2), round(avg(cost)*1.2,2) as "20% above avg cost"
+from items;
+select sum(cost), count(cost), max(cost), min(cost), round(avg(cost),2), round(avg(cost)*1.2,2) as "20% above avg cost"
+from items
+where cost >=100;
+select seller_id, count(*) as "item count by seller_id"
+from items
+group by seller_id;
+select seller_id, count(*) as "item count >=3 by seller_id"
+from items
+group by seller_id
+having count(*) >=3;
+
+--Subquery is a query inside another query.  Instructor says the quick example admit it's useless; there's an easier way.  Want items price is above average.  First, find the average price.  Second, find the items above the average price found in first. */
+--SQL queries are run inside out
+select round(avg(cost),2)
+from items;  --return 467.11 first get the cost average
+select *
+from items
+where cost > (
+	select round(avg(cost),2)
+	from items);  --second use cost average in where clause as subquery
+select cost
+from items
+where name like '%boxes of frogs%';  --costs of sellers selling boxes of frogs first
+select min(cost)
+from items
+where name like '%boxes of frogs%';  --lowest cost of sellers selling boxes of frogs second
+select seller_id
+from items
+where name like '%boxes of frogs%'
+and cost = (select min(cost)
+	from items
+	where name like '%boxes of frogs%');  --find seller_id with lowest cost selling boxes of frogs third
+
+select customers.id, customers.name, items.name, items.cost
+from customers, items
+where customers.id=items.seller_id
+order by customers.id;
+select c.id, c.name, i.name, i.cost
+from customers c, items i
+where c.id=i.seller_id
+order by c.id;
+select c.name, i.name
+from customers c, items i
+where c.id=i.seller_id;
+select c.name, i.name
+from customers c right join items i
+on c.id=i.seller_id; --get all items and their customers which match each item whether item has customer or not
+--same as
+select c.name, i.name
+from customers c right outer join items i
+on c.id=i.seller_id; --get all items and their customers which match each item whether item has customer or not
+select c.name, i.name
+from customers c left join items i
+on c.id=i.seller_id; --get all customers and their items which match each customer whether customer has item or not
+--same as
+select c.name, i.name
+from customers c left outer join items i
+on c.id=i.seller_id; --get all customers and their items which match each customer whether customer has item or not
+
+select name, cost, bids
+from items
+where bids > 190 or cost > 1000;
+--use AND OR keywords in WHERE to acheive the same results-->bids > 190 OR cost > 1000 as union
+--Instructor says UNION good for more complex filtering.  Important the columns must be the same implying the tables must be the same.  UNION removes duplicate entries.
+select name, cost, bids
+from items
+where bids > 190
+union
+select name, cost, bids
+from items
+where cost > 1000;
+--UNION ALL includes duplicate entries
+select name, cost, bids
+from items
+where bids > 190
+union all
+select name, cost, bids
+from items
+where cost > 1000;
+--start line 244 buckymysql.sql 03/28/18
