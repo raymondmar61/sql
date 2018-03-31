@@ -322,3 +322,36 @@ select name, cost, bids
 from items
 where cost > 1000;
 --start line 244 buckymysql.sql 03/28/18
+
+create table fakeitemstable (id integer not null, name varchar(65) not null, cost float not null, seller_id integer not null, bids integer not null);
+insert into fakeitemstable (id, name, cost, seller_id, bids)
+select id, name, cost, seller_id, bids
+from items
+where bids >= 1;
+delete from fakeitemstable;
+select id, name, cost, seller_id, bids
+from items
+where bids >= (select avg(bids)
+  from items);
+update items
+set name = 'frog paste', bids = 66
+where id = 99;  --update row multiple updates
+select *
+from items
+where id = 99;
+
+create table people(id int not null auto_increment, username varchar2(30) not null, password varchar2(20) constraint password_pk primary key);  --auto_increment invalid
+create table people(id int not null auto_increment, username varchar2(30) not null, password varchar2(20) constraint password_pk primary key);
+alter table people add addnewcolumn varchar2(10);  --add new column
+alter table people drop column addnewcolumn;  --delete column
+
+--views are temporary tables
+select *
+from items
+where rownum <=10;
+create view viewexample as (select *
+	from items
+	where rownum <=10)
+select *
+from viewexample
+where cost >= 20;
