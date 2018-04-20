@@ -206,3 +206,124 @@ from (
 group by "order size"
 order by "order size";  --group count the count how many times for each payment method I paid goods and services; e.g. how many payment methods between 1 and 9, between 10 and 50, between 51 and 100, etc.
 --start oraclesql12cintroduction.sql line 292 04/16/18
+
+select to_char(expensedate,'yyyy'), count(amount), sum(amount), max(amount), min(amount), case when min(amount) <0 then '0' else min(amount) end, round(avg(amount),2)
+from expenses
+where amount >=-500 and amount <=500
+group by to_char(expensedate,'yyyy')
+order by to_char(expensedate,'yyyy') desc;  --case when okay string to number, not okay number to string-->case when min(amount) <0 then 'refund' else min(amount) error message appears.
+select to_char(expensedate,'yyyy'), round(avg(amount),2)
+from expenses
+group by to_char(expensedate,'yyyy')
+having avg(amount) > 30
+order by to_char(expensedate,'yyyy') desc;  --having statement is like a where statement.  It's for the group function.  Can't use group function with where clause.  where clause restricts rows.  having clause restricts groups.  order by clause is the last statement.
+
+select *
+from categories c, expenses e
+where c.category=e.category;
+select c.id, c.category as "category table category", e.id, e.category as "expense table category", e.name, e.amount
+from categories c, expenses e
+where c.category=e.category;
+--RM:  skipped Natural Join.  Join two tables with columns with the same name.  select rows from two tables which have equal values in the same name columns
+select e.expensedate, e.name, p.city, p.state
+from expenses e left outer join personplace p
+on e.name=p.personplace;
+--multiple join
+select e.expensedate, e.name, p.city, p.state, c.id, c.category
+from expenses e left outer join personplace p
+on e.name=p.personplace
+join categories c
+on c.category=e.category;
+--same as rearranging on c.category=e.category; to on e.category=c.category;
+select e.expensedate, e.name, p.city, p.state, c.id, c.category
+from expenses e left outer join personplace p
+on e.name=p.personplace
+join categories c
+on e.category=c.category;
+--same as adding left outer join
+select e.expensedate, e.name, p.city, p.state, c.id, c.category
+from expenses e left outer join personplace p
+on e.name=p.personplace
+left outer join categories c
+on e.category=c.category;
+--different adding right outer join got more results because getting all categories c even if I didn't purchase from the categories 2014-2017
+select e.expensedate, e.name, p.city, p.state, c.id, c.category
+from expenses e left outer join personplace p
+on e.name=p.personplace
+right outer join categories c
+on e.category=c.category;
+--start oraclesql12cintroduction.sql line 426 04/18/18
+select e.expensedate, e.name, e.amount, p.city, p.state
+from expenses e join personplace p
+on e.name = p.personplace;
+select e.id, e.name, e.category, c.category, c.id
+from expenses e join categories c
+using (category);  --error message can't refer join columns in select statement
+select e.id, e.name, c.id
+from expenses e join categories c
+using (category);  --okay.  Linking column must be in paranthesis
+--full outer join retrives all the columns or matching rows from both tables and nulls for the unmatched rows of both tables.  The union of left and router outer joins and unmatched rows of both tables are returned.
+select e.expensedate, e.name, e.amount, p.personplace, p.city, p.state
+from expenses e full outer join personplace p
+on e.name = p.personplace;  --p.personplace not purchased 2014-2017 rows are included
+
+select round(avg(amount),2)
+from expenses;  --return 38.83
+select *
+from expenses
+where amount > 38.83;
+select *
+from expenses
+where amount > (
+	select round(avg(amount),2)
+	from expenses);
+select id
+from categories
+where category in ('Gas-Toyota Camry 2005');  --return 103
+select event, name, amount, expensedate
+from expenses
+where category in (
+	select category
+	from categories
+	where id = 103);
+--or
+select event, name, amount, expensedate
+from expenses
+where category in ('Gas-Toyota Camry 2005');
+--RM:  jumping ahead update record
+update expenses
+set name = 'Chevron-Winchester Payne'
+where id = 5992;
+commit;
+select *
+from expenses
+where category in (
+	select category
+	from categories
+	where id = 103)
+and
+pricepergallon > (
+	select round(avg(pricepergallon),2)
+	from expenses);  --multi line single-row subquery
+select category, min(amount)
+from expenses
+where amount > 0
+group by category
+order by category;  --find lowest amount spent per category
+select category, name, amount, id
+from expenses
+where amount in (
+  select min(amount)
+  from expenses
+  where amount > 0
+  group by category)
+order by name;  --find the name for each category spent minimum.  Amounts tied all rows included.  RM:  it doesn't work; e.g. Chevron-Hamilton there is a 25 and a 28 both included in results which must not be included.  12.98 is correct at Chevron-Winchester Payne.  Next SQL query is correct.
+select category, name, amount, id
+from expenses
+where (category, amount) in (
+  select category, min(amount)
+  from expenses
+  where amount > 0
+  group by category)
+order by category, name;  --correct SQL query. 12.98 is correct at Chevron-Winchester Payne.  No Chevron-Hamilton 25 and 28.  It's a multiple column subquery.
+--start oraclesql12cintroduction.sql line 536 04/20/18
