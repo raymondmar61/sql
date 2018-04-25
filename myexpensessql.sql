@@ -1,6 +1,6 @@
 describe categories;
 --same as
-desc categories;
+desc categories;  --database information, describe table, database structure, table information
 
 --add column q'[columndata]'  as "columntitle" populated with columndata in cell titled columntitle
 select q'[columndata]' as "columntitle" , personplace, city
@@ -327,3 +327,53 @@ where (category, amount) in (
   group by category)
 order by category, name;  --correct SQL query. 12.98 is correct at Chevron-Winchester Payne.  No Chevron-Hamilton 25 and 28.  It's a multiple column subquery.
 --start oraclesql12cintroduction.sql line 536 04/20/18
+
+delete from expenses
+where id = 7205;
+commit;
+create table carcopy as
+  select *
+  from car;  --create new table carcopy with data and columns from table car
+insert into carcopy
+select *
+from car
+where carmodel like '%Camry%';  --insert data %Camry% from table car to table carcopy.  Table carcopy must exist.
+drop table carcopy;  --delete a table
+create table expensescopy as
+  select id, name, amount
+  from expenses;  --create new table expensecopy with selected columns from table expenses
+ insert into expensescopy (id, name, amount)
+ 	select id, name, amount
+ 	from expenses
+ 	where amount > 250;
+drop table expensescopy;
+create table expensescopy as
+  select name, amount, tax
+  from expenses;
+update expensescopy
+set (amount, tax) = (select max(amount), avg(tax)
+  from expenses
+  where expenses.name = 'Costco-Santa Clara')
+where expensescopy.name = 'Costco-Santa Clara';  --update columns using subquery.  All Costco-Santa Clara amount is the max 186.7 and tax is the avg 1.633
+select *
+from expensescopy
+where name = 'Costco-Santa Clara';
+delete from expensescopy
+where name = = 'Costco-Santa Clara';  --delete rows, delete records
+drop table expensescopy;
+create table expensesgas as
+	select *
+	from expenses
+	where category like 'Gas%';
+drop table expensesgas;
+create table expensescopydataonly as
+	select *
+	from expenses
+	where 1=2;  --copy table only
+drop table expensescopydataonly;
+create table personplaceca(id, personplace, stnum, stname, stdir, city) as
+	select id, personplace, streetnumber, streetname, streetdirection, city
+	from personplace
+	where state = 'CA';  --copy table with different column names and selected data from source table
+drop table personplaceca;
+--start oraclesql12cintroduction.sql line 727 04/24/18
