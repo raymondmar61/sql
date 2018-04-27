@@ -377,3 +377,32 @@ create table personplaceca(id, personplace, stnum, stname, stdir, city) as
 	where state = 'CA';  --copy table with different column names and selected data from source table
 drop table personplaceca;
 --start oraclesql12cintroduction.sql line 727 04/24/18
+--shift+F4 highlight table popup window appears table object window
+
+--rebellionrider.sql 04/26/18
+--Ctrl + Enter or F9 runs a query
+--Ctrl + F7 automatic formatting
+--Alt + F10 create new SQL worksheet
+select *
+from tab;  --show tables?
+--concat() concatenates two columns only or combine two columns only.  Nested concat().  RM:  confusing.
+select concat(concat(streetnumber,concat(streetdirection,' ')),streetname) as "Street Address"
+from personplace;
+select streetnumber || ' ' || streetdirection || ' ' || streetname as "Street Address"
+from personplace;
+--RM:  better using case or if streetdirection is null don't print streetdirection
+select streetnumber || ' ' || case when streetdirection is null then streetname else streetdirection || ' ' || streetname end as "Street Address"
+from personplace;
+
+--sqlreportinganalystquiz.sql
+select temptable.range as "Total value Range", count(*) as "Number Of Purchases Range"
+from (select case
+  when amount <0 then 'rebate'
+	when amount >=0 and amount <=50 then '0-50'
+	when amount >=51 and amount <=100 then '51-100'
+	when amount >=101 and amount <=150 then '101-150'
+	when amount >=151 and amount <=200 then '151-200'
+	else 'greater 201+' end as range
+	from expenses) temptable
+group by temptable.range
+order by temptable.range;
