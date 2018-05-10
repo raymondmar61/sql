@@ -92,6 +92,7 @@ from items
 group by orderid
 order by orderid;  --return orderid and the count of orders for each itemid
 
+#Google SQL Test Sep 2017 Adecco Contract Position sqlreportinganalystquiz.sql
 #Q2: Table ‘Orders’ has columns order_id and total_value. Find the number of orders whose total value is in each of the following ranges: $0-$50, $51-$100, over $101. Column total_value has been rounded to integers.
 select MyTable2.ranges as "Total Value Range", count(*) as "Number of Orders Range"
 from (
@@ -151,4 +152,135 @@ from
   from table2distinct) t2
   on t1.code=t2.code; #correct.  prints first column t1 A, B, C, null second column t2 A, null, C, D
 --full outer join retrives all the columns or matching rows from both tables and nulls for the unmatched rows of both tables.
-#RM: .pdf folder search SQL
+#05/08/18: .pdf folder search SQL
+
+#oracle - Escaping ampersand (&) character in SQL string - Stack Overflow.pdf
+#https://stackoverflow.com/questions/12961215/escaping-ampersand-character-in-sql-string
+select *
+from personplace
+where personplace in 'Barnes \& Noble-Stevens Creek'; #unsuccessful
+select *
+from personplace
+where personplace in 'Barnes ' ||chr(38)|| ' Noble-Stevens Creek'; #success.  38 is the ascii code for ampersand.
+select *
+from personplace
+where personplace like 'Barnes _ Noble-Stevens Creek'; #success.  Use like and underscore single character.
+#Ampersand is the SQL*Plus marker; but you can , or more usefully in your case turn it off completely, with: set define off
+set define off
+select *
+from personplace
+where personplace in 'Barnes & Noble-Stevens Creek';
+set define on
+
+#Select top 10 percentage | Oracle Community (Top ten percentage)
+#https://community.oracle.com/thread/2539806
+with topten as 
+  (select expensedate, name, amount, ntile(10) over (order by amount) as "top ten amount"
+  from expenses
+  where name not in ('Charles Schwab-Hamilton'))
+select expensedate, name, amount
+from topten
+where "top ten amount" = 10
+order by amount desc;
+select expensedate, name, amount
+from expenses
+where name not in ('Charles Schwab-Hamilton')
+order by amount desc
+fetch first 10 percent rows with ties;  --also works using fetch first 10 percent rows
+
+ with topten as 
+  (select expensedate, name, amount, ntile(100) over (order by amount) as "top 12"
+  from expenses
+  where name not in ('Charles Schwab-Hamilton'))
+select expensedate, name, amount
+from topten
+where "top 12" >= 100 - 12
+order by amount desc; #top 12 not accurate
+with bottomten as 
+  (select expensedate, name, amount, ntile(100) over (order by amount) as "bottom 12"
+  from expenses
+  where amount > 0)
+select expensedate, name, amount
+from bottomten
+where "bottom 12" <= 12
+order by amount asc; #bottom 12 not accurate
+
+with gotanalyticstop12 as
+  (select expensedate, name, amount, row_number() over (order by amount desc) as rownumber, count(*) over() as numberofrows
+  from expenses
+  where name not in ('Charles Schwab-Hamilton'))
+select expensedate, name, amount
+from gotanalyticstop12
+where rownumber/numberofrows <=12/100
+order by amount desc; #more accurate 1490*.12=178.8 or 1,490 rows multiply 12% equals 178.8.  Get 178 rows.
+with gotanalyticstop12 as
+  (select expensedate, name, amount, row_number() over (order by amount desc) as rownumber, count(*) over() as numberofrows
+  from expenses
+  where name not in ('Charles Schwab-Hamilton'))
+select expensedate, name, amount
+from gotanalyticstop12
+where rownumber <= round(numberofrows * 12/100)
+order by amount desc; #more accurate want the extra row since 1490*.12=178.8 or 1,490 rows multiply 12% equals 178.8.  Get 179 rows.
+
+#bonus.  Top ten total expenses summed spent grouped by name
+select name, sum(amount)
+from expenses
+group by name
+order by sum(amount) desc;
+with topten as
+  (select name, sum(amount), ntile(10) over (order by sum(amount)) as toptenamount
+  from expenses
+  group by name)
+select name, sum(amount)
+from topten
+where toptenamount = 10
+group by name
+order by sum(amount) desc; #unsuccessful
+with topten as
+  (select name, sum(amount) as totalsum, ntile(10) over (order by sum(amount)) as toptenamount
+  from expenses
+  group by name)
+select name, totalsum
+from topten
+where toptenamount = 10
+order by totalsum desc; #successful
+with gotanalyticstop12 as
+  (select name, sum(amount) as totalsum, row_number() over (order by sum(amount) desc) as rownumber, count(*) over() as numberofrows
+  from expenses  
+  where name not in ('Charles Schwab-Hamilton')
+  group by name)
+select name, totalsum
+from gotanalyticstop12
+where rownumber <= round(numberofrows * 12/100)
+order by totalsum desc; #top twelve total expenses summed spent grouped by name
+
+#How can I set a custom date time format in Oracle SQL Developer?
+#https://stackoverflow.com/questions/8134493/how-can-i-set-a-custom-date-time-format-in-oracle-sql-developer
+#1. From Oracle SQL Developer's menu go to: Tools > Preferences.
+#2. From the Preferences dialog, select Database > NLS from the left panel.
+#3. From the list of NLS parameters, enter DD-MON-RR HH24:MI:SS into the Date Format field.
+#4. Save and close the dialog, done!
+
+#SQL pre-screen.pdf 07/17/2017
+#1. How many unique users viewed 1 or more ads on Feb 7, 2017?  RM:  How many unique places I shopped on Aug 25, 2014.
+select distinct name
+from expenses
+where expensedate in '08/25/2014'
+order by name;
+#2 Which ad got the most clicks in the month of January?  RM:  Which places I shopped the most in January 2015?  Top places I shopped.
+select name, count(*)
+from expenses
+where expensedate >='01/01/2015' and expensedate <='01/31/2015'
+group by name
+order by count(*) desc
+fetch first 1 percent rows with ties;
+#3. Which ad has the highest click through rate of all time?  RM:  Which places I shopped the most in a given month and year?  Top places I shopped.
+select to_char(expensedate,'Month') || ' ' || to_char(expensedate,'yyyy') as monthyear, count(*)
+from expenses
+group by to_char(expensedate,'Month') || ' ' || to_char(expensedate,'yyyy')
+order by count(*) desc
+fetch first 1 percent rows with ties;
+#4. Generate a list of all user_ids. Label each user as either "viewer only" (for users who have viewed ads but never clicked an ad) or "clicker" (for users who have ever clicked on an ad). Result will be a 2 column table.  RM:  skipped.  If or case statement counting userid greater than 0 clicker or 0 viewer only.
+#RM:  start SUM of grouped COUNT in SQL Query - Stack Overflow.pdf .pdf file 05/10/2018 .pdf sql search sorted date descending.
+
+#remember look at sql in .docx word files
