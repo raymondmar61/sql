@@ -280,7 +280,24 @@ from expenses
 group by to_char(expensedate,'Month') || ' ' || to_char(expensedate,'yyyy')
 order by count(*) desc
 fetch first 1 percent rows with ties;
-#4. Generate a list of all user_ids. Label each user as either "viewer only" (for users who have viewed ads but never clicked an ad) or "clicker" (for users who have ever clicked on an ad). Result will be a 2 column table.  RM:  skipped.  If or case statement counting userid greater than 0 clicker or 0 viewer only.
+#4. Generate a list of all user_ids. Label each user as either "viewer only" (for users who have viewed ads but never clicked an ad) or "clicker" (for users who have ever clicked on an ad). Result will be a 2 column table (RM:  added third column for tutorial reasons).  #RM:  two tables in myexpenses database 05/11/2018.
+select v.user_id as "v", c.user_id as "c"
+from
+  (select distinct user_id
+  from views) v
+  full outer join
+  (select distinct user_id
+  from clicks) c
+  on v.user_id=c.user_id;  #get distinct user_id from views table and distinct user_id from clicks table
+select v.user_id as "v", c.user_id as "c", (case
+  when c.user_id is null then 'viewer' else 'clicker' end) as "viewer or clicker"
+from
+  (select distinct user_id
+  from views) v
+  full outer join
+  (select distinct user_id
+  from clicks) c
+  on v.user_id=c.user_id; #if c.user_id is null, print viewer in viewer or clicker column
 #RM:  start SUM of grouped COUNT in SQL Query - Stack Overflow.pdf .pdf file 05/10/2018 .pdf sql search sorted date descending.
 
 #remember look at sql in .docx word files
