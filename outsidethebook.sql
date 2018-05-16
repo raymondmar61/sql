@@ -300,4 +300,123 @@ from
   on v.user_id=c.user_id; #if c.user_id is null, print viewer in viewer or clicker column
 #RM:  start SUM of grouped COUNT in SQL Query - Stack Overflow.pdf .pdf file 05/10/2018 .pdf sql search sorted date descending.
 
-#remember look at sql in .docx word files
+#SUM of grouped COUNT in SQL Query Stack Overflow
+#http://stackoverflow.com/questions/12927268/sumofgroupedcountinsqlquery
+#RM:  Add a row at the bottom of the count summing the counts or adding the numbers or add numbers
+select name, count(name)
+from expenses
+group by name;
+select name, count(name)
+from expenses
+group by name
+union all
+select 'sum' name, count(name)
+from expenses;  #bottom row named 'sum' adds the count(name) by name
+select name, count(name) as count, sum(count(name)) over() as "total count"
+from expenses
+group by name;  #adds the count(*) displayed each row under column "total count"
+select sum(count)
+  from (select name, count(name) as count
+  from expenses
+  group by Name); #prints the sum of count(name) only which is 1492
+#start look at sql in .docx word files 05/15/2018
+
+#Google SQL Prescreen Questions.docx 02/19/2018
+#1 Given a Table with Customer ID, Country & Revenue, can you write a SQL query to get the Top 10 Customers per country in terms of Revenue?
+with topten as
+  (select country, customerid, sum(revenue) as totalsum, ntile(10) over (order by sum(revenue)) as toptenamount
+  from table
+  group by country, customerid)
+select country, customerid, totalsum
+from topten
+where toptenamount = 10
+order by totalsum desc;
+#RM:  Given a table with place, city, and amount . . . .  Bonus create table, insert rows, and subquery join.  I can't multiple group top 10.
+create table placecityamount (place varchar2(60), city varchar2(20), amount float);
+insert into placecityamount (place, city, amount)
+select p.personplace, p.city, e.amount
+from expenses e, personplace p
+where p.personplace=e.name
+and city in (select p.city
+  from expenses e, personplace p
+  where p.personplace=e.name
+  group by p.city
+  having count(distinct e.name) >= 20); #insert 1051 rows.  Insert rows in placecityamount table from expenses e and personplace p table.  The cities are from the subquery getting the cities where I shopped at 20 or more places.
+select city, place, sum(amount)
+from placecityamount
+group by city, place
+order by city, sum(amount) desc;
+select city, place, sum(amount), ntile (10) over (order by sum(amount))
+from placecityamount
+group by city, place
+order by city, sum(amount) desc; #includes the nth tile position for each city and place
+with topten as
+  (select city, place, sum(amount) as totalsum, ntile(10) over (order by sum(amount)) as toptenamount
+  from placecityamount
+  group by city, place)
+select city, place, toptenamount, totalsum
+from topten
+where toptenamount = 10
+order by city, totalsum desc; #technically it's correct.  Return top ten sum amount for each city and place; e.g. one Santa Clara which is Costco-Santa Clara because the total sum is 10% of all Santa Clara and places shopped.
+select p.city, p.personplace, sum(e.amount)
+from expenses e, personplace p
+where p.personplace=e.name
+and city in (select city
+  from personplace
+  group by city
+  having count(city) >= 20)
+group by p.city, p.personplace
+order by p.city, sum(e.amount) desc; #incorrect.  The subquery to find cities where I shopped 20 times or greater is incorrect.  The subquery is actually finding cities in personplace table where there are 20 or more cities.  The subquery is not finding cities in expenses table where I shopped 20 times or greater.
+select p.city, p.personplace, sum(e.amount)
+from expenses e, personplace p
+where p.personplace=e.name
+and city in (select p.city
+  from expenses e, personplace p
+  where p.personplace=e.name
+  group by p.city
+  having count(distinct e.name) >= 20)
+group by p.city, p.personplace
+order by p.city, sum(e.amount) desc; #correct.  The subqery is searching for cities where I shopped in expenses table 20 times or greater by counting the places name no duplicate places.  The cities are from personplace table.  The subquery returns the cities for the primary query.
+#Google SQL Prescreen Questions.docx #2 05/15/2018
+
+#2 Given 2 tables, Table1 with Customer_ID, Product_ID, Date, Country & Revenue & Table2 with Product_ID & Product_Name can you write a SQL query to get the Total Revenue by Product_Name and Country?
+select t2.product_name as "Product Name", t1.country as "Country", sum(t1.revenue) as "Total Revenue"
+from table1 t1 left outer join table2 t2
+on t1.product_id = t2.product_id
+group by t2.product_name, t1.country;
+
+#3 Given a Table with Customer ID, Country, Year & Revenue, can you write a SQL query to get the Total Revenue by Country for the year 2017?
+select country, sum(revenue)
+from sales
+where year = 2017
+group by country;
+
+#4 Is there anything wrong with this query? If yes, what would you suggest?
+select customer_id, year(date) as year_date, sum(revenue) as revenue_sum
+from customer
+where year(date) in (2015);
+#yes.  My answer is below
+select customer_id, extract(year from date) as year_date, sum(revenue) as revenue_sum
+from customer
+where extract(year from date) as year_date = 2015
+group by 1, 2; #partially correct.  RM:  somehow group by 1, 2 doesn't work in Oracle
+#RM:  correct answer using my expenses table
+select name, sum(amount) as "Total Spent"
+from expenses
+where extract(year from expensedate) = 2015
+group by name
+order by sum(amount) desc;
+
+#Google Screening Questions SQL.docx 09/26/2016
+#5.  There is a database with three fields: user_id, timestamp and a transaction_number. Write SQL to show the user_ids that had transactions in December, but not in January.
+select user_id, count(user_id)
+from mydatabase
+where timestamp >='12/1/2015' and timestamp <='12/31/2015'
+group by user_id
+order by count(user_id) desc;
+#RM:  using my expenses table
+select name, count(name)
+from expenses
+where expensedate >='12/1/2017' and expensedate<='12/31/2017'
+group by name
+order by count(name) desc;
