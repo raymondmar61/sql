@@ -105,3 +105,24 @@ drop table meat_poultry_egg_inspect_backup;  --delete table
 
 --RM start page 149 06/13/18
 #You can check your changes before finalizing them and cancel the change.  Wrap the SQl statements within a transaction block which is a group of statements you define using the following keywords at the beginning and end of the query:  start transaction, commit, rollback.
+#We can apply the transaction block technique to review changes a query makes and then decide whether to keep or discard them.  e.g. we remove the comma for company AGRO Merchantss Oakland, LLC
+start transaction;
+update meat_poultry_egg_inspect
+set company = 'AGRO Merchantss Oakland LLC'
+where company = 'AGRO Merchants Oakland, LLC';
+select company
+from meat_poultry_egg_inspect
+where company like 'AGRO%'
+order by company;
+rollback;
+update meat_poultry_egg_inspect
+set company = 'AGRO Merchants Oakland LLC'
+where company = 'AGRO Merchants Oakland, LLC';
+commit;
+
+#Adding a column to a table and filling it with values can quickly inflate the table's size.  Instead of adding a column and filling it with values, we can save disk space by copying the entire table and adding a populated column during the operation.  Then we rename the tables so the copy replaces the original, and the original becomes a backup.
+create table meat_poultry_egg_inspect_addcolumn as
+	select *, '2018-02-07'::date as reviewed_date_addedcolumn
+	from meat_poultry_egg_inspect;  --create new table meat_poultry_egg_inspect_backup_addcolumn with meat_poultry_egg_inspect data and add populated column reviewed_date_addedcolumn 2018-02-07.  It's like copying a table to a new table with new column.  Copy table.
+alter table meat_poultry_egg_inspect rename to meat_poultry_egg_inspect_backup2;
+alter table meat_poultry_egg_inspect_addcolumn rename to meat_poultry_egg_inspect;  --swap table names using the two alter table queries

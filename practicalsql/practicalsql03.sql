@@ -22,3 +22,6 @@ create table dateandtimes (timestamp_dateandtime timestamp timestamp_dateandtime
 /* The CAST() function transform a value fro its stored data type to another type; e.g. retrieve a number as a character to you can combine it with text or treat a date stored as characters as an actual date type. */
 select numeric_column, cast(numeric_column as integer), cast(numeric_column as varchar(6))
 from number_data_types;
+
+select double_column, round(double_column::integer,2) as "integer.00", round(double_column::numeric,2) as "two decimal places"
+from number_data_types;
