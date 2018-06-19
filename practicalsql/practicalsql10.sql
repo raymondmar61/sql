@@ -22,3 +22,29 @@ from acs_2011_2015_stats;  --returned .465.  46.5% of the variation in the media
 --same as
 select round(regr_r2(pct_bachelors_higher, median_hh_income)::numeric,3) as r_squared
 from acs_2011_2015_stats;  --returned .465
+
+#rank() and dense_rank().  rank() includes a gap in ties 1, 2, 3, 3, 5, 6.  dense_rank() shares rank number in ties 1, 2, 3, 3, 4, 5.
+create table widget_companies (id bigserial, company varchar(30), widget_output integer not null);
+insert into widget_companies (company, widget_output)
+values ('Morse Widgets',125000), ('Morse Widgets', 125000), ('Springfield Widget Masters', 143000), ('Best Widgets', 196000), ('Acme Inc.', 133000), ('District Widget Inc.', 201000), ('Clarke Amalgamated', 620000), ('Stavesacre Industries', 244000), ('Bowers Widget Emporium', 201000);
+select company, widget_output, rank() over (order by widget_output desc), dense_rank() over (order by widget_output desc)
+from widget_companies;
+#rank() and dense_rank() subgroups.  Use sql clause partition by
+create table store_sales (store varchar(30), category varchar(30) not null, unit_sales bigint not null, constraint store_category_key primary key (store, category));
+insert into store_sales (store, category, unit_sales)
+values ('Broders', 'Cereal', 1104), ('Wallace', 'Ice Cream', 1863), ('Broders', 'Ice Cream', 2517), ('Cramers', 'Ice Cream', 2112), ('Broders', 'Beer', 641), ('Cramers', 'Cereal', 1003), ('Cramers', 'Beer', 640), ('Wallace', 'Cereal', 980), ('Wallace', 'Beer', 988);
+select category, store, unit_sales, rank() over (partition by category order by unit_sales desc)
+from store_sales;  --category is primary category.  Rank unit_sales for each category.
+
+#analyst often calculate a rate per 1,000.  e.g. 80 thefts in a population of 15,000.  (80/15000)*1000=5.3 per thousand residents.
+create table fbi_crime_data_2015 (st varchar(20), city varchar(50), population integer, violent_crime integer, property_crime integer, burglary integer, larceny_theft integer, motor_vehicle_theft integer, constraint	st_city_key primary key (st, city));
+copy fbi_crime_data_2015
+from 'i:\program files\postgresql\fbi_crime_data_2015.csv'
+with (format csv, header, delimiter ',');
+select *
+from fbi_crime_data_2015
+order by population	 desc;
+select city, st, population, property_crime, round((property_crime::numeric / population)*1000,1) as propertycrimeper1000
+from fbi_crime_data_2015
+where population >=50000
+order by propertycrimeper1000 desc;
