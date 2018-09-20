@@ -96,3 +96,125 @@ and a.leaserate is not null
 and a.leasetype in ('FS','NNN')
 and b.city in ('Palo Alto','Menlo Park')
 order by availableid;  --returns 220 rows.  nested joins or multiple joins
+select b.city, s.subtypename, to_char(round(avg(c.salepricesf),2),999.99)
+from building b inner join comparables c 
+on (b.buildingid = c.buildingid)
+inner join subtypes s
+on (b.subtype = s.subtypenumber)
+where c.leasesoldsf between 10000 and 30000 and salepricesf > 0
+group by b.city, s.subtypename
+order by 1 asc, 2 asc, 3 desc;
+
+select concat (startrate, leasetype), concat (effectiverate, leasetype)
+from comparables
+where startrate is not null and effectiverate is not null;  --The concatenation operator does not permit spaces.  Two fields only.  Returns as a string
+select tenantbuyer
+from comparables
+where tenantbuyer like '%west%';  --returns west only 7 rows.  No West or no WEST.
+select tenantbuyer
+from comparables
+where tenantbuyer like '%west%' or tenantbuyer like '%West%';  --returns west and West 66 records.  No WEST
+select tenantbuyer
+from comparables
+where lower(tenantbuyer) like '%west%';  --returns all wests 66 rows
+select tenantbuyer, instr(tenantbuyer,'west')  --instring returns starting position
+from comparables
+where tenantbuyer like '%west%';  --returns west only 7 rows.  No West or no WEST.
+select tenantbuyer, instr(lower(tenantbuyer),'west')  --instring returns starting position
+from comparables
+where lower(tenantbuyer) like '%west%';  --returns all wests 66 rows
+select tenantbuyer, instr(tenantbuyer,'e',1,2) as "start at first e find second e"
+from comparables
+where leasesoldsf >= 100000 and tenantbuyer is not null and comparabletype = 'L';
+select tenantbuyer, instr(tenantbuyer,'e',-1,2) as "start at last e find second e"
+from comparables
+where leasesoldsf >= 100000 and tenantbuyer is not null and comparabletype = 'L';
+select tenantbuyer, instr(lower(tenantbuyer),'e',-1,2) as "start at last e or E find second e or E"
+from comparables
+where leasesoldsf >= 100000 and tenantbuyer is not null and comparabletype = 'L';
+select tenantbuyer, length(tenantbuyer) as "number of characters"
+from comparables
+where leasesoldsf >= 100000 and tenantbuyer is not null and comparabletype = 'L';
+--LTRIM(x [, trim_string]) and RTRIM(x [, trim_string]) removes characters from the left or right of x. You can provide an optional trim_string, which specifies the characters to remove. If no trim_string is provided, spaces are removed by default.
+SELECT LTRIM(' Hello Kathy Lindsey!')
+FROM dual;  --returns Hello Kathy Lindsey!
+SELECT RTRIM('Hi Doreen Oakley!abcabc', 'abc')
+FROM dual;  --returns Hi Doreen Oakley!
+--TRIM([trim_char FROM] x) removes characters from the left and right of x. You can provide an optional trim_char, which specifies the characters to remove. If no trim_ char is provided, spaces are removed by default.
+SELECT TRIM('0' FROM '000Hey Steve Button!00000')
+FROM dual;  --returns Hey Steve Button!
+select buildingid, nvl(projectname,'NO NAME') as "projectname null NO NAME", city, totalsf
+from building
+where totalsf >=100000;
+select buildingid, nvl2(projectname,'YES NAME','NO NAME') as "projectname YES NAME NO NAME", city, totalsf
+from building
+where totalsf >=100000;  --nvl2 if projectname is not null YES NAME. if projectname is null NO NAME.
+select buildingid, city, replace(city,'Mt. View','Mtn. View') as "replace Mt. View w/ Mtn. View"
+from building
+where totalsf >=100000 and city in ('Menlo Park','Mt. View');
+select owner, substr(owner,1,10) as "first 10 characters"
+from building
+where owner is not null and city in ('San Jose');
+select owner, substr(owner,5,10) as "10 characters at 5th position"
+from building
+where owner is not null and city in ('San Jose');
+select owner, substr(owner,instr(owner,' ')+1) as "all characters after 1st space"
+from building
+where owner is not null and city in ('San Jose');
+select owner, substr(owner,instr(owner,' ')+1,10) as "10 characters after 1st space"
+from building
+where owner is not null and city in ('San Jose');
+select owner, substr(owner,instr(owner,' ')+1,instr(owner,' ',1,2)-instr(owner,' ',1,1)) as "2nd word"
+from building
+where owner is not null and city in ('San Jose');
+select owner, substr(owner,-5,3) as "start 5th from end, 3 forward"
+from building
+where owner is not null and city in ('San Jose');
+select comparableid, startrate, round(startrate) as "round", round(startrate,1) as "round 1 decimal", ceil(startrate) as "go up whole", floor(startrate) as "go down whole"
+from comparables
+where comparabletype in ('L') and startrate > 0;
+select comparableid, salepricesf, trunc(salepricesf) as "whole number only", trunc(salepricesf,1) as "one decimal only no round"
+from comparables
+where salepricesf > 0;
+select abs(10), abs(-10), greatest(3,4,1) as "4", least(3,4,1) as "1", power(2,3) as "8"
+from dual;
+select to_char(12345.67) as "12345.67", to_char(12345.67,'99,999.99') as "12,345.67", to_char(8712345.675, '99,999,999.99') as "8,712,345.68"
+from dual;  --to_char(x [, format]) converts x to a string convert number to string
+select to_number('970.13') as "970.13", to_number('970.13')+25.5 as "995.63", to_number('-$12,345.67', '$99,999.99') as "-12345.67 no comma", to_number('12,345.67','99999.99') as "12345.67"
+from dual;  --to_number(x [, format]) converts x to a number convert string to number
+
+--Regular expressions and their associated Oracle database functions allow you to search for a pattern of characters in a string. For example, let’s say you want to obtain the years 1965 through 1968 from the following list of years.  Regular expression is ^196[5-8]$.  ^ matches the beginning position of a string.  [5-8] matches characters between 5 and 8.  $ matches the end position of a string.
+--RM:  There are many regular expressions formats starting on page 119.
+SELECT customer_id, first_name, last_name, dob
+FROM customers
+WHERE REGEXP_LIKE(TO_CHAR(dob, 'YYYY'), '^196[5-8]$');  --retrieves customers whose date of birth is between 1965 and 1968
+SELECT customer_id, first_name, last_name, dob
+FROM customers
+WHERE REGEXP_LIKE(first_name, '^j', 'i');  --retrieves customers whose first name starts with J or j.  ^j and the match option is i (i indicates case-insensitive matching)
+
+select avg(salepricesf), round(avg(salepricesf),2), count(salepricesf), max(salepricesf), min(salepricesf), sum(saleprice)
+from comparables
+where salepricesf > 0;  --nulls are ignored, no need for salepricesf > 0
+select b.city, to_char(round(avg(c.salepricesf),2),999.99)
+from comparables c inner join building b
+on c.buildingid = b.buildingid
+where b.type = 'O' and c.leasesoldsf between 10000 and 30000
+group by city
+order by 2 desc;   --calculate average sale price per sf grouped by city office buildings between 10,000 and 30,000 SF inclusive
+select b.city, s.subtypename, to_char(round(avg(c.salepricesf),2),999.99)
+from building b inner join comparables c 
+on (b.buildingid = c.buildingid)
+inner join subtypes s
+on (b.subtype = s.subtypenumber)
+where c.leasesoldsf between 10000 and 30000 and salepricesf > 0
+group by b.city, s.subtypename
+order by 1 asc, 2 asc, 3 desc;  --calculate average sale price per sf grouped by city and by buildings between 10,000 and 30,000 SF inclusive
+select b.city, s.subtypename, to_char(round(avg(c.salepricesf),2),999.99)
+from building b inner join comparables c 
+on (b.buildingid = c.buildingid)
+inner join subtypes s
+on (b.subtype = s.subtypenumber)
+where c.leasesoldsf between 10000 and 30000 and salepricesf>0
+group by b.city, s.subtypename
+having avg(c.salepricesf) between 150 and 250
+order by 1 asc, 2 asc, 3 desc;  --You can use the WHERE, GROUP BY, and HAVING clauses together in the same query. WHERE clause filters the rows, GROUP BY clause groups the remaining rows into blocks, and HAVING clause filters the row groups.  HAVING clause filters groups of rows placed after the GROUP BY clause.
