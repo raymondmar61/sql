@@ -218,3 +218,44 @@ where c.leasesoldsf between 10000 and 30000 and salepricesf>0
 group by b.city, s.subtypename
 having avg(c.salepricesf) between 150 and 250
 order by 1 asc, 2 asc, 3 desc;  --You can use the WHERE, GROUP BY, and HAVING clauses together in the same query. WHERE clause filters the rows, GROUP BY clause groups the remaining rows into blocks, and HAVING clause filters the row groups.  HAVING clause filters groups of rows placed after the GROUP BY clause.
+
+select comparableid, datesigned, to_char(datesigned, 'Month DD, YYYY') as "June      14, 2005"
+from comparables
+where comparabletype in ('L');
+select comparableid, datesigned, add_months(datesigned,4) as "add 4 months", add_months(datesigned,-3) as "subtract 3 months"
+from comparables
+where comparabletype in ('L');
+select comparableid, datesigned, last_day(datesigned) as "last day in month datesigned", last_day(datesigned)+1 as "first day next datesigned"
+from comparables
+where comparabletype in ('L');
+select comparableid, datesigned, dateoccupied, months_between(dateoccupied, datesigned) as "months between occupied signed", round(months_between(dateoccupied, datesigned),2) as "round up months 2 decimal"
+from comparables
+where comparabletype in ('L');
+select comparableid, datesigned, trunc(datesigned,'YYYY') as "first day of year datesigned", to_char(datesigned,'YYYY') as "year datesigned"
+from comparables
+where comparabletype in ('L');
+
+select projectname
+from building
+where buildingid = 40247; --return The Triangle Building
+select *
+from comparables
+where comparabletype in ('L')
+and buildingid =
+  (select buildingid
+  from building
+  where projectname = 'The Triangle Building');  --return comparables, return 40247
+select round(avg(startrate),2)
+from comparables
+where comparabletype in ('L')
+and buildingid = 40247;  --return 1.99
+select *
+from comparables
+where comparabletype in ('L')
+and leasesoldsf between 1000 and 3000
+and startrate >=
+  (select round(avg(startrate),2)
+  from comparables
+  where comparabletype in ('L')
+  and buildingid = 40247);  --return comparables, return 1.99
+--start line 488 chapter 6 subqueries 09/24/18
