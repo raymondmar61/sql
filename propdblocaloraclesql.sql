@@ -259,3 +259,70 @@ and startrate >=
   where comparabletype in ('L')
   and buildingid = 40247);  --return comparables, return 1.99
 --start line 488 chapter 6 subqueries 09/24/18
+select round(avg(startrate),2)
+from comparables
+where comparabletype = 'L'
+and startrate > 0;  --returns 1.32
+select b.city, round(avg(c.startrate),2) as "Average Start Rate"
+from comparables c left join building b
+on c.buildingid = b.buildingid
+where c.comparabletype = 'L'
+and c.startrate > 0
+group by b.city
+order by b.city;  --returns Average Start Rate grouped by b.city
+select b.city, round(avg(c.startrate),2) as "Average Start Rate"
+from comparables c left join building b
+on c.buildingid = b.buildingid
+where c.comparabletype = 'L'
+and c.startrate > 0
+group by b.city
+having round(avg(c.startrate),2) >
+  (select round(avg(startrate),2)
+   from comparables
+   where comparabletype = 'L'
+  and startrate > 0)
+order by b.city;  --returns Average Start Rate grouped by b.city greater than 1.32
+select round(avg(startrate),2)
+from comparables c inner join building b
+on (c.buildingid = b.buildingid)
+inner join subtypes s
+on (b.subtype = s.subtypenumber)
+where c.comparabletype = 'L'
+and c.startrate > 0
+and s.subtypename = 'Office';  --return 1.85
+select b.city, s.subtypename, round(avg(c.startrate),2) as "Average Start Rate"
+from comparables c left join building b
+on (c.buildingid = b.buildingid)
+inner join subtypes s
+on (b.subtype = s.subtypenumber)
+where c.comparabletype = 'L'
+and c.startrate > 0
+and s.subtypename = 'Office'
+group by b.city, s.subtypename
+having round(avg(c.startrate),2) >
+  (select round(avg(startrate),2)
+   from comparables
+   where comparabletype = 'L'
+  and startrate > 0
+  and s.subtypename = 'Office')
+order by b.city;  --return Office comparables grouped by City
+select b.city, s.subtypename, round(avg(c.startrate),2) as "Average Start Rate"
+from comparables c left join building b
+on (c.buildingid = b.buildingid)
+inner join subtypes s
+on (b.subtype = s.subtypenumber)
+where c.comparabletype = 'L'
+and c.startrate > 0
+and s.subtypename = 'Office'
+group by b.city, s.subtypename
+having round(avg(c.startrate),2) >
+  (select round(avg(startrate),2)
+  from comparables c left join building b
+  on (c.buildingid = b.buildingid)
+  inner join subtypes s
+  on (b.subtype = s.subtypenumber)
+  where c.comparabletype = 'L'
+  and c.startrate > 0
+  and s.subtypename = 'Office')
+order by b.city;  --return Office comparables grouped by City greater than 1.85
+--start line 522 chapter 6 subqueries 09/26/18
