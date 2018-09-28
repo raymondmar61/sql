@@ -1,6 +1,7 @@
 --Oracel SQL oracledatabase12csql.sql Oracle Database 12c SQL by Jason Price
 --Tables:  availablelease, availablesale, building, comparables, streetdirection, subtypes.  Comps 2004 and later.
 --Ctrl+Shift+V opens Paste window or Edit-->Extended Paste.  It's like Excel Clipboard.
+--Ctrl+Up arrow or Ctrl+Down arrow replaces contents of SQL with lines of code from SQL History.  Step up or step down throughout SQL History.
 
 select *
 from tab;  --show table names?
