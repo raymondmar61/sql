@@ -3,6 +3,19 @@
 --Ctrl+Shift+V opens Paste window or Edit-->Extended Paste.  It's like Excel Clipboard.
 --Ctrl+Up arrow or Ctrl+Down arrow replaces contents of SQL with lines of code from SQL History.  Step up or step down throughout SQL History.
 
+--template building type
+select b.buildingid, s.subtypename
+from subtypes s join building b
+on s.typechar = b.type
+and s.subtypenumber = b.subtype;
+--template building type comparables
+select c.comparableid, s.subtypename
+from subtypes s join building b
+on s.typechar = b.type
+and s.subtypenumber = b.subtype
+join comparables c
+on c.buildingid = b.buildingid;
+
 select *
 from tab;  --show table names?
 select *
@@ -327,3 +340,103 @@ having round(avg(c.startrate),2) >
   and s.subtypename = 'Office')
 order by b.city;  --return Office comparables grouped by City greater than 1.85
 --start line 522 chapter 6 subqueries 09/26/18
+--A multiple-row subquery returns one or more rows to an outer SQL statement. To process the multiple rows returned by a subquery, an outer query can use the IN, ANY, or ALL operators.
+select tenantbuyer
+from comparables
+where comparabletype = 'L'
+and tenantbuyer like 'Apple%';  --return Apple
+select tenantbuyer, comparableid
+from comparables
+where comparabletype = 'L'
+and tenantbuyer like 'Apple%';  --return Apple
+select tenantbuyer, comparableid
+from comparables
+where tenantbuyer in
+  (select tenantbuyer
+  from comparables
+  where comparabletype = 'L'
+  and tenantbuyer like 'Apple%');  --return Apple
+select buildingid
+from building
+where owner like ('Equity Office%');  --buildingids owned by Equity Office
+select buildingid, tenantbuyer
+from comparables
+where comparabletype = 'S'
+and buildingid not in
+  (select buildingid
+  from building
+  where owner like ('Equity Office%'));  --return sale comparables buildingids not owned by Equity Office in building table
+select startrate
+from comparables
+where startrate >= 5;
+select availableid, leaserate
+from availablelease
+where leaserate >= 5;
+select availableid, leaserate
+from availablelease
+where leaserate >= any
+  (select startrate
+  from comparables
+  where startrate >= 5);  --The ANY operator compares one value with any value in a list. You must place an =, <>, <, >, <=, or >= operator before ANY in your query.
+  select startrate
+from comparables
+where startrate >= 5;
+select availableid, leaserate
+from availablelease
+where leaserate >= 5;
+select availableid, leaserate
+from availablelease
+where leaserate >= all
+  (select startrate
+  from comparables
+  where startrate >= 5);  --The ALL operator compares one value with all values in a list. You must place an =, <>, <, >, <=, or >= operator before ALL in your query.  RM:  returned no rows because none of the leaserate in availablelease table is greater than or equal to all the startrate in comparables table.
+--16045720 5.75 original 40.25 temporary
+update availablelease
+set leaserate = 40.25
+where availableid = 16045720;
+select availableid, leaserate
+from availablelease
+where leaserate >= all
+  (select startrate
+  from comparables
+  where startrate >= 5);  --The ALL operator compares one value with all values in a list. You must place an =, <>, <, >, <=, or >= operator before ALL in your query.  RM:  returned one row because availableid 16045720 lease rate is 40.25.  40.25 is greater than or equal to all the startrate in comparables table.
+--16045720 40.25 temporary back to 5.75 original
+update availablelease
+set leaserate = 5.75
+where availableid = 16045720;
+--A subquery can return multiple columns.
+select s.subtypename as "Bldg Type", min(c.startrate) as "Low Start Rate Bldg Type >.5"
+from subtypes s join building b
+on s.typechar = b.type
+and s.subtypenumber = b.subtype
+join comparables c
+on c.buildingid = b.buildingid
+where comparabletype = 'L'
+and c.startrate > .50
+group by s.subtypename;  --lowest starting rate above $.50 grouped by building
+select s.subtypename as "Bldg Type", c.tenantbuyer as "Tenant", c.startrate as "Start Rate"
+from subtypes s join building b
+on s.typechar = b.type
+and s.subtypenumber = b.subtype
+join comparables c
+on c.buildingid = b.buildingid
+where comparabletype = 'L'
+and c.startrate > .50;  --tenant starting rate and its building type
+select s.subtypename as "Bldg Type", c.tenantbuyer as "Tenant", c.startrate as "Start Rate"
+from subtypes s join building b
+on s.typechar = b.type
+and s.subtypenumber = b.subtype
+join comparables c
+on c.buildingid = b.buildingid
+where (s.subtypename, c.startrate) in
+  (select s.subtypename as "Bldg Type", min(c.startrate) as "Low Start Rate Bldg Type >.5"
+  from subtypes s join building b
+  on s.typechar = b.type
+  and s.subtypenumber = b.subtype
+  join comparables c
+  on c.buildingid = b.buildingid
+  where comparabletype = 'L'
+  and c.startrate > .50
+  group by s.subtypename)
+order by s.subtypename;  --lowest starting rate above $.50 grouped by building with the tenant.  Ties are included.
+--start line 576 chapter 6 subqueries 10/03/18
