@@ -440,3 +440,110 @@ where (s.subtypename, c.startrate) in
   group by s.subtypename)
 order by s.subtypename;  --lowest starting rate above $.50 grouped by building with the tenant.  Ties are included.
 --start line 576 chapter 6 subqueries 10/03/18
+--start line 703 chapter 7 Advanced Queries 10/04/18
+select buildingid
+from availablelease;
+select buildingid
+from availablesale;
+select buildingid
+from availablelease
+union all
+select buildingid
+from availablesale;  --return 4,961 records.  UNION ALL Returns all the rows retrieved by the queries, including duplicate rows
+select buildingid
+from availablelease
+union
+select buildingid
+from availablesale;  --return 3,084 records.  UNION Returns all non-duplicate rows retrieved by the queries.  RM:  availablesale doesn't have availableid field
+select buildingid
+from availablesale;  --return 686 records.  INTERSECT Returns rows that are retrieved by both queries
+select buildingid
+from availablelease
+minus
+select buildingid
+from availablesale;  --return 1,979 records.  MINUS Returns the remaining rows when the rows retrieved by the second query are subtracted from the rows retrieved by the first query
+select buildingid
+from availablesale
+minus
+select buildingid
+from availablelease;  --return 419 records.  MINUS Returns the remaining rows when the rows retrieved by the second query are subtracted from the rows retrieved by the first query
+
+--The CASE expression performs if then else or if else or if-then-else logic.  Simple CASE expressions, which use expressions to determine the returned value.  Searched CASE expressions, which use conditions to determine the returned value.
+select buildingid
+from availablelease
+intersectselect buildingid, case concat(type, subtype) when 'I17' then 'R&'||'D' when 'O5' then 'OFC' when 'L30' then 'LAND' when 'O4' then 'OFC/R&'||'D' when 'I18' then 'R&'||'D/'||'OFC' when 'I31' then 'WHS' when 'I19' then 'IND' when 'R20' then 'RETAIL' else 'Other' end as "Bldg Type"
+from building
+where city = 'San Jose';
+--start line 757 chapter 7 Advanced Queries 10/08/18
+select a.availableid, a.leaserate, case when a.leaserate < 1 then 'Cheap' when a.leaserate < 2 then 'Moderate' when a.leaserate < 3 then 'Expensive' else 'Out Of Range' end as "Lease Rating"
+from availablelease a left outer join building b
+on a.buildingid = b.buildingid
+where b.city = 'Palo Alto'
+and a.leaserate > 0
+and b.type = 'O'
+and b.subtype in (4,5);
+select b.city, case concat(b.type, b.subtype) when 'I17' then 'R&'||'D' when 'O5' then 'OFC' when 'L30' then 'LAND' when 'O4' then 'OFC/R&'||'D' when 'I18' then 'R&'||'D/'||'OFC' when 'I31' then 'WHS' when 'I19' then 'IND' when 'R20' then 'RETAIL' else 'Other' end as "Bldg Type", round(avg(a.leaserate),2)
+from availablelease a left outer join building b
+on a.buildingid = b.buildingid
+group by b.city, concat(b.type, b.subtype)
+order by city, concat(b.type, b.subtype);
+select b.city, case concat(b.type, b.subtype) when 'I17' then 'R&'||'D' when 'O5' then 'OFC' when 'L30' then 'LAND' when 'O4' then 'OFC/R&'||'D' when 'I18' then 'R&'||'D/'||'OFC' when 'I31' then 'WHS' when 'I19' then 'IND' when 'R20' then 'RETAIL' else 'Other' end as "Bldg Type", round(avg(a.leaserate),2) as "Avg Lease Rate"
+from availablelease a left outer join building b
+on a.buildingid = b.buildingid
+group by rollup(b.city, concat(b.type, b.subtype))
+order by city, concat(b.type, b.subtype);  --ROLLUP returns a row with the avg lease rate for each city and building type and the avg for the each entire city and a grand average for all cities at the end of the result set.  In this case, "Other" denoted at the end of each city and the last row is the averages.
+select b.city, case concat(b.type, b.subtype) when 'I17' then 'R&'||'D' when 'O5' then 'OFC' when 'L30' then 'LAND' when 'O4' then 'OFC/R&'||'D' when 'I18' then 'R&'||'D/'||'OFC' when 'I31' then 'WHS' when 'I19' then 'IND' when 'R20' then 'RETAIL' else 'Other' end as "Bldg Type", sum(a.availablesf) as "Avail SF"
+from availablelease a left outer join building b
+on a.buildingid = b.buildingid
+group by rollup(b.city, concat(b.type, b.subtype))
+order by city, concat(b.type, b.subtype);  --ROLLUP returns a row with the sum available sf for each city and building type and the sum for the each entire city and a grand sum for all cities at the end of the result set.  In this case, "Other" denoted at the end of each city and the last row is the grand sum.
+select b.city, case concat(b.type, b.subtype) when 'I17' then 'R&'||'D' when 'O5' then 'OFC' when 'L30' then 'LAND' when 'O4' then 'OFC/R&'||'D' when 'I18' then 'R&'||'D/'||'OFC' when 'I31' then 'WHS' when 'I19' then 'IND' when 'R20' then 'RETAIL' else 'Other' end as "Bldg Type", sum(a.availablesf) as "Avail SF"
+from availablelease a left outer join building b
+on a.buildingid = b.buildingid
+group by cube(b.city, concat(b.type, b.subtype))
+order by city, concat(b.type, b.subtype);  --The CUBE clause extends GROUP BY to return rows containing a subtotal for all combinations of columns, plus a row containing the grand total.  RM: order by makes query easier to read.  The additional subtotals for all combinations appear at the end of the results.  The grand total is the last row.
+--The GROUPING() function accepts a column and returns 0 or 1. GROUPING() returns 1 when the column value is null and returns 0 when the column value is non-null. GROUPING() is used only in queries that use ROLLUP or CUBE. GROUPING() is useful when you want to display a value when a null would otherwise be returned.
+select grouping(b.city), b.city, case concat(b.type, b.subtype) when 'I17' then 'R&'||'D' when 'O5' then 'OFC' when 'L30' then 'LAND' when 'O4' then 'OFC/R&'||'D' when 'I18' then 'R&'||'D/'||'OFC' when 'I31' then 'WHS' when 'I19' then 'IND' when 'R20' then 'RETAIL' else 'Other' end as "Bldg Type", sum(c.leasesoldsf) as "SF Sold"
+from comparables c left outer join building b
+on c.buildingid = b.buildingid
+where c.comparabletype  = 'S'
+group by rollup(b.city, concat(b.type, b.subtype));  --GROUPING() returns 0 for the rows that have non-null division_id values and returns 1 for the last row that has a null division_id.
+select case grouping(b.city) when 1 then 'Total SF Sold row label' else b.city end as "City column name", case concat(b.type, b.subtype) when 'I17' then 'R&'||'D' when 'O5' then 'OFC' when 'L30' then 'LAND' when 'O4' then 'OFC/R&'||'D' when 'I18' then 'R&'||'D/'||'OFC' when 'I31' then 'WHS' when 'I19' then 'IND' when 'R20' then 'RETAIL' else 'Other' end as "Bldg Type", sum(c.leasesoldsf) as "SF Sold"
+from comparables c left outer join building b
+on c.buildingid = b.buildingid
+where c.comparabletype  = 'S'
+group by rollup(b.city, concat(b.type, b.subtype));  --Label the total SF sold all cities row "Total SF Sold"
+select case grouping(b.city) when 1 then 'Total SF Sold row label' else b.city end as "City column name", case grouping(concat(b.type, b.subtype)) when 1 then 'Subtotal SF Sold by city row label' else concat(b.type, b.subtype) end as "Bldg Type column name", sum(c.leasesoldsf) as "SF Sold"
+from comparables c left outer join building b
+on c.buildingid = b.buildingid
+where c.comparabletype  = 'S'
+group by rollup(b.city, concat(b.type, b.subtype));  --Subtotal SF sold by city and Total SF sold all cities.  RM:  I can't use a case in the else clause to make it easier to read the bulding types; e.g. OFC, IND, R&D, WSE.
+select case grouping(b.city) when 1 then 'Total SF Sold row label' else b.city end as "City column name", case grouping(s.subtypename) when 1 then 'Subtotal SF Sold by city row label' else s.subtypename end as "Bldg Type column name", sum(c.leasesoldsf) as "SF Sold"
+from building b right outer join comparables c
+on c.buildingid = b.buildingid
+left outer join subtypes s
+on b.type = s.typechar and b.subtype = s.subtypenumber
+where c.comparabletype  = 'S'
+group by rollup(b.city, s.subtypename);  --Subtotal SF sold by city and Total SF sold all cities.  RM:  I can't use a case in the else clause to make it easier to read the bulding types; e.g. OFC, IND, R&D, WSE.  Solution is link building table and subtypes table.
+select case grouping(b.city) when 1 then 'Total SF Sold row label' else b.city end as "City column name", 
+case grouping(s.subtypename) when 1 then 'Subtotal SF Sold by city row label' else s.subtypename end as "Bldg Type column name",
+sum(c.leasesoldsf) as "SF Sold"
+from building b left outer join comparables c
+on c.buildingid = b.buildingid
+right outer join subtypes s
+on b.type = s.typechar and b.subtype = s.subtypenumber
+where c.comparabletype  = 'S'
+group by cube(b.city, s.subtypename)
+order by city;  --Subtotal SF sold by city and Total SF sold all cities.  Also, using CUBE subtotal SF by building type.
+select case grouping(b.city) when 1 then 'Total SF Sold row label' else b.city end as "City column name", 
+case grouping(s.subtypename) when 1 then 'Subtotal SF Sold by city row label' else s.subtypename end as "Bldg Type column name",
+sum(c.leasesoldsf) as "SF Sold"
+from building b left outer join comparables c
+on c.buildingid = b.buildingid
+right outer join subtypes s
+on b.type = s.typechar and b.subtype = s.subtypenumber
+where c.comparabletype  = 'S'
+and s.subtypename in ('Office', 'R&'||'D','Industrial','Warehouse','R&'||'D/'||'Office','Office/'||'R&'||'D')
+group by cube(b.city, s.subtypename)
+order by b.city;  --Subtotal SF sold by city and Total SF sold all cities four main building types.  Also, using CUBE subtotal SF by building type.
+--start line 851 chapter 7 Advanced Queries 10/10/18
