@@ -547,3 +547,124 @@ and s.subtypename in ('Office', 'R&'||'D','Industrial','Warehouse','R&'||'D/'||'
 group by cube(b.city, s.subtypename)
 order by b.city;  --Subtotal SF sold by city and Total SF sold all cities four main building types.  Also, using CUBE subtotal SF by building type.
 --start line 851 chapter 7 Advanced Queries 10/10/18
+--You use the GROUPING SETS clause to obtain the subtotal rows.  RM:  There are no subtotal breakdowns.  No grand total.
+select b.city, s.subtypename, round(avg(a.leaserate),2) as "Avg Lease Rate By Bldg Type"
+from availablelease a left outer join building b
+on a.buildingid = b.buildingid
+left outer join subtypes s
+on b.type = s.typechar and b.subtype = s.subtypenumber
+where leaserate > 0
+group by grouping sets(b.city, s.subtypename);  --returns average lease rate by building type only and returns average lease rate by city only and average lease rate all cities and all building types only
+select b.city, s.subtypename, round(avg(a.leaserate),2) as "Avg Lease Rate By Bldg Type"
+from availablelease a left outer join building b
+on a.buildingid = b.buildingid
+left outer join subtypes s
+on b.type = s.typechar and b.subtype = s.subtypenumber
+where leaserate > 0
+group by rollup(b.city, s.subtypename);  --ROLLUP.  returns average lease rate by city and building type, average lease all building types per city or subaverage by city, and average lease rate all cities grand average.
+select b.city, s.subtypename, round(avg(a.leaserate),2) as "Avg Lease Rate By Bldg Type"
+from availablelease a left outer join building b
+on a.buildingid = b.buildingid
+left outer join subtypes s
+on b.type = s.typechar and b.subtype = s.subtypenumber
+where leaserate > 0
+group by cube(b.city, s.subtypename);  --CUBE.  returns average lease rate by city and building type, average lease rate by city only, average lease rate by building type only, and average lease rate grand average only.
+--RM:  In lament terms, use grouping_id() to filter rows not null.  Use grouping_id() in the having clause.  Exclude rows without a subtotal or total.
+select b.city, s.subtypename, grouping_id(b.city, s.subtypename) as love, round(avg(a.leaserate),2) as "Avg Lease Rate By Bldg Type"
+from availablelease a left outer join building b
+on a.buildingid = b.buildingid
+left outer join subtypes s
+on b.type = s.typechar and b.subtype = s.subtypenumber
+where a.leaserate > 0
+group by cube(b.city, s.subtypename)
+having grouping_id(b.city, s.subtypename) > 0;
+--You can use a column many times in a GROUP BY clause. This allows you to reorganize your data or report on different groupings of data. The following query contains a GROUP BY clause that uses b.city twice, once to group by b.city and again in a ROLLUP
+select b.city, s.subtypename, round(avg(a.leaserate),2) as "Avg Lease Rate By Bldg Type"
+from availablelease a left outer join building b
+on a.buildingid = b.buildingid
+left outer join subtypes s
+on b.type = s.typechar and b.subtype = s.subtypenumber
+where a.leaserate > 0 and s.subtypename is not null
+group by b.city, rollup(b.city, s.subtypename)
+order by b.city, s.subtypename;
+--RM I see no purpose for the example.  Printed the average lease rate by city twice.  Compare SQL query above and below.
+select b.city, s.subtypename, round(avg(a.leaserate),2) as "Avg Lease Rate By Bldg Type"
+from availablelease a left outer join building b
+on a.buildingid = b.buildingid
+left outer join subtypes s
+on b.type = s.typechar and b.subtype = s.subtypenumber
+where a.leaserate > 0 and s.subtypename is not null
+group by rollup(b.city, s.subtypename)
+order by b.city, s.subtypename;
+--RM:  However, using group_id() removes the duplicate average lease rate by city twice.
+--You can use the GROUP_ID() function to remove duplicate rows returned by a GROUP BY clause.  If n duplicates exist for a particular grouping, GROUP_ID() returns numbers in the range 0 to n – 1.
+select b.city, s.subtypename, group_id(), round(avg(a.leaserate),2) as "Avg Lease Rate By Bldg Type"
+from availablelease a left outer join building b
+on a.buildingid = b.buildingid
+left outer join subtypes s
+on b.type = s.typechar and b.subtype = s.subtypenumber
+where a.leaserate > 0 and s.subtypename is not null
+group by b.city, rollup(b.city, s.subtypename)
+having group_id() = 0
+order by b.city, s.subtypename;
+--New for Oracle Database 12c are CROSS APPLY and OUTER APPLY, which compare the rows returned by two SELECT statements and return the matching rows in one merged result set.
+select *
+from building
+where city = 'Saratoga';  --returns all buildings in Saratoga
+select *
+from availablelease;  --returns all availables
+select *
+from building b right outer join availablelease a
+on b.buildingid = a.buildingid
+where b.city = 'Saratoga';  --returns all availables in Saratoga and its building information
+select *
+from building b
+cross apply
+  (select *
+  from availablelease a
+  where b.buildingid = a.buildingid)
+where b.city = 'Saratoga';  --returns all availables in Saratoga and its building information
+--RM:  I see no reason cross apply, outer apply, and lateral.
+
+--RANK() and DENSE_RANK() rank items in a group. The difference between these two functions is in the way they handle items that tie: RANK() leaves a gap in the sequence when there is a tie, but DENSE_RANK() leaves no gaps.
+select city, sum(totalsf), rank() over (order by sum(totalsf) desc) as "Ranked Total SF by City desc"
+from building
+group by city
+order by sum(totalsf) desc;
+select b.city, s.subtypename, sum(b.totalsf), rank() over (order by sum(b.totalsf) desc) as "Ranked Total SF City, Bldg"
+from building b left outer join subtypes s
+on b.type = s.typechar and b.subtype = s.subtypenumber
+group by b.city, s.subtypename
+order by sum(b.totalsf) desc;
+--You use the PARTITION BY clause with the analytic functions when you need to divide the groups into subgroups.
+select s.subtypename, b.city, sum(b.totalsf), rank() over (partition by s.subtypename order by sum(b.totalsf) desc) as "Ranked Total SF Bldg And City"
+from building b left outer join subtypes s
+on b.type = s.typechar and b.subtype = s.subtypenumber
+group by s.subtypename, b.city
+order by subtypename, rank() over (order by sum(b.totalsf) desc);  --rank Highest Total SF by each Building Type and by City
+--The ROLLUP, CUBE, and GROUPING SETS operators can be used with the analytic functions.
+select s.subtypename, b.city, sum(b.totalsf), rank() over (partition by s.subtypename order by sum(b.totalsf) desc) as "Ranked Total SF Bldg And City"
+from building b left outer join subtypes s
+on b.type = s.typechar and b.subtype = s.subtypenumber
+group by rollup(s.subtypename, b.city)
+order by subtypename, rank() over (order by sum(b.totalsf) desc);  --rank Highest Total SF by each Building Type and by City.  rollup includes a subtotal square footage for each building type.
+select s.subtypename, b.city, sum(b.totalsf), rank() over (partition by s.subtypename order by sum(b.totalsf) desc) as "Ranked Total SF Bldg And City"
+from building b left outer join subtypes s
+on b.type = s.typechar and b.subtype = s.subtypenumber
+group by cube(s.subtypename, b.city)
+order by subtypename, rank() over (order by sum(b.totalsf) desc);  --rank Highest Total SF by each Building Type and by City.  rollup includes a subtotal square footage for each building type and each city.
+--RM:  Grouping Sets couldn't think of an example.
+select to_char(datesigned,'Month'), sum(leasesoldsf), sum(sum(leasesoldsf)) over (order by to_char(datesigned,'Month') rows between unbounded preceding and current row) as "Cumulative Leased SF 2005"
+from comparables
+where comparabletype = 'L'
+and datesigned between '01/01/2005' and '12/31/2005'
+group by to_char(datesigned,'Month');
+create table calendar (month varchar(20), monthnumber number);
+insert into calendar values ('February',2);
+select cal.monthnumber, to_char(c.datesigned,'Month'), sum(leasesoldsf), sum(sum(leasesoldsf)) over (order by to_char(datesigned,'Month') rows between unbounded preceding and current row) as "Cumulative Leased SF By Month"
+from comparables c left outer join calendar cal
+on to_char(c.datesigned,'Month') = cal.monthname
+where c.comparabletype = 'L'
+and c.datesigned between '01/01/2005' and '12/31/2005'
+group by cal.monthnumber, to_char(c.datesigned,'Month');  --Cumulative lease SF by month 2005.  RM:  I can't get the months sorted by calendar month.  Helper table calendar doesn't match month number and month name.
+--start chapter 9 line 1213 10/12/18
