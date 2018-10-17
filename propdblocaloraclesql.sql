@@ -667,4 +667,44 @@ on to_char(c.datesigned,'Month') = cal.monthname
 where c.comparabletype = 'L'
 and c.datesigned between '01/01/2005' and '12/31/2005'
 group by cal.monthnumber, to_char(c.datesigned,'Month');  --Cumulative lease SF by month 2005.  RM:  I can't get the months sorted by calendar month.  Helper table calendar doesn't match month number and month name.
+
 --start chapter 9 line 1213 10/12/18
+alter table building
+add bldgtype varchar2(20);  --insert column, add column, new column
+insert into building (bldgtype)
+values ('Office')
+where type = 'O' and subtype = 5;  --error message SQL command not properly ended.  RM:  I believe we're not inserting new records.  We're updating records adding building type.
+update building
+set bldgtype = 'Office'
+where type = 'O' and subtype = 5;  --update rows adding building type.
+update building
+set bldgtype = 'Office/'||'R&'||'D'
+where type = 'O' and subtype = 4;  --update rows adding building type.  escape character.
+select b.buildingid, b.type, s.typechar, b.subtype, s.subtypenumber, s.subtypename, c.buildingid
+from comparables c left outer join building b
+on b.buildingid = c.buildingid
+left outer join subtypes s
+on b.type = s.typechar and b.subtype=s.subtypenumber;
+alter table comparables
+add type varchar2(1);
+update comparables c
+set c.type = (select b.type from building b where c.buildingid = b.buildingid);  --Source: https://stackoverflow.com/questions/7030699/oracle-sql-update-a-table-with-data-from-another-table.  update rows from another table
+alter table comparables
+add subtype number;
+update comparables c
+set c.subtype = (select b.subtype from building b where c.buildingid = b.buildingid);  --Source: https://stackoverflow.com/questions/7030699/oracle-sql-update-a-table-with-data-from-another-table.  update rows from another table
+alter table comparables
+add bldgtype varchar2(20);
+update comparables c
+set c.bldgtype = (select b.bldgtype from building b where c.buildingid = b.buildingid);  --Source: https://stackoverflow.com/questions/7030699/oracle-sql-update-a-table-with-data-from-another-table.  update rows from another table
+alter table comparables
+drop column type;  --delete column
+alter table comparables
+drop column subtype;  --delete column
+--RM 10/16/18:  delete column bldgtype in comparables table.  Try update comparables table inserting building type via building id?  Try update comparables table inserting building type matching building id, type, typechar, and subtypename
+select b.buildingid, b.type, s.typechar, b.subtype, s.subtypenumber, s.subtypename, c.buildingid
+from comparables c left outer join building b
+on b.buildingid = c.buildingid
+left outer join subtypes s
+on b.type = s.typechar and b.subtype=s.subtypenumber;
+--start chapter 9 line 1284 10/16/18
