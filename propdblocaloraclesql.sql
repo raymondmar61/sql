@@ -707,4 +707,70 @@ from comparables c left outer join building b
 on b.buildingid = c.buildingid
 left outer join subtypes s
 on b.type = s.typechar and b.subtype=s.subtypenumber;
---start chapter 9 line 1284 10/16/18
+
+--start chapter 11 line 1284 10/16/18
+create global temporary table temporarytablename (id integer, status varchar2(10), lastmodified date default sysdate)
+on commit preserve rows;  --creates a temporary table named temporarytablename whose rows will be kept until the end of a user session (ON COMMIT PRESERVE ROWS)
+insert into temporarytablename
+values(1,'Yes',sysdate);
+select table_name, tablespace_name, temporary
+from user_tables
+WHERE TABLE_NAME IN ('AVAILABLELEASE', 'BUILDING','TEMPORARYTABLENAME');  --table names must be upper case.  Get table information.
+select *
+from all_tables;  --retrieve all table information in database
+select column_name, data_type, data_length, data_precision, data_scale
+from user_tab_columns
+where table_name = 'BUILDING';  --table name must be upper case.  Retrieve column information in a table from the user_tab_columns view.
+select *
+from all_tab_columns
+where TABLE_NAME = 'BUILDING';   --table name must be upper case.  retrieve all column information in a table.
+alter table temporarytablename
+add newcolumnname varchar2(5); --add column newcolumnname.  Can't add.  SQL Error: ORA-14450: attempt to access a transactional temp table already in use
+alter table tablename
+add newcolumnname date default sysdate not null;  --add column newcolumnname to be default and to be not null
+--A virtual column is a column that refers only to other columns already in the table. For example, the following ALTER TABLE statement adds a virtual column named temporarycolumnname to the subtypes table combining typechar column and subtypename column
+alter table SUBTYPES
+add (temporarycolumnname as (typechar||' '||subtypename));  --paranthesis after as required
+alter table subtypes
+drop column temporarycolumnname;  --delete column
+add (average_salary as ((low_salary + high_salary) / 2));  --like a temporary column temp column
+
+alter table order_status2
+modify status varchar2(15);  --increases the maximum length of the status column to 15 characters or modify table
+alter table order_status2
+modify id number(5); --changes the precision of id column to 5 or modify table
+alter table order_status2
+modify status char(15);  --changes the data type of status column to char or modify table
+alter table order_status2
+modify last_modified default sysdate - 1;  --changes the default value of last_modified column to sysdate-1 or modify table.  The default value applies only to new rows added to the table. New rows will get their last_modified column set to the current date minus one day.
+alter table order_status2
+add constraint order_status2_status_ck
+check (status in ('placed','pending','shipped'));  --update column status for which status column has three choices placed, pending, or shipped.  order_status2_status_ck is the name of the constraint.
+alter table order_status2
+add constraint order_status2_id_ck check (id > 0); --update column id for which id must be greater than zero.  order_status2_id_ck is the name of the constraint.
+alter table order_status2
+modify status constraint order_status2_status_nn not null;  --update column status for which status must be not null.  order_status2_status_nn is the name of the constraint.
+alter table order_status2
+add constraint order_status_modified_by_fk
+modified_by references employees(employee_id); --add column modified_by with constraint modified_by is a foreign key to employee_id in employees table.  order_status_modified_by_fk is name of the constraint.
+
+--Use EXISTS Rather than IN
+select buildingid, city
+from building;
+select buildingid, availableid
+from availablelease;
+select buildingid, availableid
+from availablelease
+where buildingid in 
+  (select buildingid
+  from building
+  where city = 'San Jose')
+order by buildingid;
+select buildingid, availableid
+from availablelease outer
+where exists
+  (select buildingid
+  from building inner
+  where inner.buildingid=outer.buildingid
+  and city = 'San Jose')
+order by buildingid;
