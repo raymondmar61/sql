@@ -135,3 +135,28 @@ where winner = 'Dennis Gabor';
 select winner
 from nobel_win
 where subject = 'Physics' and year >=1950; #RM:  no need for year >=1950 because nobel_win table starts at 1970
+
+#16. Write a SQL query to Show all the details (year, subject, winner, country ) of the Chemistry prize winners between the year 1965 to 1975 inclusive.
+select year, subject, winner, country
+from nobel_win
+where subject = 'Chemistry' and year >=1965 and year <=1975;
+
+#17. Write a SQL query to show all details of the Prime Ministerial winners after 1972 of Menachem Begin and Yitzhak Rabin.
+select *
+from nobel_win
+where winner in('Menachem Begin','Yitzhak Rabin') and year >1972;
+
+#18. Write a SQL query to show all the details of the winners with first name Louis.
+select *
+from nobel_win
+where winner like 'Louis%';
+
+#19. Write a SQL query to show all the winners in Physics for 1970 together with the winner of Economics for 1971.
+select *
+from nobel_win
+where (subject = 'Physics' and year = 1970) or (subject = 'Economics' and year = 1971);
+
+#20. Write a SQL query to show all the winners of nobel prize in the year 1970 except the subject Physiology and Economics.
+select *
+from nobel_win
+where year = 1970 and subject not in ('Physiology','Economics');
