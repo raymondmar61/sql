@@ -160,3 +160,89 @@ where (subject = 'Physics' and year = 1970) or (subject = 'Economics' and year =
 select *
 from nobel_win
 where year = 1970 and subject not in ('Physiology','Economics');
+
+#21. Write a SQL query to show the winners of a 'Physiology' prize in an early year before 1971 together with winners of a 'Peace' prize in a later year on and after the 1974.
+select *
+from nobel_win
+where (subject = 'Physiology' and year < 1971) or (subject = 'Peace' and year >= 1974);
+
+#22. Write a SQL query to find all details of the prize won by Johannes Georg Bednorz.
+select *
+from nobel_win
+where winner = 'Johannes Georg Bednorz';
+
+#23 Write a SQL query to find all the details of the nobel winners for the subject not started with the letter 'P' and arranged the list as the most recent comes first, then by name in order.
+select *
+from nobel_win
+where subject not like 'P%'
+order by year desc, winner asc;
+
+#24. Write a SQL query to find all the details of 1970 winners by the ordered to subject and winner name; but the list contain the subject Economics and Chemistry at last.
+select *
+from nobel_win
+where year = 1970
+order by case when subject in ('Economics','Chemistry') then 1 else 0 end asc, subject, winner;
+--also
+select *
+from nobel_win
+where year = 1970 and subject not in ('Economics','Chemistry')
+order by subject, winner
+union
+select *
+from nobel_win
+where year = 1970 and subject in ('Economics','Chemistry');
+
+/*
+Sample table: item_mast
+ PRO_ID PRO_NAME                   PRO_PRICE    PRO_COM
+------- ------------------------- ---------- ----------
+    101 Mother Board                    3200         15
+    102 Key Board                        450         16
+    103 ZIP drive                        250         14
+    104 Speaker                          550         16
+    105 Monitor                         5000         11
+    106 DVD drive                        900         12
+    107 CD drive                         800         12
+    108 Printer                         2600         13
+    109 Refill cartridge                 350         13
+    110 Mouse                            250         12
+*/
+#25. Write a SQL query to find all the products with a price between Rs.200 and Rs.600.
+select *
+from item_mast
+where pro_price >= 200 and pro_price <= 600;
+--also
+select *
+from item_mast
+where pro_price between 200 and 600; #between is inclusive
+
+#26. Write a SQL query to calculate the average price of all products of the manufacturer which code is 16.
+select avg(pro_price)
+from item_mast
+where pro_com = 16;
+
+#27. Write a SQL query to find the item name and price in Rs.
+select pro_name as "Item Name", pro_price as "Price in Rs"
+from item_mast;
+
+#28. Write a SQL query to display the name and price of all the items with a price is equal or more than Rs.250, and the list contain the larger price first and then by name in ascending order. 
+select pro_name, pro_price
+from item_mast
+where pro_price >= 250
+order by pro_price desc, pro_name asc;
+
+#29. Write a SQL query to display the average price of the items for each company, showing only the company code.
+select pro_com, avg(pro_price)
+from item_mast
+group by pro_com;
+--or
+select avg(pro_price), pro_com
+from item_mast
+group by pro_com;
+
+#30. Write a SQL query to find the name and price of the cheapest item(s).
+select pro_com, pro_price
+from item_mast
+where pro_price = 
+	(select min(pro_price)
+	from item_mast);
