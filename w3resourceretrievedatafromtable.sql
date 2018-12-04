@@ -1,3 +1,4 @@
+#https://www.w3resource.com/sql/tutorials.php #RM: click column for SQL topic help
 #https://www.w3resource.com/sql-exercises/sql-retrieve-from-table.php
 /* table:  salesman
 salesman_id  name        city        commission
@@ -246,3 +247,34 @@ from item_mast
 where pro_price = 
 	(select min(pro_price)
 	from item_mast);
+/*
+Sample table: emp_details
+ EMP_IDNO EMP_FNAME       EMP_LNAME         EMP_DEPT
+--------- --------------- --------------- ----------
+   127323 Michale         Robbin                  57
+   526689 Carlos          Snares                  63
+   843795 Enric           Dosio                   57
+   328717 Jhon            Snares                  63
+   444527 Joseph          Dosni                   47
+   659831 Zanifer         Emily                   47
+   847674 Kuleswar        Sitaraman               57
+   748681 Henrey          Gabriel                 47
+   555935 Alex            Manuel                  57
+   539569 George          Mardy                   27
+   733843 Mario           Saule                   63
+   631548 Alan            Snappy                  27
+   839139 Maria           Foster                  57
+*/
+#31. Write a query in SQL to find the last name of all employees, without duplicates.
+select distinct emp_lname
+from emp_details;
+
+#32. Write a query in SQL to find the data of employees whose last name is 'Snares'.
+select *
+from emp_details
+where emp_lname = 'Snares';
+
+#33. Write a query in SQL to display all the data of employees that work in the department 57.
+select *
+from emp_details
+where empt_dept = 57;
