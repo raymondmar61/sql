@@ -420,3 +420,14 @@ from expenses
 where expensedate >='12/1/2017' and expensedate<='12/31/2017'
 group by name
 order by count(name) desc;
+
+#Group By Percentage Of Total
+#https://stackoverflow.com/questions/13721093/oracle-how-to-get-percent-of-total-by-a-query
+#https://stackoverflow.com/questions/46909494/percentage-from-total-sum-after-group-by-sql-server
+select sum(availablesf)
+from availablelease;
+select b.city, sum(a.availablesf) as "Total Avail SF By City", sum(sum(a.availablesf)) over() as "Grand Total Avail SF", round(100*(sum(a.availablesf)/sum(sum(a.availablesf)) over ()),2) as "City % Of Grand Total"
+from availablelease a left outer join building b
+on a.buildingid = b.buildingid
+group by b.city
+order by b.city;
