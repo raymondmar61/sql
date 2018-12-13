@@ -124,4 +124,74 @@ A001/DJ-402\44
 #12. Write a SQL statement to find those rows from the table testtable which contain the escape character underscore ( _ ) in its column 'col1'.
 select *
 from testtable
-where col1 like '%/_%'
+where col1 like '%/_%';
+
+#13. Write a SQL statement to find those rows from the table testtable which does not contain the character underscore ( _ ) in its column 'col1'.
+select *
+from testtable
+where col1 not like '%/_%';
+
+#14. Write a SQL statement to find those rows from the table testtable which contain the escape character ( / ) in its column 'col1'.
+select *
+from testtable
+where col1 like '%/%';
+
+#15. Write a SQL statement to find those rows from the table testtable which does not contain the escape character ( / ) in its column 'col1'.
+select *
+from testtable
+where col1 not like '%/%';
+
+#16. Write a SQL statement to find those rows from the table testtable which contain the string ( _/ ) in its column 'col1'.
+select *
+from testtable
+where col1 like '%/_//%' escape '/';
+
+#17. Write a SQL statement to find those rows from the table testtable which does not contain the string ( _/ ) in its column 'col1'.
+select *
+from testtable
+where col1 not like '%/_//%' escape '/';
+
+#18. Write a SQL statement to find those rows from the table testtable which contain the character ( % ) in its column 'col1'.
+select *
+from testtable
+where col1 like '%/%%' escape '/';
+#RM:  Use the backslash for Oracle https://docs.oracle.com/cd/B28359_01/text.111/b28304/cqspcl.htm#CCREF0400
+
+#19. Write a SQL statement to find those rows from the table testtable which does not contain the character ( % ) in its column 'col1'.
+select *
+from testtable
+where col1 not like '%/%%' escape '/';
+#RM:  Use the backslash for Oracle https://docs.oracle.com/cd/B28359_01/text.111/b28304/cqspcl.htm#CCREF0400
+
+#20. Write a SQL statement to find that customer with all information who does not get any grade except NULL.
+select *
+from customer
+where grade is null;
+
+#21. Write a SQL statement to find that customer with all information who gets a grade except NULL value.
+select *
+from customer
+where grade is not null;
+
+/*
+Sample table: emp_details
+ EMP_IDNO EMP_FNAME       EMP_LNAME         EMP_DEPT
+--------- --------------- --------------- ----------
+   127323 Michale         Robbin                  57
+   526689 Carlos          Snares                  63
+   843795 Enric           Dosio                   57
+   328717 Jhon            Snares                  63
+   444527 Joseph          Dosni                   47
+   659831 Zanifer         Emily                   47
+   847674 Kuleswar        Sitaraman               57
+   748681 Henrey          Gabriel                 47
+   555935 Alex            Manuel                  57
+   539569 George          Mardy                   27
+   733843 Mario           Saule                   63
+   631548 Alan            Snappy                  27
+   839139 Maria           Foster                  57
+*/
+#22. Write a query in SQL to display all the data of employees whose last name begins with an 'D'.
+select *
+from emp_details
+where emp_lname like 'D%';
