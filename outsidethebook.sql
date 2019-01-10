@@ -431,3 +431,10 @@ from availablelease a left outer join building b
 on a.buildingid = b.buildingid
 group by b.city
 order by b.city;
+
+#https://www.w3resource.com/sql-exercises/joins-hr/index.php
+#3. Write a query in SQL to display the first name, last name, salary, and job grade for all employees.  RM:  copied solution.  Also job_grades table lists grade, lowest salary and highest salary three columns
+/* join unequal tables.  Can use between ... and, and comparison operators < > >= <= RM:  also <> */
+select e.first_name, e.last_name, e.salary, j.grade_level
+from employees e join job_grades j
+on e.salary between j.lowest_sal and j.highest_sal;
