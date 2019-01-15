@@ -190,7 +190,7 @@ Sample table: locations
 +-------------+------------------------------------------+-------------+---------------------+-------------------+------------+
 */
 #2. Write a query in SQL to display the first and last name, department, city, and state province for each employee.
-select e.first_name, e.last_name, d.department_name, l.city, l.state
+select e.first_name, e.last_name, d.department_name, l.city, l.state_provice
 from employees e join departments d
 on e.department_id=d.department_id
 join locations l
@@ -212,3 +212,150 @@ F             25000       40000
 select e.first_name, e.last_name, e.salary, j.grade_level
 from employees e join job_grades j
 on e.salary between j.lowest_sal and j.highest_sal;
+
+#4. Write a query in SQL to display the first name, last name, department number and department name, for all employees for departments 80 or 40.
+select e.first_name, e.last_name, d.department_id, d.department_name
+from employees e left outer join departments d
+on e.department_id = d.department_id
+where e.department_id in (80,40);
+#official solution
+select e.first_name, e.last_name, e.department_id , d.department_name 
+from employees e join departments d 
+on e.department_id = d.department_id and e.department_id in (80,40)
+order by e.last_name;
+
+#5. Write a query in SQL to display those employees who contain a letter z to their first name and also display their last name, department, city, and state province.
+select e.first_name, e.last_name, e.department_id, l.city, l.state_provice
+from employees e left outer join departments d
+on e.department_id = e.department_id
+left outer join locations l
+on d.location_id = e.location_id
+where e.first_name like '%z%';
+
+#6. Write a query in SQL to display all departments including those where does not have any employee.  RM:  SQL technical question no practical sense.
+select distinct d.department_name
+from departments d; #RM:  display all department_name departments; although, there are no duplicate department names.  No distinct required.
+#RM:  return a table of employees and their departments.  Also include departments which don't have employees.
+select e.first_name, e.last_name, d.department_id, d.department_name
+from departments d left outer join employees e
+on d.department_id = e.department_id;
+#official solution
+select e.first_name, e.last_name, d.department_id, d.department_name
+from employee e right outer join departments d
+on e.department_id = d.department_id;
+
+#7. Write a query in SQL to display the first and last name and salary for those employees who earn less than the employee earn whose number is 182.
+select first_name, last_name, salary
+from employees
+where salary < (
+	select salary
+	from employees
+	where employee_id = 182);
+#official solution
+/* join unequal tables.  Can use between ... and, and comparison operators < > >= <= RM:  also <> */
+select e.first_name, e.last_name, e.salary 
+from employees e join employees s
+on e.salary < s.salary and s.employee_id = 182;
+
+#8. Write a query in SQL to display the first name of all employees including the first name of their manager.
+select e.first_name as "Employee First Name", manager.first_name as "Manager First Name"
+from employees e join employees manager
+on e.employee_id = manager.manager_id;
+#RM:  Each employee must have one manager.
+
+#9. Write a query in SQL to display the department name, city, and state province for each department.
+select d.department_name, l.city, l.state_provice
+from departments d join locations l
+on d.location_id = l.location_id;
+
+#10. Write a query in SQL to display the first name, last name, department number and name, for all employees who have or have not any department.
+select e.first_name, e.last_name, d.department_id, d.department_name
+from departments d left outer join employees e
+on d.department_id = e.department_id;
+
+#11. Write a query in SQL to display the first name of all employees and the first name of their manager including those who does not working under any manager.
+select e.first_name as "Employee First Name", manager.first_name as "Manager First Name"
+from employees e left outer join employees manager
+on e.employee_id = manager.manager_id;  #RM:  running the query resulted in incorrect output.  SQL is correct.
+
+#12. Write a query in SQL to display the first name, last name, and department number for those employees who works in the same department as the employee who holds the last name as Taylor.
+select first_name, last_name, department_id
+from employees
+where department_id in (
+	select department_id
+	from employees
+	where last_name = 'Taylor');
+#official solution
+select e.first_name, e.last_name, e.department_id 
+from employees e join employees same
+on e.department_id = same.department_id
+and same.last_name = 'Taylor';
+
+/*
+Sample table:  job_history
++-------------+------------+------------+------------+---------------+
+| EMPLOYEE_ID | START_DATE | END_DATE   | JOB_ID     | DEPARTMENT_ID |
++-------------+------------+------------+------------+---------------+
+|         102 | 2001-01-13 | 2006-07-24 | IT_PROG    |            60 |
+|         101 | 1997-09-21 | 2001-10-27 | AC_ACCOUNT |           110 |
+|         101 | 2001-10-28 | 2005-03-15 | AC_MGR     |           110 |
+|         201 | 2004-02-17 | 2007-12-19 | MK_REP     |            20 |
+|         114 | 2006-03-24 | 2007-12-31 | ST_CLERK   |            50 |
+|         122 | 2007-01-01 | 2007-12-31 | ST_CLERK   |            50 |
+|         200 | 1995-09-17 | 2001-06-17 | AD_ASST    |            90 |
+|         176 | 2006-03-24 | 2006-12-31 | SA_REP     |            80 |
+|         176 | 2007-01-01 | 2007-12-31 | SA_MAN     |            80 |
+|         200 | 2002-07-01 | 2006-12-31 | AC_ACCOUNT |            90 |
++-------------+------------+------------+------------+---------------+
+
+Sample table:  jobs
++------------+---------------------------------+------------+------------+
+| JOB_ID     | JOB_TITLE                       | MIN_SALARY | MAX_SALARY |
++------------+---------------------------------+------------+------------+
+| AD_PRES    | President                       |      20080 |      40000 |
+| AD_VP      | Administration Vice President   |      15000 |      30000 |
+| AD_ASST    | Administration Assistant        |       3000 |       6000 |
+| FI_MGR     | Finance Manager                 |       8200 |      16000 |
+| FI_ACCOUNT | Accountant                      |       4200 |       9000 |
+| AC_MGR     | Accounting Manager              |       8200 |      16000 |
+| AC_ACCOUNT | Public Accountant               |       4200 |       9000 |
+| SA_MAN     | Sales Manager                   |      10000 |      20080 |
+| SA_REP     | Sales Representative            |       6000 |      12008 |
+| PU_MAN     | Purchasing Manager              |       8000 |      15000 |
+| PU_CLERK   | Purchasing Clerk                |       2500 |       5500 |
+| ST_MAN     | Stock Manager                   |       5500 |       8500 |
+| ST_CLERK   | Stock Clerk                     |       2008 |       5000 |
+| SH_CLERK   | Shipping Clerk                  |       2500 |       5500 |
+| IT_PROG    | Programmer                      |       4000 |      10000 |
+| MK_MAN     | Marketing Manager               |       9000 |      15000 |
+| MK_REP     | Marketing Representative        |       4000 |       9000 |
+| HR_REP     | Human Resources Representative  |       4000 |       9000 |
+| PR_REP     | Public Relations Representative |       4500 |      10500 |
++------------+---------------------------------+------------+------------+
+*/
+#13. Write a query in SQL to display the job title, department name, full name (first and last name ) of employee, and starting date for all the jobs which started on or after 1st January, 1993 and ending with on or before 31 August, 1997.  #RM:  first SQL with four tables.  Also, question wants start_date column 1/1/1993 to 8/31/1997.  Not start date 1/1/1993 and end date 8/31/1997.
+select j.job_title, d.department_name, e.first_name || ' ' || e.last_name as "Full Name", jobhistory.start_date
+from employees e join departments d
+on e.department_id = d.department_id
+join job_history jobhistory
+on d.department_id = jobhistory.department_id
+join
+jobs j
+on jobhistory.job_id = j.job_id
+where jobhistory.start_date >= '1993-01-01' and jobhistory.end_date <= '1997-08-31';  #RM:  incorrect.  Applied incorrect join . . . on.  Answer says join employee e and departments d with employee_id.
+#correct solution from user
+select j.job_title, d.department_name, e.first_name || ' ' || e.last_name as "Full Name", jobhistory.start_date
+from jobs j join employees e
+on j.job_id = e.job_id
+join departments d
+on e.department_id = d.department_id
+join job_history jobhistory
+on e.employee_id = jobhistory.employee_id  #RM:  I can link a join from a table not next to each other.  employee e is second table and job_history jobhistory is last table.
+where jobhistory.start_date >= '1993-01-01' and jobhistory.start_date <= '1997-08-31';
+#official solution
+select job_title, department_name, first_name || ' ' || last_name as employee_name, start_date 
+from job_history 
+join jobs using (job_id) 
+join departments using (department_id) 
+join employees using (employee_id) 
+where start_date >='1993-01-01' and start_date <='1997-08-31';
