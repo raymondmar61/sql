@@ -438,3 +438,31 @@ order by b.city;
 select e.first_name, e.last_name, e.salary, j.grade_level
 from employees e join job_grades j
 on e.salary between j.lowest_sal and j.highest_sal;
+
+#https://www.w3resource.com/sql-exercises/joins-hr/index.php
+#25. Write a query in SQL to display full name(first and last name), job title, starting and ending date of last jobs for those employees with worked without a commission percentage.
+select e.first_name || ' ' || e.last_name as "Full Name", j.job_title, jobhistory.start_date, jobhistory.end_date
+from employees e join job_history jobhistory
+on e.employee_id = jobhistory.employee_id
+join jobs j
+on jobhistory.job_id = j.job_id
+where e.commission_pct = 0;  #RM:  problem is there are two employees with two job_id in job_history table.  We want the latest job or the job with the latest date; e.g. start date 9/21/97 or 10/28/01 we want 10/28/01.
+
+select e.first_name || ' ' || e.last_name as "Full Name", j.job_title, jobhistoryspecial.*
+from employees e join (
+  select max(start_date), max(end_date), employee_id
+  from job_history
+  group by employee_id) jobhistoryspecial
+on e.employee_id = jobhistoryspecial.employee_id
+join jobs j
+on j.job_id = e.job_id
+where e.commission_pct = 0;
+/*
+employee_name   job_title     starting_date ending_date employee_id
+Neena Kochhar   Administration Vice President 2001-10-28  2005-03-15  101
+Lex De Haan   Administration Vice President 2001-01-13  2006-07-24  102
+Den Raphaely    Purchasing Manager    2006-03-24  2007-12-31  114
+Payam Kaufling    Stock Manager     2007-01-01  2007-12-31  122
+Jennifer Whalen   Administration Assistant  2002-07-01  2006-12-31  200
+Michael Hartstein Marketing Manager   2004-02-17  2007-12-19  201
+*/

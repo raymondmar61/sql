@@ -359,3 +359,237 @@ join jobs using (job_id)
 join departments using (department_id) 
 join employees using (employee_id) 
 where start_date >='1993-01-01' and start_date <='1997-08-31';
+
+#14. Write a query in SQL to display job title, full name (first and last name ) of employee, and the difference between maximum salary for the job and salary of the employee.
+select e.first_name || ' ' || e.last_name as "Full Name", (j.max_salary-e.salary)
+from employee e join jobs j
+on e.job_id = j.job_id;
+#official solution
+select job_title, first_name || ' ' || last_name as employee_name, max_salary-salary as salary_difference 
+from employees natural join jobs;
+
+#15. Write a query in SQL to display the name of the department, average salary and number of employees working in that department who got commission.
+select d.department_name, avg(e.salary), count(e.commission_pct)
+from employees e join departments d
+on e.department_id = d.department_id
+group by d.department_name;
+#official solution
+select department_name, avg(salary), count(commission_pct) 
+from departments join employees using (department_id)
+group by department_name;
+
+#16. Write a query in SQL to display the full name (first and last name ) of employees, job title and the salary differences to their own job for those employees who is working in the department ID 80.
+select e.first_name || ' ' || e.last_name as "Full Name", j.job_title, j.max_salary-e.salary as "salary difference"
+from employees e join jobs j
+on e.job_id = j.job_id
+where e.department_id = 80;
+#official solution
+select job_title, first_name || ' ' || last_name as employee_name, max_salary-salary as salary_difference
+from employees natural join jobs 
+where department_id  = 80;
+
+/*
+Sample table:  countries
++------------+--------------------------+-----------+
+| COUNTRY_ID | COUNTRY_NAME             | REGION_ID |
++------------+--------------------------+-----------+
+| AR         | Argentina                |         2 |
+| AU         | Australia                |         3 |
+| BE         | Belgium                  |         1 |
+| BR         | Brazil                   |         2 |
+| CA         | Canada                   |         2 |
+| CH         | Switzerland              |         1 |
+| CN         | China                    |         3 |
+| DE         | Germany                  |         1 |
+| DK         | Denmark                  |         1 |
+| EG         | Egypt                    |         4 |
+| FR         | France                   |         1 |
+| IL         | Israel                   |         4 |
+| IN         | India                    |         3 |
+| IT         | Italy                    |         1 |
+| JP         | Japan                    |         3 |
+| KW         | Kuwait                   |         4 |
+| ML         | Malaysia                 |         3 |
+| MX         | Mexico                   |         2 |
+| NG         | Nigeria                  |         4 |
+| NL         | Netherlands              |         1 |
+| SG         | Singapore                |         3 |
+| UK         | United Kingdom           |         1 |
+| US         | United States of America |         2 |
+| ZM         | Zambia                   |         4 |
+| ZW         | Zimbabwe                 |         4 |
++------------+--------------------------+-----------+
+*/
+#17. Write a query in SQL to display the name of the country, city, and the departments which are running there.
+select c.country_name, l.city, d.department_name
+from countries c join locations l #RM:  right outer join returned a department without a country
+on c.country_id = l.country_id
+join departments d
+on l.location_id = d.location_id;
+#official solution
+select country_name,city, department_name 
+from countries 
+join locations using (country_id) 
+join departments using (location_id);
+
+#18. Write a query in SQL to display department name and the full name (first and last name) of the manager.
+select d.department_name, e.first_name || ' ' || e.last_name as "Full Name"
+from departments d join employees e
+on d.manager_id = e.manager_id;
+
+#19. Write a query in SQL to display job title and average salary of employees.
+select j.job_title, avg(e.salary)
+from jobs j right outer join employees e
+on j.job_id = e.job_id
+group by j.job_title;
+#official solution
+select job_title, avg(salary)
+from employees natural join jobs
+group by job_title;
+
+#20. Write a query in SQL to display the details of jobs which was done by any of the employees who is presently earning a salary on and above 12000.
+select j.*
+from job_history j join employees e 
+on j.employee_id = e.employee_id
+where e.salary >= 12000;
+#RM:  I can get all columns from one table in the join by doing the following:  select tablealias.*
+#RM:  no need for left outer join because an employee may have two or more job history; e.g. employee_id 101 has two entries.  For each row in job_history there is one employees.
+
+#21. Write a query in SQL to display the country name, city, and number of those departments where at leaste 2 employees are working.  RM:  four tables.  Four table joins.
+select c.country_name, l.city, d.department_name, count(e.employee_id)
+from countries c join locations l
+on c.country_id = l.country_id
+join departments d
+on l.location_id = d.location_id
+right outer join employees e
+on d.department_id = e.department_id
+group by c.country_name, l.city, d.department_name
+having count(e.employee_id) >=2;
+#RM:  my SQL code returns country, city, department, employee count where number of employees 2 or greater, and employees without a country, city, and department
+#RM:  question is number of departments where number of employees 2 or greater
+#official solution modified
+select c.country_name, l.city, count(d.department_id)
+from countries c join locations l
+on c.country_id = l.country_id
+join departments d
+on l.location_id = d.location_id
+where d.department_id in (
+		select e.department_id
+		from employees e
+		group by e.department_id
+		having count(e.department_id)>=2) #RM:  use department_id to count employees instead of employee_id because need department_id in where clause
+group by c.country_name, l.city;
+#official solution
+select country_name,city, count(department_id)
+from countries 
+join locations using (country_id) 
+join departments using (location_id) 
+where department_id in (
+	select department_id 
+	from employees 
+	group by department_id 
+	having count(department_id)>=2)
+group by country_name,city;
+
+#22. Write a query in SQL to display the department name, full name (first and last name) of manager, and their city.
+select d.department_name, e.first_name || ' ' || e.last_name as "Full Name Manager", l.city
+from employees e left outer join departments d
+on e.manager_id = d.manager_id
+join locations l
+on d.location_id = l.location_id;
+#RM:  correct solution.  Reason is we want the manager's name departments d table connect with manager's employee_id employees e table
+select d.department_name, e.first_name || ' ' || e.last_name as "Full Name Manager", l.city
+from employees e join departments d
+on e.employee_id = d.manager_id
+join locations l
+on d.location_id = l.location_id;
+
+#23. Write a query in SQL to display the employee ID, job name, number of days worked in for all those jobs in department 80.
+select jobhistory.employee_id, j.job_title, (jobhistory.end_date-jobhistory.start_date) as "Number Days Worked"
+from job_history jobhistory join jobs j
+on jobhistory.job_id = j.job_id
+where jobhistory.department_id = 80;
+#official solution
+select employee_id, job_title, end_date-start_date days
+from job_history natural join jobs
+where department_id=80;
+
+#24. Write a query in SQL to display the full name (first and last name), and salary of those employees who working in any department located in London.
+select e.first_name || ' ' || e.last_name as "Full Name", e.salary
+from employees e join departments d
+on e.department_id = d.department_id
+join locations l
+on d.location_id = l.location_id
+where l.city = 'London';
+#also
+select e.first_name || ' ' || e.last_name as "Full Name", e.salary
+from employees e join departments d using (department_id)
+join locations l using (location_id)
+where l.city = 'London';
+#two natural joins?!?
+select e.first_name || ' ' || e.last_name, e.salary
+from employees e natural join departments d
+natural join locations l
+where l.city = 'London';  #RM  can I use two or more natural joins?  Apparently no.
+
+#25. Write a query in SQL to display full name(first and last name), job title, starting and ending date of last jobs for those employees with worked without a commission percentage.
+select e.first_name || ' ' || e.last_name as "Full Name", j.job_title, jobhistory.start_date, jobhistory.end_date
+from employees e join job_history jobhistory
+on e.employee_id = jobhistory.employee_id
+join jobs j
+on jobhistory.job_id = j.job_id
+where e.commission_pct = 0;  #RM:  problem is there are two employees with two job_id in job_history table.  We want the latest job or the job with the latest date; e.g. start date 9/21/97 or 10/28/01 we want 10/28/01.
+#correct answer
+select e.first_name || ' ' || e.last_name as "Full Name", j.job_title, jobhistoryspecial.*
+from employees e join (
+	select max(start_date), max(end_date), employee_id
+	from job_history
+	group by employee_id) jobhistoryspecial
+on e.employee_id = jobhistoryspecial.employee_id
+join jobs j
+on j.job_id = e.job_id
+where e.commission_pct = 0;
+/*
+employee_name		job_title			starting_date	ending_date	employee_id
+Neena Kochhar		Administration Vice President	2001-10-28	2005-03-15	101
+Lex De Haan		Administration Vice President	2001-01-13	2006-07-24	102
+Den Raphaely		Purchasing Manager		2006-03-24	2007-12-31	114
+Payam Kaufling		Stock Manager			2007-01-01	2007-12-31	122
+Jennifer Whalen		Administration Assistant	2002-07-01	2006-12-31	200
+Michael Hartstein	Marketing Manager		2004-02-17	2007-12-19	201
+*/
+
+#26. Write a query in SQL to display the department name and number of employees in each of the department.
+select d.department_name, count(e.department_id)
+from departments d join employees e
+on d.department_id = e.department_id
+group by d.department_name;
+#official solution which added department_id column
+select d.department_name, e.*
+from departments d join (
+	select department_id, count(employee_id)
+	from employees
+	group by department_id) e
+using (department_id);
+
+#27. Write a query in SQL to display the full name (firt and last name ) of employee with ID and name of the country presently where (s)he is working.  RM:  four tables.  Also added country_id from countries c table.
+select e.first_name || ' ' || e.last_name as "Full Name", e.employee_id, c.country_id, c.country_name
+from employees e inner join departments d
+on e.department_id = d.department_id
+inner join locations l
+on d.location_id = l.location_id
+inner join countries c
+on l.country_id = c.country_id;
+#same as inner join and join are the same inner join join
+select e.first_name || ' ' || e.last_name as "Full Name", e.employee_id, c.country_id, c.country_name
+from employees e join departments d
+on e.department_id = d.department_id
+join locations l
+on d.location_id = l.location_id
+join countries c
+on l.country_id = c.country_id;
+#official solution
+select first_name || ' ' || last_name as employee_name, employee_id, country_name 
+from employees join departments using(department_id) 
+join locations using(location_id) 
+join countries using (country_id);
