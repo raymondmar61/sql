@@ -466,3 +466,108 @@ Payam Kaufling    Stock Manager     2007-01-01  2007-12-31  122
 Jennifer Whalen   Administration Assistant  2002-07-01  2006-12-31  200
 Michael Hartstein Marketing Manager   2004-02-17  2007-12-19  201
 */
+
+#https://www.w3resource.com/sql-exercises/subqueries/index.php
+#RM:  joins subquery joins subqueries joins join subquery join together
+#9. Write a query to display all customers with orders on October 5, 2012.
+select *
+from customer
+where customer_id in (
+  select customer_id
+  from orders
+  where ord_date = '2012-10-05');
+#official solution
+select *
+from customer a, orders  b 
+where a.customer_id=b.customer_id 
+and b.ord_date='2012-10-05';
+
+#10. Write a query to display all the customers with orders issued on date 17th August, 2012.
+select *
+from customer
+where customer_id in (
+  select customer_id
+  from orders
+  where ord_date = '2012-08-17');
+#official solution
+select b.*, a.cust_name
+from orders b, customer a
+where a.customer_id=b.customer_id
+and b.ord_date='2012-08-17';
+
+#11. Write a query to find the name and numbers of all salesmen who had more than one customer.
+select *
+from salesman
+where salesman_id in (
+  select salesman_id
+  from customer
+  group by salesman_id
+  having count(salesman_id) >= 2);
+#official solution
+select salesman_id,name 
+from salesman a 
+where 1 < 
+    (select count(*) 
+     from customer 
+     where salesman_id=a.salesman_id);
+
+#12. Write a query to find all orders with order amounts which are above-average amounts for their customers.  RM:  subquery and join together.  subquery join subquery together.
+#official solution
+select *
+from orders oa
+where oa.purch_amt > (
+  select avg(ob.purch_amt)
+  from orders ob
+  where oa.customer_id=ob.customer_id) #<-- take customers into account per official solution
+order by customer_id;
+/*
+ord_no  purch_amt ord_date  customer_id salesman_id
+70008 5760.00 2012-09-10  3002  5001
+70013 3045.60 2012-04-25  3002  5001
+70007 948.50  2012-09-10  3005  5002
+70003 2480.40 2012-10-10  3009  5003
+*/
+
+#13. Write a queries to find all orders with order amounts which are on or above-average amounts for their customers.
+select *
+from orders oa
+where oa.purch_amt >= (
+  select avg(ob.purch_amt)
+  from orders ob
+  where oa.customer_id=ob.customer_id) #<-- take customers into account per official solution
+order by customer_id;
+
+#14. Write a query to find the sums of the amounts from the orders table, grouped by date, eliminating all those dates where the sum was not at least 1000.00 above the maximum order amount for that date.
+#official solution
+select oa.ord_date, sum(oa.purch_amt)
+from orders oa
+group by oa.ord_date
+having sum (oa.purch_amt) > (
+  select 1000.00 + max(ob.purch_amt) 
+  from orders ob 
+  where oa.ord_date = ob.ord_date);
+/*
+ord_date  sum
+2012-09-10  6979.15
+2012-10-10  4463.83
+*/
+
+#15. Write a query to extract the data from the customer table if and only if one or more of the customers in the customer table are located in London.
+#RM:  question is extract the customer table if one or more customer is from London.  There is a customer from London.
+#official solution
+select *
+from customer
+where exists (
+  select *
+    from customer 
+    where city = 'London');
+#also from comment section
+select *
+from customer ca
+where 1 >= (
+  select count(distinct cb.city)
+  from customer cb
+  where ca.customer_id=cb.customer_id
+  and cb.city='London');
+
+  
