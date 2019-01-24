@@ -570,4 +570,40 @@ where 1 >= (
   where ca.customer_id=cb.customer_id
   and cb.city='London');
 
-  
+#22. Write a query to display the customers who have a greater gradation than any customer who belongs to the alphabetically lower than the city New York.
+select ca.*
+from customer ca
+where ca.grade > any (
+  select cb.grade
+  from customer cb
+  where cb.city < 'New York');
+
+#25. Write a query to display all orders with an amount smaller than any amount for a customer in London.  #RM:  I don't understand the question becuase it's the same as #24.  The differrence is max() in the subquery orders ob, customer c.
+select oa.*
+from orders oa
+where purch_amt < any (
+  select max(ob.purch_amt)
+  from orders ob, customer c
+  where ob.customer_id = c.customer_id
+  and c.city='London');
+
+#26. Write a query to display only those customers whose grade are, in fact, higher than every customer in New York.
+select ca.*
+from customer ca
+where ca.grade > all ( #RM:  every customer means all customers
+  select cb.grade
+  from customer cb
+
+#33. Write a SQL query to display the name of each company, price for their most expensive product along with their ID.
+select c.com_name, max(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name; #RM:  display company name and most expensive product
+#official solution
+select c.com_name, i.pro_price, i.pro_name
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+and i.pro_price = (
+  select max(i.pro_price)
+  from item_mast i
+  where c.com_id = i.pro_com);  #RM:  aggregate function itself in a subquery and a join aggregate function join.  

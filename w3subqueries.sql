@@ -59,7 +59,7 @@ from orders
 where salesman_id =
     (select distinct salesman_id 
      from orders 
-     where customer_id =3007);
+     where customer_id = 3007);
 
 #4. Write a query to display all the orders which values are greater than the average order value for 10th October 2012.
 select *
@@ -102,7 +102,7 @@ where salesman_id = (
 select *
 from customer
 where customer_id = (
-	select salesman_id -2001
+	select salesman_id - 2001
 	from salesman
 	where name = 'Mc Lyon');
 
@@ -172,7 +172,7 @@ where 1 <
      from customer 
      where salesman_id=a.salesman_id);
 
-#12. Write a query to find all orders with order amounts which are above-average amounts for their customers.  RM:  subquery and join together.  subquery join subquery together.
+#12. Write a query to find all orders with order amounts which are above-average amounts for their customers.  RM:  subquery and join together.  subquery join subquery together.  join same table join.
 select avg(o.purch_amt)
 from orders o;
 /*
@@ -244,7 +244,7 @@ ord_no	purch_amt	ord_date	customer_id	salesman_id
 70003	2480.40	2012-10-10	3009	5003
 */
 
-#14. Write a query to find the sums of the amounts from the orders table, grouped by date, eliminating all those dates where the sum was not at least 1000.00 above the maximum order amount for that date.
+#14. Write a query to find the sums of the amounts from the orders table, grouped by date, eliminating all those dates where the sum was not at least 1000.00 above the maximum order amount for that date.  join same table join.
 #official solution
 select oa.ord_date, sum(oa.purch_amt)
 from orders oa
@@ -259,8 +259,7 @@ ord_date	sum
 2012-10-10	4463.83
 */
 
-#15. Write a query to extract the data from the customer table if and only if one or more of the customers in the customer table are located in London.
-#RM:  question is extract the customer table if one or more customer is from London.  There is a customer from London.
+#15. Write a query to extract the data from the customer table if and only if one or more of the customers in the customer table are located in London.  join same table join.  #RM:  question is extract the customer table if one or more customer is from London.  There is a customer from London.
 #official solution
 select *
 from customer
@@ -316,3 +315,366 @@ where salesman_id in (
       from customer b 
       where b.salesman_id=a.salesman_id 
       and b.cust_name<>a.cust_name));
+
+#18. Write a query that extract the rows of all salesmen who have customers with more than one orders.
+select *
+from salesman
+where salesman_id in (
+	select salesman_id
+	from customer
+	where customer_id in (
+		select customer_id
+		from orders
+		group by customer_id
+		having count(customer_id) > 1));
+#official solution
+select * 
+from salesman a 
+where exists
+   (select *
+   	from customer b
+    where a.salesman_id = b.salesman_id
+	and 1 < (
+	 	select count (*)
+		from orders
+		where orders.customer_id = b.customer_id));
+
+#19. Write a query to find salesmen with all information who lives in the city where any of the customers lives.
+select distinct s.*
+from salesman s, customer c
+where s.salesman_id=c.salesman_id
+and s.city=c.city;  #RM:  incorrect.  Want salesmen lives in a city where ANY of the customers live.  Not matching salesman and customer city.
+#official solution
+select *
+from salesman
+where city = any (
+	select city
+	from customer);
+#I like the comment solution
+select *
+from salesman a
+where a.city in (
+	select city
+	from customer
+	where a.city=city);
+#I like the comment solution
+select *
+from salesman sa
+where exists (
+	select *
+	from customer cu
+	where sa.city = cu.city);
+
+#20. Write a query to find all the salesmen for whom there are customers that follow them.  RM:  I don't understand the question.
+#official solution
+select *
+from salesman
+where city in (
+	select city
+	from customer);
+#comment section says official solution is incorrect
+select s.*
+from salesman s
+where s.salesman_id in (
+	select salesman_id
+	from customer);
+
+#21. Write a query to display the salesmen which name are alphabetically lower than the name of the [their] customers.  RM:  I believe question is salesman name is below their customer's name
+#official solution
+select *
+from salesman a
+where exists (
+	select *
+	from customer b
+	where a.name < b.cust_name);
+
+#22. Write a query to display the customers who have a greater gradation than any customer who belongs to the alphabetically lower than the city New York.
+select ca.*
+from customer ca
+where ca.grade > any (
+	select cb.grade
+	from customer cb
+	where cb.city < 'New York');
+
+#23. Write a query to display all the orders that had amounts that were greater than at least one of the orders on September 10th 2012.
+select oa.*
+from orders oa
+where purch_amt > any (
+	select ob.purch_amt
+	from orders ob
+	where ob.ord_date = '2012-09-10');
+
+#24. Write a query to find all orders with an amount smaller than any amount for a customer in London.
+select oa.*
+from orders oa
+where purch_amt < any (
+	select ob.purch_amt
+	from orders ob, customer c
+	where ob.customer_id = c.customer_id
+	and c.city='London');
+
+#25. Write a query to display all orders with an amount smaller than any amount for a customer in London.  #RM:  I don't understand the question becuase it's the same as #24.  The differrence is max() in the subquery orders ob, customer c.
+select oa.*
+from orders oa
+where purch_amt < any (
+	select max(ob.purch_amt)
+	from orders ob, customer c
+	where ob.customer_id = c.customer_id
+	and c.city='London');
+
+#26. Write a query to display only those customers whose grade are, in fact, higher than every customer in New York.
+select ca.*
+from customer ca
+where ca.grade > all ( #RM:  every customer means all customers
+	select cb.grade
+	from customer cb
+	where cb.city = 'New York');
+
+#27. Write a query to find only those customers whose grade are, higher than every customer to the city New York.  RM:  official solution same as #26.
+select ca.*
+from customer ca
+where ca.grade > all ( #RM:  every customer means all customers
+	select cb.grade
+	from customer cb
+	where cb.city = 'New York');
+
+#28. Write a query to get all the information for those customers whose grade is not as the grade of customer who belongs to the city London.
+select ca.*
+from customer ca
+where ca.grade not in ( #RM:  not in is invalid because there is a customer in London grade is null
+	select cb.grade
+	from customer cb
+	where cb.city = 'London');
+#official solution
+select ca.*
+from customer ca
+where ca.grade <> any (
+	select cb.grade
+	from customer cb
+	where cb.city = 'London');
+#city London must have a grade.  not in is valid because all customers in London must have a grade
+select ca.*
+from customer ca
+where ca.grade not in (
+	select cb.grade
+	from customer cb
+	where cb.city = 'London'
+	and cb.grade is not null);
+
+#29. Write a query to find all those customers whose grade are not as the grade, belongs to the city Paris.
+select ca.*
+from customer ca
+where ca.grade not in (
+	select cb.grade
+	from customer cb
+	where cb.city = 'Paris');
+
+#30. Write a query to find all those customers who hold a different grade than any customer of the city Dallas.  #RM:  reading the comments the question is find customers don't have a grade from Dallas.  There are no customers in Dallas.  Stupid question.  Practice using where not.
+#official solution
+select ca.*
+from customer ca
+where not ca.grade = any (
+	select cb.grade
+	from customer cb
+	where cb.city = 'Dallas');
+
+/*
+Sample table:  company_mast
+COM_ID COM_NAME
+------ -------------
+    11 Samsung
+    12 iBall
+    13 Epsion
+    14 Zebronics
+    15 Asus
+    16 Frontech
+
+Sample table: item_mast
+PRO_ID PRO_NAME                   PRO_PRICE    PRO_COM
+------- ------------------------- ---------- ----------
+    101 Mother Board                    3200         15
+    102 Key Board                        450         16
+    103 ZIP drive                        250         14
+    104 Speaker                          550         16
+    105 Monitor                         5000         11
+    106 DVD drive                        900         12
+    107 CD drive                         800         12
+    108 Printer                         2600         13
+    109 Refill cartridge                 350         13
+    110 Mouse                            250         12
+*/
+
+#31. Write a SQL query to find the average price of each manufacturer's products along with their name.
+select c.com_name, avg(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name;
+#comments section use a subquery
+select com_name as compname, (
+	select avg(pro_price)
+	from item_mast
+	where pro_com = com_id) as avgprice
+from company_mast;
+
+#32. Write a SQL query to display the average price of the products which is more than or equal to 350 along with theri names.
+select c.com_name, avg(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name
+having avg(i.pro_price) >= 350;
+#comments section use a subquery
+select com_name as compname, (
+	select avg(pro_price)
+	from item_mast
+	where pro_com = com_id
+	having avg(pro_price) >= 350) as avgprice
+from company_mast;  #RM:  Zebronics average price less than 350 appears on results showing null under avgprice
+#comments section use a subquery
+select compname, avgprice
+from (
+	select com_name as compname, (
+		select avg(pro_price)
+		from item_mast
+		where pro_com = com_id) as avgprice
+	from company_mast) tmp
+where avgprice >= 350;
+
+#33. Write a SQL query to display the name of each company, price for their most expensive product along with their ID.
+select c.com_name, max(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name; #RM:  display company name and most expensive product
+#official solution
+select c.com_name, i.pro_price, i.pro_name
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+and i.pro_price = (
+	select max(i.pro_price)
+	from item_mast i
+	where c.com_id = i.pro_com);  #RM:  aggregate function itself in a subquery and a join aggregate function join.
+
+/*
+Sample table:  emp_details
+EMP_IDNO EMP_FNAME       EMP_LNAME         EMP_DEPT
+--------- --------------- --------------- ----------
+   127323 Michale         Robbin                  57
+   526689 Carlos          Snares                  63
+   843795 Enric           Dosio                   57
+   328717 Jhon            Snares                  63
+   444527 Joseph          Dosni                   47
+   659831 Zanifer         Emily                   47
+   847674 Kuleswar        Sitaraman               57
+   748681 Henrey          Gabriel                 47
+   555935 Alex            Manuel                  57
+   539569 George          Mardy                   27
+   733843 Mario           Saule                   63
+   631548 Alan            Snappy                  27
+   839139 Maria           Foster                  57
+*/
+#34. Write a query in SQL to find all the details of employees whose last name is Gabriel or Dosio.
+select *
+from emp_details
+where emp_lname in ('Gabriel','Dosio');
+#subquery
+select *
+from emp_details
+where emp_lname in (
+	select emp_lname
+	from emp_details
+	where emp_lname in ('Gabriel','Dosio'));
+
+/*
+Sample table: emp_department
+DPT_CODE DPT_NAME        DPT_ALLOTMENT
+-------- --------------- -------------
+      57 IT                      65000
+      63 Finance                 15000
+      47 HR                     240000
+      27 RD                      55000
+      89 QC                      75000
+*/
+#35. Write a query in SQL to display all the details of employees who works in department 89 or 63.
+select *
+from emp_details
+where emp_dept in (89, 63);
+#same as
+select empdet.*
+from emp_details empdet, emp_department empdep
+where empdet.emp_dept = empdep.dpt_code
+and empdep.dpt_code in (89, 63);
+#same as
+select empdet.*
+from emp_details empdet inner join emp_department empdep
+on empdet.emp_dept = empdep.dpt_code
+where empdep.dpt_code in (89, 63);
+
+#36. Write a query in SQL to display the first name and last name of employees working for the department which allotment amount is more than Rs.50000.
+select emp_fname, emp_lname
+from emp_details
+where emp_dept in (
+	select dpt_code
+	from emp_department
+	where dpt_allotment > 50000);
+
+#37. Write a query in SQL to find the departments which sanction amount is larger than the average sanction amount of all the departments.
+select *
+from emp_department
+where dpt_allotment > (
+	select avg(dpt_allotment)
+	from emp_department);
+
+#38. Write a query in SQL to find the names of departments with more than two employees are working.
+select *
+from emp_department
+where dpt_code in (
+	select emp_dept
+	from emp_details
+	group by emp_dept
+	having count(emp_dept) > 2);
+
+#39. Write a query in SQL to find the first name and last name of employees working for departments which sanction amount is second lowest.
+select emp_fname, emp_lname
+from emp_details
+where emp_dept in (
+	select dpt_code
+	from emp_department
+	group by dpt_code
+	having dpt_allotment > min(dpt_allotment)); #RM:  incorrect SQL doesn't answer the question.  Want second lowest amount.
+
+select emp_fname, emp_lname
+from emp_details
+where emp_dept in (
+	select dpt_code
+	from emp_department
+	where dpt_allotment > (
+		select min(dpt_allotment)
+		from emp_department)); #RM:  incorrect SQL doesn't answer the question.  Want second lowest amount.
+
+select emp_fname, emp_lname
+from emp_details
+where emp_dept in (
+	select dpt_code
+	from emp_department
+	where dpt_allotment = (
+		select dpt_allotment
+		from (
+			select dpt_allotment, rank() over (order by dpt_allotment asc) as rnk
+			from emp_department)
+		where rnk = 2)); #RM:  no result
+
+select emp_fname, emp_lname
+from emp_details
+where emp_dept in (
+	select dpt_code
+	from emp_department
+	where dpt_allotment = (
+			select dpt_allotment, rank() over (order by dpt_allotment asc) as rnk
+			from emp_department
+			where rnk = 2)); #RM:  no result
+
+select emp_fname, emp_lname
+from emp_details
+where emp_dept in (
+	select dpt_code from (
+		select *, rank() over (order by dpt_allotment) rank from emp_department)
+	where rank=2);
