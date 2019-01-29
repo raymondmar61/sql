@@ -676,5 +676,5 @@ select emp_fname, emp_lname
 from emp_details
 where emp_dept in (
 	select dpt_code from (
-		select *, rank() over (order by dpt_allotment) rank from emp_department)
-	where rank=2);
+		select dpt_code, rank() over (order by dpt_allotment asc) rank from emp_department) neednamehere
+	where rank = 2);  #returns Alan Snappy and George Mardy

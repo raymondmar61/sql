@@ -606,4 +606,44 @@ where c.com_id = i.pro_com
 and i.pro_price = (
   select max(i.pro_price)
   from item_mast i
-  where c.com_id = i.pro_com);  #RM:  aggregate function itself in a subquery and a join aggregate function join.  
+  where c.com_id = i.pro_com);  #RM:  aggregate function itself in a subquery and a join aggregate function join.
+
+#38. Write a query in SQL to find the names of departments with more than two employees are working.
+select *
+from emp_department
+where dpt_code in (
+  select emp_dept
+  from emp_details
+  group by emp_dept
+  having count(emp_dept) > 2);
+
+#39. Write a query in SQL to find the first name and last name of employees working for departments which sanction amount is second lowest.
+select emp_fname, emp_lname
+from emp_details
+where emp_dept in (
+  select dpt_code from (
+    select dpt_code, rank() over (order by dpt_allotment asc) rank from emp_department) neednamehere
+  where rank = 2);  #returns Alan Snappy and George Mardy
+
+#https://www.w3resource.com/sql-exercises/sql-subqueries-exercises.php
+#10. Write a query to display all the information of the employees whose salary is within the range of smallest salary and 2500.
+select *
+from employees
+where salary between (
+  select min(salary)
+  from employees) and 2500;
+
+#12. Write a query to display all the information for those employees whose id is any id who earn the second highest salary.
+select *
+from (
+  select employees.*, rank() over (order by salary desc) rank 
+  from employees) employee_rank
+  where rank = 2
+#also
+select *
+from employees
+where employee_id in (
+  select employee_id from (
+    select employee_id, rank() over (order by salary desc) rank 
+  from employees) employee_rank
+  where rank = 2);
