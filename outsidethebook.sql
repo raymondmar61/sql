@@ -81,6 +81,17 @@ end) as "cases comparsion operations", last_name
 from employees
 where salary >= 8500;
 
+#23. Write a query to display the employee id, name ( first name and last name ) and the job id column with a modified title SALESMAN for those employees whose job title is ST_MAN and DEVELOPER for whose job title is IT_PROG.
+select employee_id, first_name, last_name, (case when job_id = 'ST_MAN' then 'SALESMAN', when job_id = 'IT_PROG' then 'DEVELOPER' else job_id end) as "Job Title"
+from employees;
+#official solution no paranthesis required
+select employee_id, first_name, last_name, case job_id when 'ST_MAN' then 'SALESMAN' when 'IT_PROG' then 'DEVELOPER' else job_id end as "Job Title"
+from employees;
+
+#24. Write a query to display the employee id, name ( first name and last name ), salary and the SalaryStatus column with a title HIGH and LOW respectively for those employees whose salary is more than and less than the average salary of all employees.  #RM:  subquery inside a case or inside a if statement.
+select employee_id, first_name, last_name, salary, case when salary > (select avg(salary) from employees) then 'HIGH' when salary < (select avg(salary) from employees) then 'LOW' else 'MATCH' end as "Salary Status"
+from employees;
+
 #Import data from Excel to Oracle SQL Developer
 create table jobsearchlog (dateapplied date, wherejobfound varchar(100), applyjobat varchar(100), company varchar(100), position varchar(100), jobid varchar(50), comments varchar(250), userid varchar(50), password varchar(50));  --RM create table at hrpdborcl
 drop table jobsearchlog; --RM: needed increase varchar length.  delete table and update create table sql statement
@@ -647,3 +658,72 @@ where employee_id in (
     select employee_id, rank() over (order by salary desc) rank 
   from employees) employee_rank
   where rank = 2);
+
+#15. Write a query to display the employee number, name( first name and last name ), and salary for all employees who earn more than the average salary and who work in a department with any employee with a J in their name.  #RM:  two subqueries in one query.  Two subqueries combined with and statement.
+select employee_id, first_name || ' ' last_name as "Name", salary
+from employees
+where employee_id in (
+  select employee_id
+  from employees
+  where salary > (
+    select avg(salary)
+    from employees))
+and first_name like '%J%';  #returns nothing
+select employee_id, first_name, salary  
+from employees  
+where salary > (
+  select avg (salary)  
+  from employees)
+and department_id in (
+  select department_id  
+  from employees  
+  where first_name like '%J%');
+
+#17. Write a query to display the employee number, name( first name and last name ) and job title for all employees whose salary is smaller than any salary of those employees whose job title is MK_MAN.  #RM:  there is one MK_MAN.
+select employee_id, first_name, last_name, job_id
+from employees
+where salary < any (
+  select salary
+  from employees
+  where job_id = 'MK_MAN');
+
+#19. Write a query to display the employee number, name( first name and last name ) and job title for all employees whose salary is more than any salary of those employees whose job title is PU_MAN. Exclude job title PU_MAN.  #RM:  official answer says salary > all (...  Questions asked for any salary.
+select employee_id, first_name, last_name, job_id
+from employees
+where salary > all (
+  select salary
+  from employees
+  where job_id = 'PU_MAN')
+and job_id <> 'PU_MAN';
+
+#20. Write a query to display the employee number, name( first name and last name ) and job title for all employees whose salary is more than any average salary of any department.
+select employee_id, first_name, last_name, job_id
+from employees
+where salary > all (
+  select avg(salary)
+  from employees
+  group by department_id);
+
+#22. Write a query to display the department id and the total salary for those departments which contains at least one employee.
+select department_id, sum(salary)
+from employees
+group by department_id
+having count(department_id) > 1
+order by department_id;
+#official solution using inner join
+select departments.department_id, result1.total_amt 
+from departments, (
+  select employees.department_id, sum(employees.salary) total_amt  
+  from employees  
+  group by department_id) result1 
+where result1.department_id = departments.department_id;
+#comments subquery
+select department_id, sum(salary), count(employee_id)
+from employees 
+where 0 < any (
+  select count(employee_id)
+  from employees,departments
+  where departments.department_id = employees.employee_id)
+group by department_id
+order by department_id;
+

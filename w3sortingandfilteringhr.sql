@@ -136,6 +136,7 @@ from employees
 where department_id is null;  #RM:  database 0 represents no department number.
 
 /*
+Sample table:  departments
 +---------------+----------------------+------------+-------------+
 | DEPARTMENT_ID | DEPARTMENT_NAME      | MANAGER_ID | LOCATION_ID |
 +---------------+----------------------+------------+-------------+

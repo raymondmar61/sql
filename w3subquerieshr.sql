@@ -293,4 +293,145 @@ from employees
 where department_id in (
 	select department_id
 	from employees
-	where first name like '%T%');
+	where first_name like '%T%');
+
+#15. Write a query to display the employee number, name( first name and last name ), and salary for all employees who earn more than the average salary and who work in a department with any employee with a J in their name.  #RM:  two subqueries in one query.  Two subqueries combined with and statement.
+select employee_id, first_name || ' ' last_name as "Name", salary
+from employees
+where employee_id in (
+	select employee_id
+	from employees
+	where salary > (
+		select avg(salary)
+		from employees))
+and first_name like '%J%';  #returns nothing
+select employee_id, first_name, salary
+from employees
+where salary > (
+	select avg (salary)
+	from employees)
+and	department_id in (
+	select department_id
+	from employees
+	where first_name like '%J%');
+
+/*
+Sample table:  locations
++-------------+------------------------------------------+-------------+---------------------+-------------------+------------+
+| LOCATION_ID | STREET_ADDRESS                           | POSTAL_CODE | CITY                | STATE_PROVINCE    | COUNTRY_ID |
++-------------+------------------------------------------+-------------+---------------------+-------------------+------------+
+|        1000 | 1297 Via Cola di Rie                     | 989         | Roma                |                   | IT         |
+|        1100 | 93091 Calle della Testa                  | 10934       | Venice              |                   | IT         |
+|        1200 | 2017 Shinjuku-ku                         | 1689        | Tokyo               | Tokyo Prefecture  | JP         |
+|        1300 | 9450 Kamiya-cho                          | 6823        | Hiroshima           |                   | JP         |
+|        1400 | 2014 Jabberwocky Rd                      | 26192       | Southlake           | Texas             | US         |
+|        1500 | 2011 Interiors Blvd                      | 99236       | South San Francisco | California        | US         |
+|        1600 | 2007 Zagora St                           | 50090       | South Brunswick     | New Jersey        | US         |
+|        1700 | 2004 Charade Rd                          | 98199       | Seattle             | Washington        | US         |
+|        1800 | 147 Spadina Ave                          | M5V 2L7     | Toronto             | Ontario           | CA         |
+|        1900 | 6092 Boxwood St                          | YSW 9T2     | Whitehorse          | Yukon             | CA         |
+|        2000 | 40-5-12 Laogianggen                      | 190518      | Beijing             |                   | CN         |
+|        2100 | 1298 Vileparle (E)                       | 490231      | Bombay              | Maharashtra       | IN         |
+|        2200 | 12-98 Victoria Street                    | 2901        | Sydney              | New South Wales   | AU         |
+|        2300 | 198 Clementi North                       | 540198      | Singapore           |                   | SG         |
+|        2400 | 8204 Arthur St                           |             | London              |                   | UK         |
+|        2500 | Magdalen Centre, The Oxford Science Park | OX9 9ZB     | Oxford              | Oxford            | UK         |
+|        2600 | 9702 Chester Road                        | 9629850293  | Stretford           | Manchester        | UK         |
+|        2700 | Schwanthalerstr. 7031                    | 80925       | Munich              | Bavaria           | DE         |
+|        2800 | Rua Frei Caneca 1360                     | 01307-002   | Sao Paulo           | Sao Paulo         | BR         |
+|        2900 | 20 Rue des Corps-Saints                  | 1730        | Geneva              | Geneve            | CH         |
+|        3000 | Murtenstrasse 921                        | 3095        | Bern                | BE                | CH         |
+|        3100 | Pieter Breughelstraat 837                | 3029SK      | Utrecht             | Utrecht           | NL         |
+|        3200 | Mariano Escobedo 9991                    | 11932       | Mexico City         | Distrito Federal, | MX         |
++-------------+------------------------------------------+-------------+---------------------+-------------------+------------+
+*/
+#16. Display the employee name( first name and last name ), employee id, and job title for all employees whose department location is Toronto.
+select first_name, last_name, employee_id, job_id
+from employees
+where department_id in (
+	select department_id
+	from departments
+	where location_id in (
+		select location_id
+		from locations
+		where city = 'Toronto'));
+
+#17. Write a query to display the employee number, name( first name and last name ) and job title for all employees whose salary is smaller than any salary of those employees whose job title is MK_MAN.  #RM:  there is one MK_MAN.
+select employee_id, first_name, last_name, job_id
+from employees
+where salary < any (
+	select salary
+	from employees
+	where job_id = 'MK_MAN');
+
+#18. Write a query to display the employee number, name( first name and last name ) and job title for all employees whose salary is smaller than any salary of those employees whose job title is MK_MAN. Exclude Job title MK_MAN.  #RM:  there is one MK_MAN.
+select employee_id, first_name, last_name, job_id
+from employees
+where salary < any (
+	select salary
+	from employees
+	where job_id = 'MK_MAN')
+and job_id <> 'MK_MAN';
+
+#19. Write a query to display the employee number, name( first name and last name ) and job title for all employees whose salary is more than any salary of those employees whose job title is PU_MAN. Exclude job title PU_MAN.  #RM:  official answer says salary > all (...  Questions asked for any salary.
+select employee_id, first_name, last_name, job_id
+from employees
+where salary > all (
+	select salary
+	from employees
+	where job_id = 'PU_MAN')
+and job_id <> 'PU_MAN';
+
+#20. Write a query to display the employee number, name( first name and last name ) and job title for all employees whose salary is more than any average salary of any department.  #RM:  official answer says salary > all (...  Questions asked for any salary.
+select employee_id, first_name, last_name, job_id
+from employees
+where salary > all (
+	select avg(salary)
+	from employees
+	group by department_id);
+
+#21. Write a query to display the employee name( first name and last name ) and department for all employees for any existence of those employees whose salary is more than 3700.
+select first_name, last_name, department_id
+from employees
+where salary > 3700;
+#official solution
+select first_name, last_name, department_id 
+from employees 
+where exists (
+	select * 
+	from employees 
+	where salary > 3700);  #RM:  I remember seeing the SQL key word exists.
+
+#22. Write a query to display the department id and the total salary for those departments which contains at least one employee.
+select department_id, sum(salary)
+from employees
+group by department_id
+having count(department_id) > 1
+order by department_id;
+#official solution using inner join
+select departments.department_id, result1.total_amt 
+from departments, (
+	select employees.department_id, sum(employees.salary) total_amt  
+	from employees  
+	group by department_id) result1 
+where result1.department_id = departments.department_id;
+#comments subquery
+select department_id, sum(salary), count(employee_id)
+from employees 
+where 0 < any (
+	select count(employee_id)
+	from employees,departments
+	where departments.department_id = employees.employee_id)
+group by department_id
+order by department_id;
+
+#23. Write a query to display the employee id, name ( first name and last name ) and the job id column with a modified title SALESMAN for those employees whose job title is ST_MAN and DEVELOPER for whose job title is IT_PROG.
+select employee_id, first_name, last_name, (case when job_id = 'ST_MAN' then 'SALESMAN', when job_id = 'IT_PROG' then 'DEVELOPER' else '' end) as "Job Title"
+from employees;
+#official solution no paranthesis required
+select employee_id, first_name, last_name, case job_id when 'ST_MAN' then 'SALESMAN' when 'IT_PROG' then 'DEVELOPER' else job_id end as "Job Title"
+from employees;
+
+#24. Write a query to display the employee id, name ( first name and last name ), salary and the SalaryStatus column with a title HIGH and LOW respectively for those employees whose salary is more than and less than the average salary of all employees.  #RM:  subquery inside a case or inside a if statement.
+select employee_id, first_name, last_name, salary, case when salary > (select avg(salary) from employees) then 'HIGH' when salary < (select avg(salary) from employees) then 'LOW' else 'MATCH' end as "Salary Status"
+from employees;
