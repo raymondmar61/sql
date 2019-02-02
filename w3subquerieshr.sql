@@ -435,3 +435,146 @@ from employees;
 #24. Write a query to display the employee id, name ( first name and last name ), salary and the SalaryStatus column with a title HIGH and LOW respectively for those employees whose salary is more than and less than the average salary of all employees.  #RM:  subquery inside a case or inside a if statement.
 select employee_id, first_name, last_name, salary, case when salary > (select avg(salary) from employees) then 'HIGH' when salary < (select avg(salary) from employees) then 'LOW' else 'MATCH' end as "Salary Status"
 from employees;
+
+#25. Write a query to display the employee id, name ( first name and last name ), SalaryDrawn, AvgCompare (salary - the average salary of all employees) and the SalaryStatus column with a title HIGH and LOW respectively for those employees whose salary is more than and less than the average salary of all employees.
+select employee_id, first_name, last_name, salary as SalaryDrawn, round((salary-(select avg(salary) from employees)),2) as AvgCompare, case when salary > (select avg(salary) from employees) then 'HIGH' when salary < (select avg(salary) from employees) then 'LOW' else 'MATCH' end as SalaryStatus
+from employees;
+
+#26. Write a subquery that returns a set of rows to find all departments that do actually have one or more employees assigned to them.
+select department_id, count(department_id)
+from employees
+group by department_id
+having count(department_id) >= 1
+order by department_id;
+#official solution  #RM:  returned department names
+select department_name 
+from departments 
+where department_id in (
+	select distinct(department_id) 
+	from employees);
+#another solution  #RM:  returned department names and employee count.
+select d.department_name, count(e.department_id)
+from employees e, departments d
+where e.department_id = d.department_id
+group by e.department_id, d.department_name
+having count(e.department_id) >= 1
+order by e.department_id;
+
+/*
+Sample table: countries
++------------+--------------------------+-----------+
+| COUNTRY_ID | COUNTRY_NAME             | REGION_ID |
++------------+--------------------------+-----------+
+| AR         | Argentina                |         2 |
+| AU         | Australia                |         3 |
+| BE         | Belgium                  |         1 |
+| BR         | Brazil                   |         2 |
+| CA         | Canada                   |         2 |
+| CH         | Switzerland              |         1 |
+| CN         | China                    |         3 |
+| DE         | Germany                  |         1 |
+| DK         | Denmark                  |         1 |
+| EG         | Egypt                    |         4 |
+| FR         | France                   |         1 |
+| IL         | Israel                   |         4 |
+| IN         | India                    |         3 |
+| IT         | Italy                    |         1 |
+| JP         | Japan                    |         3 |
+| KW         | Kuwait                   |         4 |
+| ML         | Malaysia                 |         3 |
+| MX         | Mexico                   |         2 |
+| NG         | Nigeria                  |         4 |
+| NL         | Netherlands              |         1 |
+| SG         | Singapore                |         3 |
+| UK         | United Kingdom           |         1 |
+| US         | United States of America |         2 |
+| ZM         | Zambia                   |         4 |
+| ZW         | Zimbabwe                 |         4 |
++------------+--------------------------+-----------+
+*/
+#27. Write a query that will identify all employees who work in departments located in the United Kingdom.
+select *
+from employees
+where department_id in (
+	select department_id
+	from departments
+	where location_id in (
+		select location_id
+		from locations
+		where country_id in (
+			select country_id
+			from countries
+			where country_name = 'United Kingdom')));
+
+#28. Write a query to identify all the employees who earn more than the average and who work in any of the IT departments.
+select *
+from employees
+where salary > (
+	select avg(salary)
+	from employees)
+and department_id in (
+	select department_id
+	from departments
+	where department_name like '%IT%');
+
+#29. Write a query to determine who earns more than Mr. Ozer.
+select *
+from employees
+where salary > (
+	select salary
+	from employees
+	where last_name = 'Ozer');
+
+#30. Write a query to find out which employees have a manager who works for a department based in the US.
+select *
+from employees
+where manager_id in (
+	select manager_id
+	from departments
+	where location_id in (
+		select location_id
+		from locations
+		where country_id = 'US'));  #partially correct.  departments table have some manager_id which is null.
+#correct answer  acquire the manager_id from its employee_id
+select *
+from employees
+where manager_id in (
+	select employee_id
+	from employees
+	where manager_id in (
+		select manager_id
+		from departments
+		where location_id in (
+			select location_id
+			from locations
+			where country_id = 'US')));
+
+#31. Write a query which is looking for the names of all employees whose salary is greater than 50% of their department’s total salary bill.
+select *
+from employees e, employeessalary es
+where e.department_id = es.department_id
+and e.salary > (
+	select department_id, sum(salary)*.50 as salary
+	from employees es
+	group by department_id); #incorrect
+select *
+from employees e, employees es
+where e.department_id = es.department_id
+and e.salary > (
+	select es.department_id, sum(es.salary)*.50 as salary
+	from employees es
+	group by es.department_id); #incorrect
+select *
+from employees e
+where e.salary > (
+	select sum(es.salary)*.50 as salary
+	from employees es
+	where e.department_id = es.department_id
+	group by es.department_id); #correct
+#official solution
+select e1.first_name, e1.last_name 
+from employees e1 
+where salary > (
+	select (sum(salary))*.5 
+	from employees e2 
+	where e1.department_id=e2.department_id);

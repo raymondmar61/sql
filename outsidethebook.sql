@@ -727,3 +727,52 @@ where 0 < any (
 group by department_id
 order by department_id;
 
+#26. Write a subquery that returns a set of rows to find all departments that do actually have one or more employees assigned to them.
+select department_id, count(department_id)
+from employees
+group by department_id
+having count(department_id) >= 1
+order by department_id;
+#official solution  #RM:  returned department names
+select department_name 
+from departments 
+where department_id in (
+  select distinct(department_id) 
+  from employees);
+#another solution  #RM:  returned department names and employee count.
+select d.department_name, count(e.department_id)
+from employees e, departments d
+where e.department_id = d.department_id
+group by e.department_id, d.department_name
+having count(e.department_id) >= 1
+order by e.department_id;
+
+#31. Write a query which is looking for the names of all employees whose salary is greater than 50% of their department’s total salary bill.
+select *
+from employees e, employeessalary es
+where e.department_id = es.department_id
+and e.salary > (
+  select department_id, sum(salary)*.50 as salary
+  from employees es
+  group by department_id); #incorrect
+select *
+from employees e, employees es
+where e.department_id = es.department_id
+and e.salary > (
+  select es.department_id, sum(es.salary)*.50 as salary
+  from employees es
+  group by es.department_id); #incorrect
+select *
+from employees e
+where e.salary > (
+  select sum(es.salary)*.50 as salary
+  from employees es
+  where e.department_id = es.department_id
+  group by es.department_id); #correct
+#official solution
+select e1.first_name, e1.last_name 
+from employees e1 
+where salary > (
+  select (sum(salary))*.5 
+  from employees e2 
+  where e1.department_id=e2.department_id);
