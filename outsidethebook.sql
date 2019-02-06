@@ -776,3 +776,13 @@ where salary > (
   select (sum(salary))*.5 
   from employees e2 
   where e1.department_id=e2.department_id);
+
+#34. Write a query to display the employee id, name ( first name and last name ), salary, department name and city for all the employees who gets the salary as the salary earn by the employee which is maximum within the joining person January 1st, 2002 and December 31st, 2003.  RM:  as I expected.  Find the employees making the highest salary hired between January 1, 2002 and December 31, 2003.  #RM:  two subqueries 2 subquery where and
+select e.employee_id, e.first_name, e.last_name, e.salary, d.department_name, l.city
+from employees e, departments d, locations l
+where salary = (
+  select max(e.salary)
+  from employees e
+  where hire_date is between '2002-01-01' and '2003-12-31')
+and e.department_id = d.department_id
+and d.location_id = l.location_id;

@@ -578,3 +578,74 @@ where salary > (
 	select (sum(salary))*.5 
 	from employees e2 
 	where e1.department_id=e2.department_id);
+
+#32. Write a query to get the details of employees who are managers.
+select *
+from employees
+where employee_id in (
+	select distinct manager_id
+	from employees);
+
+#33. Write a query to get the details of employees who manage a department.
+select *
+from employees
+where employee_id in (
+	select manager_id
+	from departments);
+#official solution
+select * 
+from employees 
+where employee_id=any (
+	select manager_id
+	from departments);
+#RM:  both solutions return same results
+
+#34. Write a query to display the employee id, name ( first name and last name ), salary, department name and city for all the employees who gets the salary as the salary earn by the employee which is maximum within the joining person January 1st, 2002 and December 31st, 2003.  RM:  as I expected.  Find the employees making the highest salary hired between January 1, 2002 and December 31, 2003.  #RM:  two subqueries 2 subqueries 2 subquery where and
+select e.employee_id, e.first_name, e.last_name, e.salary, d.department_name, l.city
+from employees e, departments d, locations l
+where salary = (
+	select max(e.salary)
+	from employees e
+	where hire_date is between '2002-01-01' and '2003-12-31')
+and e.department_id = d.department_id
+and d.location_id = l.location_id;
+
+#35. Write a query in SQL to display the department code and name for all departments which located in the city London.
+select department_id, department_name
+from departments
+where location_id in (
+	select location_id
+	from locations
+	where city = 'London');
+
+#36. Write a query in SQL to display the first and last name, salary, and department ID for all those employees who earn more than the average salary and arrange the list in descending order on salary. 
+select first_name, last_name, salary, department_id
+from employees
+where salary > (
+	select avg(salary)
+	from employees)
+order by salary desc;
+
+#37. Write a query in SQL to display the first and last name, salary, and department ID for those employees who earn more than the maximum salary of a department which ID is 40.
+select first_name, last_name, salary, department_id
+from employees
+where salary > (
+	select max(salary)
+	from employees
+	where department_id = 40);
+
+#38. Write a query in SQL to display the department name and Id for all departments where they located, that Id is equal to the Id for the location where department number 30 is located.
+select department_name, department_id
+from departments
+where location_id = (
+	select location_id
+	from departments
+	where department_id = 30);
+
+#39. Write a query in SQL to display the first and last name, salary, and department ID for all those employees who work in that department where the employee works who hold the ID 201.
+select first_name, last_name, salary, department_id
+from employees
+where department_id = (
+	select department_id
+	from employees
+	where employee_id = 201);
