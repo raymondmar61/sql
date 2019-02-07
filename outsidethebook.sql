@@ -786,3 +786,33 @@ where salary = (
   where hire_date is between '2002-01-01' and '2003-12-31')
 and e.department_id = d.department_id
 and d.location_id = l.location_id;
+
+#48. Write a query in SQL to display the the details of those departments which max salary is 7000 or above for those employees who already done one or more jobs.  #RM:  should be greater than one jobs.
+select *
+from departments
+where department_id in (
+  select department_id
+  from employees
+  where employee_id in (
+    select employee_id
+    from job_history
+    group by employee_id
+    having count(employee_id) > 1) #employee id's 101, 176, 200
+  group by department_id
+  having max(salary) > 7000);  #department id's 90, 80
+
+#54. Write a query in SQL to display the department ID, full name (first and last name), salary for those employees who is highest salary drawar in a department.  #RM:  subquery returns two or more columns.  Subquery two columns.
+#comment solution
+select department_id, first_name || ' ' || last_name as employee_name, salary
+from employees
+where (department_id, salary) in (
+  select department_id, max(salary) 
+  from employees
+  group by department_id);
+#official solution
+select ea.department_id, ea.first_name || ' ' || ea.last_name as employee_name, ea.salary 
+from employees ea
+where ea.salary = (
+  select max(eb.salary) 
+  from employees eb 
+  where eb.department_id = ea.department_id);  #RM:  Partially correct.  What if two or more departments have same maximum salary?  My guess is the where eb.department_id = ea.department_id prevents the same maximum salary?
