@@ -816,3 +816,48 @@ where ea.salary = (
   select max(eb.salary) 
   from employees eb 
   where eb.department_id = ea.department_id);  #RM:  Partially correct.  What if two or more departments have same maximum salary?  My guess is the where eb.department_id = ea.department_id prevents the same maximum salary?
+
+#https://www.w3resource.com/sql-exercises/union/sql-union.php
+
+#5. Write a query to make a report of which salesman produce the largest and smallest orders on each date and arranged the orders number in smallest to the largest number.
+select s.salesman_id, s.name, o1.ord_no, 'Highest Number', o1.ord_date
+from salesman s, orders o1
+where s.salesman_id = o1.salesman_id
+and o1.purch_amt = (
+  select max(o2.purch_amt)
+  from orders o2
+  where o2.ord_date=o1.ord_date)
+union
+(select s.salesman_id, s.name, o1.ord_no, 'Lowest Number', o1.ord_date
+from salesman s, orders o1
+where s.salesman_id = o1.salesman_id
+and o1.purch_amt = (
+  select min(o2.purch_amt)
+  from orders o2
+  where o2.ord_date=o1.ord_date))
+order by ord_no;
+
+#7. Write a query to that appends strings to the selected fields, indicating whether or not a specified salesman was matched to a customer in his city.
+select s.salesman_id, s.name, s.city as "Salesman City", c.city as "Customer City", 'Match'
+from salesman s, customer c
+where s.salesman_id = c.salesman_id
+and s.city = c.city
+union
+(select s.salesman_id, s.name, s.city as "Salesman City", c.city as "Customer City", 'No Match'
+from salesman s, customer c
+where s.salesman_id = c.salesman_id
+and s.city <> c.city;
+
+#8. Create a union of two queries that shows the names, cities, and ratings of all customers. Those with a rating of 200 or greater will also have the words "High Rating", while the others will have the words "Low Rating".
+select cust_name, city, grade, (case when grade >=200 then 'High Rating' else 'Low Rating' end) as "Unknown Rating"
+from customer;
+#official solution
+select cust_name, city, grade, 'High Rating'
+from customer
+where grade >=200
+union
+(select cust_name, city, grade, 'Low Rating'
+from customer
+where grade <200);
+
+
