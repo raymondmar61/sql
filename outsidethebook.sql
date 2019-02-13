@@ -860,4 +860,19 @@ union
 from customer
 where grade <200);
 
+#https://www.w3resource.com/sql-exercises/movie-database-exercise/basic-exercises-on-movie-database.php
+#5. Write a query in SQL to return the name of all reviewers and name of movies together in a single list.  #RM:  returns one column containing movie names and reviewer names.
+#official solution
+select reviewer.rev_name
+from reviewer
+union
+(select movie.mov_title
+from movie);
 
+#7. Write a query in SQL to find the titles of all movies that have no ratings.  #RM:  analysis paralysis.  does not include.
+#official solution
+select mov_title
+from movie
+where mov_id not in (
+  select mov_id
+  from rating);

@@ -38,3 +38,151 @@ mov_id |                     mov_title                      | mov_year | mov_tim
 #1. Write a query in SQL to find the name and year of the movies.
 select mov_title, mov_year
 from movie;
+
+#2. Write a query in SQL to find the year when the movie American Beauty released.
+select mov_year
+from movie
+where mov_title = 'American Beauty';
+
+#3. Write a query in SQL to find the movie which was released in the year 1999.
+select mov_title
+from movie
+where mov_year = 1999;
+
+#4. Write a query in SQL to find the movies which was released before 1998.
+select mov_title
+from movie
+where mov_year < 1998;
+
+/*
+Sample table: reviewer
+rev_id |            rev_name
+--------+--------------------------------
+   9001 | Righty Sock
+   9002 | Jack Malvern
+   9003 | Flagrant Baronessa
+   9004 | Alec Shaw
+   9005 |
+   9006 | Victor Woeltjen
+   9007 | Simon Wright
+   9008 | Neal Wruck
+   9009 | Paul Monks
+   9010 | Mike Salvati
+   9011 |
+   9012 | Wesley S. Walker
+   9013 | Sasha Goldshtein
+   9014 | Josh Cates
+   9015 | Krug Stillo
+   9016 | Scott LeBrun
+   9017 | Hannah Steele
+   9018 | Vincent Cadena
+   9019 | Brandt Sponseller
+   9020 | Richard Adams
+*/
+#5. Write a query in SQL to return the name of all reviewers and name of movies together in a single list.  #RM:  returns one column containing movie names and reviewer names.
+#official solution
+select reviewer.rev_name
+from reviewer
+union
+(select movie.mov_title
+from movie);
+
+/*
+Sample table:  rating
+mov_id | rev_id | rev_stars | num_o_ratings
+--------+--------+-----------+---------------
+    901 |   9001 |      8.40 |        263575
+    902 |   9002 |      7.90 |         20207
+    903 |   9003 |      8.30 |        202778
+    906 |   9005 |      8.20 |        484746
+    924 |   9006 |      7.30 |
+    908 |   9007 |      8.60 |        779489
+    909 |   9008 |           |        227235
+    910 |   9009 |      3.00 |        195961
+    911 |   9010 |      8.10 |        203875
+    912 |   9011 |      8.40 |
+    914 |   9013 |      7.00 |        862618
+    915 |   9001 |      7.70 |        830095
+    916 |   9014 |      4.00 |        642132
+    925 |   9015 |      7.70 |         81328
+    918 |   9016 |           |        580301
+    920 |   9017 |      8.10 |        609451
+    921 |   9018 |      8.00 |        667758
+    922 |   9019 |      8.40 |        511613
+    923 |   9020 |      6.70 |         13091
+*/
+#6. Write a query in SQL to find the name of all reviewers who have rated 7 or more stars to their rating.
+select reviewer.rev_name
+from reviewer, rating
+where reviewer.rev_id = rating.rev_id
+and rating.rev_stars >= 7
+and reviewer.rev_name is not null;  #RM:  there are rev_stars 7 or greater without a rev_name?!?
+
+#7. Write a query in SQL to find the titles of all movies that have no ratings.  #RM:  analysis paralysis.  does not include.
+#official solution
+select mov_title
+from movie
+where mov_id not in (
+	select mov_id
+	from rating);
+#another way?
+select mov_title
+from movie
+where mov_id in (
+	select mov_id
+	from movie
+	minus
+	(select mov_id
+	from rating));
+
+#8. Write a query in SQL to find the titles of the movies with ID 905, 907, 917.
+select mov_title
+from movie
+where mov_id in (905,907,917);
+
+#9. Write a query in SQL to find the list of all those movies with year which include the words Boogie Nights.  #RM:  find movies in the year Boogie Nights was released.
+select *
+from movie
+where mov_year = (
+	select mov_year
+	from movie
+	where mov_id = 'Boogie Nights');
+#official solution
+select mov_id, mov_title, mov_year
+from movie
+where mov_title like '%Boogie%Nights%'
+order by mov_year asc;  #RM:  what?!?  Find movies with the words Boogie Nights.
+
+/*
+Sample table: actor
+act_id |      act_fname       |      act_lname       | act_gender
+--------+----------------------+----------------------+------------
+    101 | James                | Stewart              | M
+    102 | Deborah              | Kerr                 | F
+    103 | Peter                | OToole               | M
+    104 | Robert               | De Niro              | M
+    105 | F. Murray            | Abraham              | M
+    106 | Harrison             | Ford                 | M
+    107 | Nicole               | Kidman               | F
+    108 | Stephen              | Baldwin              | M
+    109 | Jack                 | Nicholson            | M
+    110 | Mark                 | Wahlberg             | M
+    111 | Woody                | Allen                | M
+    112 | Claire               | Danes                | F
+    113 | Tim                  | Robbins              | M
+    114 | Kevin                | Spacey               | M
+    115 | Kate                 | Winslet              | F
+    116 | Robin                | Williams             | M
+    117 | Jon                  | Voight               | M
+    118 | Ewan                 | McGregor             | M
+    119 | Christian            | Bale                 | M
+    120 | Maggie               | Gyllenhaal           | F
+    121 | Dev                  | Patel                | M
+    122 | Sigourney            | Weaver               | F
+    123 | David                | Aston                | M
+    124 | Ali                  | Astin                | F
+*/
+#10. Write a query in SQL to find the ID number for the actor whose first name is 'Woody' and the last name is 'Allen'
+select act_id
+from actor
+where act_fname = 'Woody' and act_lname = 'Allen';
