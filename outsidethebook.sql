@@ -876,3 +876,86 @@ from movie
 where mov_id not in (
   select mov_id
   from rating);
+
+#https://www.w3resource.com/sql-exercises/movie-database-exercise/subqueries-exercises-on-movie-database.php
+#5. Write a query in SQL to find the titles of all movies directed by the director whose first and last name are Woddy Allen.
+select *
+from movie
+where mov_id in (
+  select mov_id
+  from movie_direction
+  where dir_id = (
+    select dir_id
+    from director
+    where dir_fname = 'Woody' and dir_lname = 'Allen'));
+#also
+select movie.*
+from movie, movie_direction, director
+where movie.mov_id = movie_direction.mov_id
+and movie_direction.dir_id = director.dir_id
+and director.dir_fname = 'Woody' and dir_lname = 'Allen';
+
+#9. Write a query in SQL to return the reviewer name, movie title, and stars for those movies which reviewed by a reviewer and must be rated. Sort the result by reviewer name, movie title, and number of stars.
+select reviewer.rev_name, movie.mov_title, rating.rev_stars
+from reviewer, rating, movie
+where reviewer.rev_id = rating.rev_id
+and rating.mov_id = movie.mov_id
+and reviewer.rev_name is not null
+and rating.rev_stars is not null
+order by reviewer.rev_name, movie.mov_title, rating.rev_stars;
+#also
+select reviewer.rev_name, movie.mov_title, rating.rev_stars
+from reviewer inner join rating
+on reviewer.rev_id = rating.rev_id
+inner join movie
+on rating.mov_id = movie.mov_id
+where reviewer.rev_name is not null
+and rating.rev_stars is not null
+order by reviewer.rev_name, movie.mov_title, rating.rev_stars;
+
+#11. Write a query in SQL to find the movie title, and the highest number of stars that movie received and arranged the result according to the group of a movie and the movie title appear alphabetically in ascending order.
+select mov_id, count(rev_stars)
+from rating
+group by mov_id; #RM:  stupid question because all mov_id count is 1 or 0.
+#pretend movies have many stars.  Use max()
+select movie.mov_title, MAX(rating.rev_stars)
+from movie, rating
+where movie.mov_id = rating.mov_id
+and rating.rev_stars is not null
+group by movie.mov_title
+order by movie.mov_title;
+
+#12. Write a query in SQL to find the names of all reviewers who rated the movie American Beauty.
+select rev_name
+from reviewer
+where rev_id in (
+    select rev_id
+    from rating
+    where mov_id in (
+        select mov_id
+        from movie
+        where mov_title = 'American Beauty'));
+#also and official solution
+select rev_name
+from reviewer, rating, movie
+where reviewer.rev_id = rating.rev_id
+and rating.mov_id = movie.mov_id
+and movie.mov_title = 'American Beauty';
+
+#13. Write a query in SQL to find the titles of all movies which have been reviewed by anybody except by Paul Monks.  #RM:  something to think about.  First query returns all movies with a reviewer.  Second query official query returns all movies in reviewer table rev_name null or not null.
+select mov_title
+from movie, rating, reviewer
+where movie.mov_id = rating.mov_id
+and rating.rev_id = reviewer.rev_id
+and rev_name <> 'Paul Monks';
+#official solution subquery includes movies where rev_name in rating table is null
+select movie.mov_title
+from movie 
+where movie.mov_id in(
+    select mov_id 
+    from rating 
+    where rev_id not in (
+        select rev_id 
+        from reviewer 
+        where rev_name='Paul Monks'));
+
