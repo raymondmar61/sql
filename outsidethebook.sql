@@ -959,3 +959,67 @@ where movie.mov_id in(
         from reviewer 
         where rev_name='Paul Monks'));
 
+#https://www.w3resource.com/sql-exercises/movie-database-exercise/joins-exercises-on-movie-database.php
+#8. Write a query in SQL to list all the movies with year, genres, and name of the director.
+select movie.mov_title, movie.mov_year, genres.gen_title, director.dir_fname, director.dir_lname
+from movie, genres, movie_genres, director, movie_direction
+where movie.mov_id = movie_genres.mov_id
+and movie_genres.gen_id = genres.gen_id
+and movie.mov_id = movie_direction.mov_id
+and movie_direction.dir_id = director.dir_id;
+#also
+select mov_title, mov_year, gen_title, dir_fname, dir_lname
+from movie
+natural join genres
+natural join movie_genres
+natural join movie_direction
+natural join director;
+
+#9. Write a query in SQL to list all the movies with title, year, date of release, movie duration, and first and last name of the director which released before 1st january 1989, and sort the result set according to release date from highest date to lowest.
+select m.mov_title, m.mov_year, m.mov_dt_rel, m.mov_time, d.dir_fname, d.dir_lname
+from movie m inner join movie_direction md
+on m.mov_id = md.mov_id
+inner join director d
+on md.dir_id = d.dir_id
+where m.mov_dt_rel < '1989-01-01'
+order by m.mov_dt_rel desc;
+#also
+select mov_title, mov_year, mov_dt_rel, mov_time, dir_fname, dir_lname
+from movie
+natural join movie_direction
+natural join director
+where mov_dt_rel < '1989-01-01'
+order by mov_dt_rel desc;
+
+#10. Write a query in SQL to compute a report which contain the genres of those movies with their average time and number of movies for each genres.
+select g.gen_title, count(g.gen_title), avg(m.mov_time)
+from movie m inner join movie_genres mg
+on m.mov_id = mg.mov_id
+inner join genres g
+on mg.gen_id = g.gen_id
+group by g.gen_title;
+#also
+select g.gen_title, count(g.gen_title), avg(m.mov_time)
+from movie m
+natural join movie_genres mg
+natural join genres g
+group by g.gen_title;
+
+#11. Write a query in SQL to find those lowest duration movies along with the year, director's name, actor's name and his/her role in that production.
+select mov_title, mov_year, dir_fname, dir_lname, act_fname, act_lname, role
+from movie
+natural join actor
+natural join director
+natural join movie_direction
+natural join movie_cast
+where mov_time = (
+  select min(mov_time)
+  from movie);
+
+#12. Write a query in SQL to find all the years which produced a movie that received a rating of 3 or 4, and sort the result in increasing order.  #RM:  dumb question.  There are two movies with a rating 3 or 4.  Same year which is 1997.
+select distinct mov_year
+from movie
+natural join rating
+where rev_stars in (3, 4)
+order by mov_year;
+
