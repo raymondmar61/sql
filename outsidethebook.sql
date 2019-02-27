@@ -1023,3 +1023,53 @@ natural join rating
 where rev_stars in (3, 4)
 order by mov_year;
 
+#18. Write a query in SQL to find the first and last name of an actor with their role in the movie which was also directed by themselve.
+select actor.act_fname, actor.act_lname, movie.mov_title, movie_cast.role
+from movie inner join movie_cast
+on movie.mov_id = movie_cast.mov_id
+inner join actor
+on movie_cast.act_id = actor.act_id
+inner join movie_direction
+on movie.mov_id = movie_direction.mov_id
+inner join director
+on movie_direction.dir_id = director.dir_id
+where actor.act_fname=director.dir_fname
+and actor.act_lname=director.dir_lname;
+
+#22. Write a query in SQL to find the highest-rated Mystery movie, and report the title, year, and rating.
+select m.mov_title, m.mov_year, r.rev_stars, m.mov_rel_country
+from movie m, rating r
+where m.mov_id = r.mov_id
+and r.rev_stars = (
+    select max(r.rev_stars)
+    from rating r, movie_genres mg, genres g
+    where r.mov_id = mg.mov_id
+    and mg.gen_id = g.gen_id
+    and g.gen_title = 'Mystery');  #RM:  partially correct because max rating for Mystery is 8.40 in subquery.  There are three movies with 8.40, and one is Mystery.
+
+select m.mov_title, m.mov_year, r.rev_stars, m.mov_rel_country
+from movie m, rating r
+where m.mov_id = r.mov_id
+and m.mov_id = (
+    select r.mov_id
+    from rating r, movie_genres mg, genres g
+    where r.mov_id = mg.mov_id
+    and mg.gen_id = g.gen_id
+    and g.gen_title = 'Mystery'
+    and r.rev_stars = (
+        select max(r.rev_stars)
+        from rating r, movie_genres mg, genres g
+        where r.mov_id = mg.mov_id
+        and mg.gen_id = g.gen_id
+        and g.gen_title = 'Mystery'));  #RM:  correct.  Second subquery gets 8.40 highest rating.  First subquery gets Mystery 8.40 highest rating mov_id.
+
+#23. Write a query in SQL to generate a report which shows the year when most of the Mystery movies produces, and number of movies and their average rating.  #RM:  there are 19 movies with a genre.  #RM:  question asked get all Mystery movies grouped by year, count, and average rating.  There is one movie.
+select m.mov_year, g.gen_title, count(g.gen_title), avg(r.rev_stars)
+from movie m inner join rating r
+on m.mov_id = r.mov_id
+inner join movie_genres mg
+on m.mov_id = mg.mov_id
+inner join genres g
+on mg.gen_id = g.gen_id
+where g.gen_title = 'Mystery'
+group by m.mov_year, g.gen_title;
