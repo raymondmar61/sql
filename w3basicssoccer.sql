@@ -87,3 +87,88 @@ select count(*)
 from player_in_out
 where in_out = 'I'
 and play_schedule = 'NT';
+
+#17. Write a query in SQL to find the number of players replaced in the stoppage time.
+select count(*)
+from player_in_out
+where in_out = 'I'
+and play_schedule = 'ST';
+
+#18. Write a query in SQL to find the total number of players replaced in the first half of play.
+select count(*)
+from player_in_out
+where in_out = 'I'
+and play_schedule = 'NT'
+and play_half = 1;
+#Normal Time must be included in query because don't want first half of play in extra time or OT.
+
+#19. Write a query in SQL to find the total number of goalless draws have there in the entire tournament.
+select count(distinct match_no)
+from match_details
+where win_lose = 'D'
+and goal_score = 0;
+
+#20. Write a query in SQL to fine the total number of players replaced in the extra time of play.
+select count(*)
+from player_in_out
+where play_schedule = 'ET'
+and in_out = 'I';
+
+#21. Write a query in SQL to compute a list to show the number of substitute happened in various stage of play for the entire tournament.
+select play_half, play_schedule, count(*)
+from player_in_out
+where in_out = 'I'
+group by play_half, play_schedule
+order by play_half, play_schedule;
+
+#22. Write a query in SQL to find the number of shots taken in penalty shootout matches.
+select count(*)
+from penalty_shootout;
+
+#23. Write a query in SQL to find the number of shots socred goal in penalty shootout matches.
+select count(*)
+from penalty_shootout
+where score_goal = 'Y';
+
+#24. Write a query in SQL to find the number of shots missed or saved in penalty shootout matches.
+select count(*)
+from penalty_shootout
+where score_goal = 'N';
+
+#25. Write a query in SQL to prepare a list of players with number of shots they taken in penalty shootout matches.
+select player.player_name, count(score_goal)
+from player_mast player inner join penalty_shootout penalty
+on player.player_id = penalty.player_id
+group by player.player_name;
+#official solution
+select c.match_no,a.country_name as "Team", b.player_name, b.jersey_no, c.score_goal ,c.kick_no
+from soccer_country a, penalty_shootout c, player_mast b
+where c.team_id=a.country_id
+and c.player_id=b.player_id;
+
+#26. Write a query in SQL to find the number of penalty shots taken by the teams.
+select sc.country_name, count(ps.*)
+from soccer_country sc inner join penalty_shootout ps
+on ps.team_id = sc.country_id
+group by sc.country_name;
+#official solution
+select a.country_name, count(b.*) as "Number of Shots" 
+from soccer_country a, penalty_shootout b
+where b.team_id=a.country_id
+group by a.country_name;
+
+#27. Write a query in SQL to find the number of booking happened in each half of play within normal play schedule.
+select play_half, count(booking_time)
+from player_booked
+where play_schedule = 'NT'
+group by play_half;
+
+#28. Write a query in SQL to find the number of booking happened in stoppage time.
+select count(booking_time)
+from player_booked
+where play_schedule = 'ST';
+
+#29. Write a query in SQL to find the number of booking happened in extra time.
+select count(booking_time)
+from player_booked
+where play_schedule = 'ET';
