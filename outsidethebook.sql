@@ -1073,3 +1073,81 @@ inner join genres g
 on mg.gen_id = g.gen_id
 where g.gen_title = 'Mystery'
 group by m.mov_year, g.gen_title;
+
+#https://www.w3resource.com/sql-exercises/soccer-database-exercise/subqueries-exercises-on-soccer-database.php
+#4. Write a query in SQL to find the match no in which Germany played against Poland. #Germany 1208.  Poland 1213.
+select *
+from match_details
+where team_id in (
+  select country_id
+  from soccer_country
+  where country_name in ('Germany','Poland'));  #RM:  incorrect because want the match_no Germany vs. Poland.
+#official solution
+select match_no 
+from match_details 
+where team_id=(
+  select country_id 
+  from soccer_country 
+  where country_name='Germany') 
+or team_id=(
+  select country_id 
+  from soccer_country 
+  where country_name='Poland') 
+group by match_no 
+having count(distinct team_id)=2;
+#user solution
+select match_no 
+from match_details
+where team_id in (
+  select country_id
+  from soccer_country
+  where country_name = 'Germany')
+and match_no in (
+  select match_no 
+  from match_details
+  where team_id in (
+    select country_id
+    from soccer_country
+    where country_name = 'Poland'));
+#doesn't work for select *
+select *
+from match_details
+where team_id in (
+  select country_id
+  from soccer_country
+  where country_name = 'Germany')
+and * in (
+  select match_no 
+  from match_details
+  where team_id in (
+    select country_id
+    from soccer_country
+    where country_name = 'Poland')); #RM:  doesn't work for select *
+
+#5. Write a query in SQL to find the match no, play stage, date of match, number of gole scored, and the result of the match where Portugal played against Hungary.  #RM:  override print the goal_score results not adding goals scored.
+select match_no, play_stage, play_date, goal_score, results
+from match_mast
+where match_no in (
+  select match_no
+  from match_details
+  where team_id in (
+    select country_id
+    from soccer_country
+    where country_name in ('Portugal','Hungary')));  #RM:  obviously incorrect
+select match_no, play_stage, play_date, goal_score, results
+from match_mast
+where match_no in (
+  select match_no
+  from match_details
+  where team_id in (
+    select country_id
+    from soccer_country
+    where country_name in ('Portugal')))
+and match_no in (
+  select match_no
+  from match_details
+  where team_id in (
+    select country_id
+    from soccer_country
+    where country_name in ('Hungary')));
+
