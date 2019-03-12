@@ -1151,3 +1151,50 @@ and match_no in (
     from soccer_country
     where country_name in ('Hungary')));
 
+#13. Write a query in SQL to find the club which supplied the most number of players to the 2016 EURO cup.  #subquery having statement and subquery from statement
+select playing_club, count(*)
+from player_mast
+group by playing_club
+order by count(*) desc;  #RM:  list of playing_club and the counts descending
+#official solution
+select playing_club, count(playing_club)
+from player_mast
+group by playing_club
+having count(playing_club) = (
+  select max(mycount)
+  from (
+    select playing_club, count(playing_club) mycount
+    from player_mast
+    group by playing_club) pm);
+#user solution
+select playing_club
+from player_mast
+group by playing_club
+having count(playing_club) = (
+  select count(playing_club)
+  from player_mast
+  group by playing_club
+  order by count(playing_club) desc limit 1);
+#another user solution
+select playing_club, count(playing_club)
+from player_mast
+group by playing_club
+having count(playing_club) = (
+  select max(x.rows)
+  from (
+    select count(playing_club) as rows
+    from player_mast
+    group by playing_club) as x);
+
+#15. Write a query in SQL to find the player along with his team and jersey number who scored the first penalty of the tournament.
+select player_name, jersey_no, soccer_country.country_name
+from player_mast, soccer_country
+where player_id in (
+  select player_id
+  from goal_details
+  where goal_type = 'P'
+  and goal_id = (
+    select min(goal_id)
+    from goal_details
+    where goal_type = 'P' and play_stage = 'G'))
+and player_mast.team_id = soccer_country.country_id;

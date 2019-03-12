@@ -141,3 +141,173 @@ where country_id in (
 		where audence = (
 			select max(audence)
 			from match_mast)));
+
+#8. Write a query in SQL to find the player who scored the last goal for Portugal against Hungary.
+select player_name
+from player_mast
+where player_id in (
+	select player_id
+	from goal_details
+	where goal_id in (
+		select max(goal_id)
+		from goal_details
+		where match_no in (
+			select match_no
+			from match_details
+			where team_id in (
+				select country_id
+				from soccer_country
+				where country_name = 'Portugal')
+			and match_no in (
+				select match_no
+				from match_details
+				where team_id = (
+					select country_id
+					from soccer_country
+					where country_name = 'Hungary')))));
+
+#9. Write a query in SQL to find the 2nd highest stoppage time which had been added in 2nd half of play.
+select stop2_sec
+from match_mast
+where stop2_sec in (
+	select stop2_sec from (
+		select stop2_sec, rank() over (order by stop2_sec desc) rank from match_mast) columnname
+	where rank = 2);
+#official solution
+select max(stop2_sec) 
+from match_mast
+where stop2_sec <> (
+	select max(stop2_sec) 
+	from match_mast);
+
+#10. Write a query in SQL to find the teams played the match where 2nd highest stoppage time had been added in 2nd half of play.
+select country_name
+from soccer_country
+where country_id in (
+	select team_id
+	from match_details
+	where match_no in (
+		select match_no
+		from match_mast
+		where stop2_sec in (
+			select stop2_sec from (
+				select stop2_sec, rank() over (order by stop2_sec desc) rank from match_mast) columnname
+			where rank = 2)));
+
+#11. Write a query in SQL to find the match no, date of play and the 2nd highest stoppage time which have been added in the 2nd half of play.
+select *
+from match_mast
+where stop2_sec in (
+	select stop2_sec
+	from match_mast
+	where stop2_sec in (
+		select stop2_sec from (
+			select stop2_sec, rank() over (order by stop2_sec desc) rank from match_mast) columnname
+		where rank = 2));
+
+#12. Write a query in SQL to find the team which was defeated by Portugal in EURO cup 2016 final.
+select country_name
+from soccer_country
+where country_id = (
+	select team_id
+	from match_details
+	where play_stage = 'F' and win_lose = 'L');
+
+#13. Write a query in SQL to find the club which supplied the most number of players to the 2016 EURO cup.
+select playing_club, count(*)
+from player_mast
+group by playing_club
+order by count(*) desc;  #RM:  list of playing_club and the counts descending
+#official solution
+select playing_club, count(playing_club)
+from player_mast
+group by playing_club
+having count(playing_club) = (
+	select max(mycount)
+	from (
+		select playing_club, count(playing_club) mycount
+		from player_mast
+		group by playing_club) pm);
+#user solution
+select playing_club
+from player_mast
+group by playing_club
+having count(playing_club) = (
+	select count(playing_club)
+	from player_mast
+	group by playing_club
+	order by count(playing_club) desc limit 1);
+#another user solution
+select playing_club, count(playing_club)
+from player_mast
+group by playing_club
+having count(playing_club) = (
+	select max(x.rows)
+	from (
+		select count(playing_club) as rows
+		from player_mast
+		group by playing_club) as x);
+
+#14. Write a query in SQL to find the player and his jersey number Who scored the first penalty of the tournament. #RM:  exclude penalty shots during shootouts.
+select player_name, jersey_no
+from player_mast
+where player_id in (
+	select player_id
+	from goal_details
+	where goal_type = 'P'
+	and goal_id = (
+		select min(goal_id)
+		from goal_details
+		where goal_type = 'P' and play_stage = 'G'));
+#user solution
+select player_name, jersey_no
+from player_mast
+where player_id = (
+	select player_id
+	from goal_details
+	where goal_id = (
+		select goal_id
+		from goal_details
+		where goal_type ='P'
+		order by goal_id asc limit 1));  #RM:  added order by asc
+
+#15. Write a query in SQL to find the player along with his team and jersey number who scored the first penalty of the tournament.
+select player_name, jersey_no, soccer_country.country_name
+from player_mast, soccer_country
+where player_id in (
+	select player_id
+	from goal_details
+	where goal_type = 'P'
+	and goal_id = (
+		select min(goal_id)
+		from goal_details
+		where goal_type = 'P' and play_stage = 'G'))
+and player_mast.team_id = soccer_country.country_id;
+
+#16. Write a query in SQL to find the player who was the goalkeeper for Italy in penalty shootout against Germany in Football EURO cup 2016.
+select player_name
+from player_mast
+where player_id in (
+	select player_gk
+	from penalty_gk
+	where team_id in (
+		select country_id
+		from soccer_country
+		where country_name = 'Italy'));
+
+#17. Write a query in SQL to find the number of Germany scored at the tournament.  #RM:  looked at solution.  Number of Germany players scored
+select count(*)
+from goal_details
+where team_id = (
+	select country_id
+	from soccer_country
+	where country_name = 'Germany');
+
+#18. Write a query in SQL to find the players along with their jersey no., and playing club, who were the goalkeepers for the England squad for 2016 EURO cup.
+select player_name, jersey_no, playing_club
+from player_mast
+where posi_to_play = 'GK'
+and team_id = (
+	select country_id
+	from soccer_country
+	where country_name = 'England');
