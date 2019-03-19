@@ -1198,3 +1198,99 @@ where player_id in (
     from goal_details
     where goal_type = 'P' and play_stage = 'G'))
 and player_mast.team_id = soccer_country.country_id;
+
+#20. Write a query in SQL to find the player with other infromation Who scored the last goal in the 2nd semi final i.e. 50th match in EURO cub 2016.
+select player_name, soccer_country.country_name
+from player_mast, soccer_country
+where player_id in (
+  select player_id
+  from goal_details
+  where match_no = 50
+  and goal_id in (
+    select max(goal_id)
+    from goal_details
+    where match_no = 50))
+and player_mast.team_id = soccer_country.country_id;
+#user solution
+select player_name, country_name, goal_time, goal_half
+from player_mast pm join soccer_country sc
+on pm.team_id=sc.country_id 
+join goal_details gd
+on pm.player_id=gd.player_id
+where goal_time in (
+  select max(goal_time)
+  from goal_details 
+  where match_no = 50)
+and match_no = 50;
+
+#25. Write a query in SQL to find the maximum penalty shots taken by the teams.  #RM:  find teams took most penalty shots
+select sc.country_name, count(sc.country_name)
+from soccer_country sc, penalty_shootout ps
+where sc.country_id = ps.team_id
+and team_id in (
+  select team_id
+  from penalty_shootout)
+group by sc.country_name
+order by count(sc.country_name) desc limit 1;  #RM:  doesn't work because there are three countries with nine penalty shots.  Returns Germany one of the three countries with nine penalty shots.
+select sc.country_name, count(sc.country_name)
+from soccer_country sc, penalty_shootout ps
+where sc.country_id = ps.team_id
+and team_id in (
+  select team_id
+  from penalty_shootout)
+group by sc.country_name
+having count(sc.country_name) in (
+  select count(team_id)
+  from penalty_shootout
+  group by team_id
+  order by count(team_id) desc limit 1);  #RM:  find highest count or maximum count or high count or max count.  The having count(sc.country_name) subquery retuerns the highest count or maximum count or max count.
+
+#user solution
+select country_name, count(kick_id)
+from penalty_shootout ps join soccer_country sc
+on ps.team_id=sc.country_id
+group by country_name
+having count(kick_id) in (
+  select max(abc)
+  from (
+    select count(kick_id) abc
+    from penalty_shootout
+    group by team_id) d);  #from subquery from.  Find highest count or maximum count or high count or max count.
+select sc.country_name, count(ps.*)
+from soccer_country as sc join penalty_shootout as ps
+on sc.country_id = ps.team_id 
+group by sc.country_name
+having count(ps.kick_id) = (
+  select max(x.shots)
+  from (
+    select count(*) as shots
+    from penalty_shootout
+    group by team_id) as x);
+
+#26. Write a query in SQL to find the maximum number of penalty shots taken by the players.  #RM:  find playes took most penalty shots
+select pm.player_name, count(pm.player_name)
+from player_mast pm, penalty_shootout ps
+where pm.player_id = ps.player_id
+group by pm.player_name
+having count(pm.player_name) in (
+  select count(player_id)
+  from penalty_shootout
+  group by player_id
+  order by count(player_id) desc limit 1);  #RM:  find highest count or maximum count or high count or max count.  The having count(sc.country_name) subquery retuerns the highest count or maximum count or max count.
+
+#27. Write a query in SQL to find the match no. where highest number of penalty shots taken.
+select match_no
+from penalty_shootout
+where kick_no = (
+  select max(kick_no)
+  from penalty_shootout);  #RM:  the kick_no column contains the penalty shot number.  I searched for the highest penalty shot number.  The highest penalty shot number is the number of penalty shots taken.
+#official solution
+select match_no, count(*) shots
+from penalty_shootout
+group by match_no
+having count(*) = (
+  select max(shots)
+  from (
+    select count(*) shots
+    from penalty_shootout
+    group by match_no) inner_result);  #RM:  find highest count or maximum count or high count or max count same table.
