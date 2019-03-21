@@ -527,3 +527,43 @@ where a.player_id=b.player_id
     	where country_name= 'Portugal')
     group by match_no)
 group by match_no, player_name, kick_id;  #RM:  official solution doesn't take the opponent Poland into consideration.
+
+#30. Write a query in SQL to find the stage of match where the penalty kick number 23 had been taken.
+select match_no, play_stage
+from match_mast
+where match_no in (
+	select match_no
+	from penalty_shootout
+	where kick_id = 23);
+
+#31. Write a query in SQL to find the venues where penalty shootout matches played.
+select venue_name
+from soccer_venue
+where venue_id in (
+	select venue_id
+	from match_mast
+	where match_no in (
+		select distinct match_no
+		from penalty_shootout));
+
+#32. Write a query in SQL to find the date when penalty shootout matches played.
+select play_date
+from match_mast
+where match_no in (
+	select distinct match_no
+	from penalty_shootout);
+
+#33. Write a query in SQL to find the most quickest goal at the EURO cup 2016, after 5 minutes.  #RM:  find the quickest goal
+select min(goal_time)
+from goal_details;  #return 2
+select min(goal_time)
+from goal_details
+where goal_time >5;  #return 6
+#official solution
+select min(goal_time) as "Most quickest goal after 5 minutes"
+from (
+	select match_no, goal_time
+	from goal_details
+	where goal_time > 5
+	group by match_no, goal_time
+	order by goal_time) hh;

@@ -1294,3 +1294,41 @@ having count(*) = (
     select count(*) shots
     from penalty_shootout
     group by match_no) inner_result);  #RM:  find highest count or maximum count or high count or max count same table.
+
+#https://www.w3resource.com/sql-exercises/soccer-database-exercise/joins-exercises-on-soccer-database.php
+#4. Write a query in SQL to find the highest individual scorer in EURO cup 2016.
+select player.player_name, country.country_name, count(goal.player_id)
+from player_mast player inner join goal_details goal
+on player.player_id = goal.player_id
+inner join soccer_country country
+on goal.team_id = country.country_id
+group by player.player_name, country.country_name
+order by count(goal.player_id) desc limit 1;
+#what if more than one player scored the most goals?
+select player.player_name, country.country_name, count(goal.player_id)
+from player_mast player inner join goal_details goal
+on player.player_id = goal.player_id
+inner join soccer_country country
+on goal.team_id = country.country_id
+group by player.player_name, country.country_name
+having count(goal.player_id) = (
+  select count(goal.player_id)
+  from player_mast player inner join goal_details goal
+  on player.player_id = goal.player_id
+  group by player.player_name
+  order by count(goal.player_id) desc limit 1);
+#official solution
+select player_name, country_name, count(player_name)
+from goal_details gd join player_mast pm
+on gd.player_id = pm.player_id
+join soccer_country sc
+on pm.team_id = sc.country_id
+group by country_name, player_name
+having count(player_name) >= all (
+  select count(player_name)
+  from goal_details gd join player_mast pm
+  on gd.player_id = pm.player_id
+  join soccer_country sc
+  on pm.team_id = sc.country_id
+  group by country_name,player_name);
+
