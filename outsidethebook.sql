@@ -1332,3 +1332,83 @@ having count(player_name) >= all (
   on pm.team_id = sc.country_id
   group by country_name,player_name);
 
+#10. Write a query in SQL to find the name and country of the referee who assisted the referee in the opening match.
+select ar.ass_ref_name, c.country_name
+from asst_referee_mast ar natural join soccer_country c;  #return assistant referees and their country
+select ar.ass_ref_name, c.country_name
+from asst_referee_mast ar natural join soccer_country c
+natural join match_details m;  #return nothing
+select ar.ass_ref_name, c.country_name
+from asst_referee_mast ar natural join soccer_country c
+and asst_referee_mast ar inner join match_details m
+where ar.ass_ref_id = m.ass_ref;  #return nothing
+select ar.ass_ref_name, c.country_name
+from asst_referee_mast ar natural join soccer_country c
+and asst_referee_mast ar inner join match_details m
+on ar.ass_ref_id = m.ass_ref;  #return nothing
+select ar.ass_ref_name, c.country_name
+from asst_referee_mast ar natural join soccer_country c
+inner join match_details m
+on ar.ass_ref_id = m.ass_ref;  #return nothing
+select ar.ass_ref_name, c.country_name
+from asst_referee_mast ar inner join soccer_country c
+on ar.country_id = c.country_id
+inner join match_details m
+on ar.ass_ref_id = m.ass_ref;  #return assistant referees and their country
+select ar.ass_ref_name, c.country_name
+from asst_referee_mast ar inner join soccer_country c
+on ar.country_id = c.country_id
+inner join match_details m
+on ar.ass_ref_id = m.ass_ref
+where match_no = 1;  #return assistant referees and their country opening match
+
+#13. Write a query in SQL to find the stadium hosted the final match of EURO cup 2016 along with the capacity, and audance for that match.
+select v.venue_name, v.aud_capacity, m.audence
+from soccer_venue v natural join soccer_city c
+natural join match_mast m
+where m.play_stage = 'F';  #soccer_venue v and soccer_city c natural join city_id.  soccer_venue v and match_mast m natural join venue_id.  No natural join soccer_city c and match_mast m.  SQL query still works.
+
+#15. Write a query in SQL to find the player who was the first player to be sent off at the tournament EURO cup 2016.
+select match_no
+from player_booked
+where sent_off = 'Y' limit 1;  #return 1.  1 is correct first player to be sent off.
+select p.player_name
+from player_mast p inner join player_booked b
+on p.player_id = b.player_id
+where p.player_id in (
+  select b.player_id
+  from player_booked b
+  where b.match_no in (
+    select b.match_no
+    from player_booked b
+    where b.sent_off = 'Y' limit 1));  #return all four players on player_booked b match 1
+select p.player_name
+from player_mast p inner join player_booked b
+on p.player_id = b.player_id
+where p.player_id in (
+  select b.player_id
+  from player_booked b
+  where b.match_no in (
+    select min(b.match_no)
+    from player_booked b
+    where b.sent_off = 'Y'));  #return all four players on player_booked b match 1
+select p.player_name
+from player_mast p inner join player_booked b
+on p.player_id = b.player_id
+where p.player_id in (
+  select b.player_id
+  from player_booked b
+  where sent_off = 'Y'
+  and match_no = (
+    select min(match_no)
+    from player_booked b
+    where sent_off = 'Y'));  #correct
+#user solution
+select player_name
+from player_mast
+where player_id = (
+  select player_id
+  from player_booked
+  where sent_off = 'Y'
+  order by match_no, booking_time limit 1);
+

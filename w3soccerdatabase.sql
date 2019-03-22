@@ -2011,8 +2011,8 @@ match_played – how many matches a team played in group stage
 won – how many matches a team won
 draw – how many matches a team draws
 lost – how many matches a team lose
-goal_for – how many goals a team conceded
-goal_agnst – how many goals a team scored
+goal_for – how many goals a team conceded  #RM:  correction is goal scored
+goal_agnst – how many goals a team scored  #RM:  correction is goal conceded
 goal_diff – the difference of goal scored and goal conceded
 points – how many points a team achieved from their group stage matches
 group_position – in which position a team finished their group stage matches
