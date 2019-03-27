@@ -1412,3 +1412,81 @@ where player_id = (
   where sent_off = 'Y'
   order by match_no, booking_time limit 1);
 
+#23. Write a query in SQL to find the match no. and the teams played in that match where the 2nd highest stoppage time had been added in the 2nd half of play.
+select match_no
+from match_mast
+where stop2_sec in (
+  select stop2_sec from (
+    select stop2_sec, rank() over (order by stop2_sec desc) rank
+  from match_mast) stop2_sec_rank
+  where rank = 2);  #match #15
+select m.match_no, c.country_name, m.stop2_sec
+from match_mast m inner join match_details d
+on m.match_no = d.match_no
+inner join soccer_country c
+on d.team_id = c.country_id
+where m.stop2_sec in (
+  select stop2_sec
+  from match_mast
+  where stop2_sec in (
+    select stop2_sec from (
+      select stop2_sec, rank() over (order by stop2_sec desc) rank
+    from match_mast) stop2_sec_rank
+    where rank = 2));  #correct
+select m.match_no, c.country_name, m.stop2_sec
+from match_mast m inner join match_details d
+on m.match_no = d.match_no
+inner join soccer_country c
+on d.team_id = c.country_id
+where m.stop2_sec in (
+  select m.stop2_sec
+  from match_mast m
+  where m.stop2_sec in (
+    select m.stop2_sec from (
+      select m.stop2_sec, rank() over (order by m.stop2_sec desc) rank
+    from match_mast m) stop2_sec_rank
+    where rank = 2));  #error.  Returns all matches.
+
+#25. Write a query in SQL to find the venue that has seen the most goals.  #subquery having statement and subquery from statement.
+select match_no, count(match_no)
+from goal_details
+group by match_no
+order by match_no;  #count goals for each match_no
+select v.venue_name
+from soccer_venue v inner join match_mast m
+on v.venue_id = m.venue_id
+inner join goal_details g
+on m.match_no = g.match_no
+where m.match_no in (
+  select match_no
+  from goal_details
+  having count(match_no) in (
+    select count(match_no)
+    from goal_details
+    group by match_no
+    order by count(match_no) desc limit 1));  #RM:  missing SQL line group by match_no above having count(match_no) in (
+select distinct(v.venue_name)
+from soccer_venue v inner join match_mast m
+on v.venue_id = m.venue_id
+inner join goal_details g
+on m.match_no = g.match_no
+where m.match_no in (
+  select match_no
+  from goal_details
+  group by match_no
+  having count(match_no) = (
+    select count(match_no)
+    from goal_details
+    group by match_no
+    order by count(match_no) desc limit 1));  #RM:  correct added missing SQL line
+#user solution
+select venue_name
+from soccer_venue
+where venue_id = ( 
+  select venue_id
+  from match_mast
+  where match_no = (
+    select match_no
+    from goal_details
+    group by match_no
+    order by count(*) desc limit 1));
