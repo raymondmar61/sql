@@ -1490,3 +1490,11 @@ where venue_id = (
     from goal_details
     group by match_no
     order by count(*) desc limit 1));
+
+#Excel Magic Trick 1322_ Backwards One To Many Relationship Report_ Excel  #temporary table Access SQL.  Works for Oracle SQL?
+select b.major, avg(b.gpa) as AvgGPA
+from
+  (select distinct major, gpa, students.sID
+  from students inner join applications
+  on students.sID = applications.sID) as b
+group by b.major;
