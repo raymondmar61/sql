@@ -1491,6 +1491,169 @@ where venue_id = (
     group by match_no
     order by count(*) desc limit 1));
 
+#26. Write a query in SQL to find the oldest player to have appeared in a EURO cup 2016 match.
+select player_name
+from player_mast
+having max(age) = (
+  select max(age)
+  from player_mast);  #nothing
+select player_name
+from player_mast
+where age = (
+  select max(age)
+  from player_mast);  #correct
+
+#30. Write a query in SQL to find the final four teams in the tournament.
+select country_name
+from soccer_country
+where country_id in (
+  select distinct(team_id)
+  from match_details
+  where play_stage in ('S','F'));
+#also
+select distinct(c.country_name)
+from soccer_country c inner join match_details m
+on c.country_id = m.team_id
+where m.play_stage in ('S','F');
+#official solution.  No need for F because teams in S two of the four go to finals.
+select country_name
+from match_details a join soccer_country b
+on a.team_id=b.country_id
+where play_stage='s';
+
+#33. Write a query in SQL to find the captain and goal keeper with other information for all the matches for all the team.
+select d.match_no, m.player_name, m.jersey_no, country.country_name
+from player_mast m, match_details d, soccer_country country
+where m.player_id = d.player_gk
+and d.team_id = country.country_id
+order by d.match_no, m.player_name; #find goal keeper players
+select d.match_no, m.player_name, m.jersey_no, country.country_name, m.posi_to_play, 'GK' as "GK or Captain"
+from player_mast m, match_details d, soccer_country country
+where m.player_id = d.player_gk
+and d.team_id = country.country_id
+union
+(select c.match_no, m.player_name, m.jersey_no, country.country_name, m.posi_to_play, 'Captain' as "GK or Captain"
+from match_captain c, player_mast m, soccer_country country
+where c.player_captain = m.player_id
+and c.team_id = country.country_id)
+order by match_no, player_name;
+/*
+match_no  player_name jersey_no country_name  posi_to_play  GK or Captain
+1 Ciprian Tatarusanu  12  Romania GK  GK
+1 Hugo Lloris 1 France  GK  GK
+1 Hugo Lloris 1 France  GK  Captain
+1 Vlad Chiriches  6 Romania DF  Captain
+2 Etrit Berisha 1 Albania GK  GK
+2 Lorik Cana  5 Albania MF  Captain
+2 Stephan Lichtsteiner  2 Switzerland DF  Captain
+2 Yann Sommer 1 Switzerland GK  GK
+3 Ashley Williams 6 Wales DF  Captain
+3 Danny Ward  21  Wales GK  GK
+3 Martin Skrtel 3 Slovakia  DF  Captain
+3 MatusKozacik  23  Slovakia  GK  GK
+*/
+#same without country and position
+select match_captain.match_no, player_mast.player_name, 'Captain' as "GK or Captain"
+from match_captain inner join player_mast
+on match_captain.player_captain = player_mast.player_id
+order by match_captain.match_no
+union
+(select match_details.match_no, player_mast.player_name, 'GK' as "GK or Captain"
+from match_details inner join player_mast
+on match_details.player_gk = player_mast.player_id)
+order by match_no;
+#Combined captain and GK on one line.  Not correct.
+select match_details.match_no, playercaptain.player_name as "Captain", playergk.player_name as "GK", country.country_name
+from match_details inner join match_captain captain
+on match_details.match_no = captain.match_no
+inner join soccer_country country
+on match_details.team_id = country.country_id
+inner join player_mast playercaptain
+on captain.player_captain = playercaptain.player_id
+inner join player_mast playergk
+on match_details.player_gk = playergk.player_id
+order by match_details.match_no;
+/*
+match_no  Captain GK  country_name
+1 Hugo Lloris Hugo Lloris France
+1 Hugo Lloris Ciprian Tatarusanu  Romania
+1 Vlad Chiriches  Hugo Lloris France
+1 Vlad Chiriches  Ciprian Tatarusanu  Romania
+2 Lorik Cana  Etrit Berisha Albania
+2 Lorik Cana  Yann Sommer Switzerland
+2 Stephan Lichtsteiner  Etrit Berisha Albania
+2 Stephan Lichtsteiner  Yann Sommer Switzerland
+*/
+#official solution
+select a.match_no, c.player_name as "captain", d.player_name as "goal keeper", e.country_name
+from match_captain a natural join match_details b
+join soccer_country e
+on b.team_id=e.country_id
+join player_mast c
+on a.player_captain=c.player_id
+join player_mast d
+on b.player_gk=d.player_id;
+#piggy back from official solution elaborating joins.  Two tables joining the same table.  Two tables join same table.
+select match_captain.match_no, captainplayer.player_name as "captain", gkplayer.player_name as "goal keeper", soccer_country.country_name
+from match_captain natural join match_details
+join soccer_country
+on match_details.team_id=soccer_country.country_id
+join player_mast captainplayer
+on match_captain.player_captain=captainplayer.player_id
+join player_mast gkplayer
+on match_details.player_gk=gkplayer.player_id;
+/*
+match_no  captain goal keeper country_name
+1 Hugo Lloris Hugo Lloris France
+1 Vlad Chiriches  Ciprian Tatarusanu  Romania
+2 Lorik Cana  Etrit Berisha Albania
+2 Stephan Lichtsteiner  Yann Sommer Switzerland
+3 Ashley Williams Danny Ward  Wales
+3 Martin Skrtel MatusKozacik  Slovakia
+*/
+#need natural join.  Not correct.
+select match_captain.match_no, captainplayer.player_name as "captain", gkplayer.player_name as "goal keeper", soccer_country.country_name
+from match_captain inner join match_details
+on match_captain.match_no = match_details.match_no
+inner join soccer_country
+on match_details.team_id=soccer_country.country_id
+join player_mast captainplayer
+on match_captain.player_captain=captainplayer.player_id
+inner join player_mast gkplayer
+on match_details.player_gk=gkplayer.player_id
+order by match_no;
+/*
+match_no  Captain GK  country_name
+1 Hugo Lloris Hugo Lloris France
+1 Hugo Lloris Ciprian Tatarusanu  Romania
+1 Vlad Chiriches  Hugo Lloris France
+1 Vlad Chiriches  Ciprian Tatarusanu  Romania
+2 Lorik Cana  Etrit Berisha Albania
+2 Lorik Cana  Yann Sommer Switzerland
+2 Stephan Lichtsteiner  Etrit Berisha Albania
+2 Stephan Lichtsteiner  Yann Sommer Switzerland
+*/
+#user solutions
+select distinct mc.match_no, sc.country_name, pmc.player_name as "Captain", pmgk.player_name as "Goal"
+from match_captain mc join match_details md
+on mc.team_id=md.team_id
+join player_mast pmc
+on mc.player_captain=pmc.player_id
+join player_mast pmgk
+on md.player_gk=pmgk.player_id
+join soccer_country sc
+on sc.country_id=mc.team_id
+order by 1;
+/*
+match_no  country_name  Captain Goal
+1 France  Hugo Lloris Hugo Lloris
+1 Romania Vlad Chiriches  Ciprian Tatarusanu
+2 Albania Lorik Cana  Etrit Berisha
+2 Switzerland Stephan Lichtsteiner  Yann Sommer
+3 Slovakia  Martin Skrtel MatusKozacik
+3 Wales Ashley Williams Danny Ward
+*/
+
 #Excel Magic Trick 1322_ Backwards One To Many Relationship Report_ Excel  #temporary table Access SQL.  Works for Oracle SQL?
 select b.major, avg(b.gpa) as AvgGPA
 from
@@ -1498,3 +1661,4 @@ from
   from students inner join applications
   on students.sID = applications.sID) as b
 group by b.major;
+
