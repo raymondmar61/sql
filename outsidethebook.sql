@@ -1522,11 +1522,6 @@ on a.team_id=b.country_id
 where play_stage='s';
 
 #33. Write a query in SQL to find the captain and goal keeper with other information for all the matches for all the team.
-select d.match_no, m.player_name, m.jersey_no, country.country_name
-from player_mast m, match_details d, soccer_country country
-where m.player_id = d.player_gk
-and d.team_id = country.country_id
-order by d.match_no, m.player_name; #find goal keeper players
 select d.match_no, m.player_name, m.jersey_no, country.country_name, m.posi_to_play, 'GK' as "GK or Captain"
 from player_mast m, match_details d, soccer_country country
 where m.player_id = d.player_gk
@@ -1536,33 +1531,32 @@ union
 from match_captain c, player_mast m, soccer_country country
 where c.player_captain = m.player_id
 and c.team_id = country.country_id)
-order by match_no, player_name;
+order by match_no, country_name, player_name;
 /*
 match_no  player_name jersey_no country_name  posi_to_play  GK or Captain
-1 Ciprian Tatarusanu  12  Romania GK  GK
 1 Hugo Lloris 1 France  GK  GK
 1 Hugo Lloris 1 France  GK  Captain
+1 Ciprian Tatarusanu  12  Romania GK  GK
 1 Vlad Chiriches  6 Romania DF  Captain
 2 Etrit Berisha 1 Albania GK  GK
 2 Lorik Cana  5 Albania MF  Captain
 2 Stephan Lichtsteiner  2 Switzerland DF  Captain
 2 Yann Sommer 1 Switzerland GK  GK
-3 Ashley Williams 6 Wales DF  Captain
-3 Danny Ward  21  Wales GK  GK
 3 Martin Skrtel 3 Slovakia  DF  Captain
 3 MatusKozacik  23  Slovakia  GK  GK
+3 Ashley Williams 6 Wales DF  Captain
+3 Danny Ward  21  Wales GK  GK
 */
 #same without country and position
 select match_captain.match_no, player_mast.player_name, 'Captain' as "GK or Captain"
 from match_captain inner join player_mast
 on match_captain.player_captain = player_mast.player_id
-order by match_captain.match_no
 union
 (select match_details.match_no, player_mast.player_name, 'GK' as "GK or Captain"
 from match_details inner join player_mast
 on match_details.player_gk = player_mast.player_id)
-order by match_no;
-#Combined captain and GK on one line.  Not correct.
+order by match_details.match_no;  #Combined captain and GK on one line.  Not correct.
+
 select match_details.match_no, playercaptain.player_name as "Captain", playergk.player_name as "GK", country.country_name
 from match_details inner join match_captain captain
 on match_details.match_no = captain.match_no
@@ -1572,7 +1566,7 @@ inner join player_mast playercaptain
 on captain.player_captain = playercaptain.player_id
 inner join player_mast playergk
 on match_details.player_gk = playergk.player_id
-order by match_details.match_no;
+order by match_details.match_no;  #RM:  close.  match_details.match_no = captain.match_no is incorrrect.  match_details.team_id= captain.team_id is correct.  Also, add distinct.
 /*
 match_no  Captain GK  country_name
 1 Hugo Lloris Hugo Lloris France
@@ -1611,7 +1605,7 @@ match_no  captain goal keeper country_name
 3 Ashley Williams Danny Ward  Wales
 3 Martin Skrtel MatusKozacik  Slovakia
 */
-#need natural join.  Not correct.
+#Not correct.  on match_captain.match_no = match_details.match_no is incorrect. on match_captain.team_id= match_details.team_id is correct.  Also, add distinct. 
 select match_captain.match_no, captainplayer.player_name as "captain", gkplayer.player_name as "goal keeper", soccer_country.country_name
 from match_captain inner join match_details
 on match_captain.match_no = match_details.match_no
@@ -1653,6 +1647,89 @@ match_no  country_name  Captain Goal
 3 Slovakia  Martin Skrtel MatusKozacik
 3 Wales Ashley Williams Danny Ward
 */
+select distinct match_details.match_no, playercaptain.player_name as "Captain", playergk.player_name as "GK", soccer_country.country_name
+from match_details, match_captain, player_mast playercaptain, player_mast playergk, soccer_country
+where match_captain.player_captain = playercaptain.player_id
+and match_details.player_gk  = playergk.player_id
+and match_details.team_id = match_captain.team_id
+and match_details.team_id = soccer_country.country_id
+order by match_details.match_no; #correct with country.
+/*
+match_no  Captain GK  country_name
+1 Hugo Lloris Hugo Lloris France
+1 Vlad Chiriches  Ciprian Tatarusanu  Romania
+2 Ansi Agolli Etrit Berisha Albania
+2 Lorik Cana  Etrit Berisha Albania
+2 Stephan Lichtsteiner  Yann Sommer Switzerland
+3 Ashley Williams Danny Ward  Wales
+3 Martin Skrtel MatusKozacik  Slovakia
+*/
+select distinct match_details.match_no, playercaptain.player_name as "Captain", playergk.player_name as "GK", soccer_country.country_name
+from match_details inner join match_captain
+on match_details.team_id = match_captain.team_id
+inner join player_mast playergk
+on match_details.player_gk = playergk.player_id
+inner join player_mast playercaptain
+on match_captain.player_captain = playercaptain.player_id
+inner join soccer_country
+on match_details.team_id = soccer_country.country_id
+order by 1; #correct with country using joins
+/*
+match_no  Captain GK  country_name
+1 Hugo Lloris Hugo Lloris France
+1 Vlad Chiriches  Ciprian Tatarusanu  Romania
+2 Ansi Agolli Etrit Berisha Albania
+2 Lorik Cana  Etrit Berisha Albania
+2 Stephan Lichtsteiner  Yann Sommer Switzerland
+3 Ashley Williams Danny Ward  Wales
+3 Martin Skrtel MatusKozacik  Slovakia
+*/
+
+#https://www.google.com/search?q=sql+join+multiple+tables+to+one+table&oq=sql+join+two+tables+to+one+table&aqs=chrome.1.69i57j0l3j69i64.15727j0j7&sourceid=chrome&ie=UTF-8
+#https://stackoverflow.com/questions/21126181/left-join-multiple-tables-onto-one-table  #join multiple tables to one table two tables to one table
+select t1.*, t2.foo, t3.bar
+from table1 as t1 left join table2 as t2
+on t1.id = t2.id
+left join table3 as t3
+on t1.id = t3.id;
+#https://stackoverflow.com/questions/34593764/join-multiple-tables-on-one-specific-column #Join multiple tables on one specific column
+/*Names table:
+
+ID  Full name   Type
+-----------------------
+1   Sibelga     Company
+2   Belgacom    Company
+3   Brussels    Authority
+4   Etterbeek   Authority
+Worksite table:
+
+ID Worksite CompanyID   AuthorityID
+-----------------------------------
+12569        1              3
+4563         2              4
+1589         1              4
+1489         1              3
+*/
+SELECT WS."ID worksite", C."Full name" AS CompanyName, A."Full name" AS AuthorityName
+FROM Worksite AS WS LEFT OUTER JOIN Names C
+ON C.ID = WS.CompanyID
+LEFT OUTER JOIN Names A
+ON A.ID = WS.AuthorityID;
+#https://www.w3resource.com/sql/joins/using-a-where-cluase-to-join-three-or-more-tables-based-on-a-parent-child-relationship.php
+select a.ord_num, b.cust_name, a.cust_code, c.agent_code, b.cust_city
+from agents c, customer b, orders a
+where b.cust_city=c.working_area
+and a.cust_code=b.cust_code
+and a.agent_code=c.agent_code;
+#https://www.geeksforgeeks.org/joining-three-tables-sql/
+select s_name, score, status, address_city, email_id, accomplishments
+from student s inner join marks m
+on s.s_id = m.s_id
+inner join details d
+on d.school_id = m.school_id; #Using joins in sql to join the table
+select s_name, score, status, address_city, email_id, accomplishments
+from student s, marks m, details d
+where s.s_id = m.s_id and m.school_id = d.school_id; #Using parent-child relationship
 
 #Excel Magic Trick 1322_ Backwards One To Many Relationship Report_ Excel  #temporary table Access SQL.  Works for Oracle SQL?
 select b.major, avg(b.gpa) as AvgGPA

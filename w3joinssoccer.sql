@@ -463,11 +463,6 @@ and c.team_id = country.country_id
 order by c.match_no, m.player_name;
 
 #33. Write a query in SQL to find the captain and goal keeper with other information for all the matches for all the team.
-select d.match_no, m.player_name, m.jersey_no, country.country_name
-from player_mast m, match_details d, soccer_country country
-where m.player_id = d.player_gk
-and d.team_id = country.country_id
-order by d.match_no, m.player_name; #find goal keeper players
 select d.match_no, m.player_name, m.jersey_no, country.country_name, m.posi_to_play, 'GK' as "GK or Captain"
 from player_mast m, match_details d, soccer_country country
 where m.player_id = d.player_gk
@@ -477,33 +472,31 @@ union
 from match_captain c, player_mast m, soccer_country country
 where c.player_captain = m.player_id
 and c.team_id = country.country_id)
-order by match_no, player_name;
+order by match_no, country_name, player_name;
 /*
 match_no	player_name	jersey_no	country_name	posi_to_play	GK or Captain
-1	Ciprian Tatarusanu	12	Romania	GK	GK
 1	Hugo Lloris	1	France	GK	GK
 1	Hugo Lloris	1	France	GK	Captain
+1	Ciprian Tatarusanu	12	Romania	GK	GK
 1	Vlad Chiriches	6	Romania	DF	Captain
 2	Etrit Berisha	1	Albania	GK	GK
 2	Lorik Cana	5	Albania	MF	Captain
 2	Stephan Lichtsteiner	2	Switzerland	DF	Captain
 2	Yann Sommer	1	Switzerland	GK	GK
-3	Ashley Williams	6	Wales	DF	Captain
-3	Danny Ward	21	Wales	GK	GK
 3	Martin Skrtel	3	Slovakia	DF	Captain
 3	MatusKozacik	23	Slovakia	GK	GK
+3	Ashley Williams	6	Wales	DF	Captain
+3	Danny Ward	21	Wales	GK	GK
 */
 #same without country and position
 select match_captain.match_no, player_mast.player_name, 'Captain' as "GK or Captain"
 from match_captain inner join player_mast
 on match_captain.player_captain = player_mast.player_id
-order by match_captain.match_no
 union
 (select match_details.match_no, player_mast.player_name, 'GK' as "GK or Captain"
 from match_details inner join player_mast
 on match_details.player_gk = player_mast.player_id)
-order by match_no;
-#Combined captain and GK on one line.  Not correct.
+order by match_details.match_no;  #Combined captain and GK on one line.  Not correct.
 select match_details.match_no, playercaptain.player_name as "Captain", playergk.player_name as "GK", country.country_name
 from match_details inner join match_captain captain
 on match_details.match_no = captain.match_no
@@ -513,7 +506,7 @@ inner join player_mast playercaptain
 on captain.player_captain = playercaptain.player_id
 inner join player_mast playergk
 on match_details.player_gk = playergk.player_id
-order by match_details.match_no;
+order by match_details.match_no;  #RM:  close.  match_details.match_no = captain.match_no is incorrrect.  match_details.team_id= captain.team_id is correct.  Also, add distinct.
 /*
 match_no	Captain	GK	country_name
 1	Hugo Lloris	Hugo Lloris	France
@@ -552,7 +545,7 @@ match_no	captain	goal keeper	country_name
 3	Ashley Williams	Danny Ward	Wales
 3	Martin Skrtel	MatusKozacik	Slovakia
 */
-#need natural join.  Not correct.
+#Not correct.  on match_captain.match_no = match_details.match_no is incorrect. on match_captain.team_id= match_details.team_id is correct.  Also, add distinct. 
 select match_captain.match_no, captainplayer.player_name as "captain", gkplayer.player_name as "goal keeper", soccer_country.country_name
 from match_captain inner join match_details
 on match_captain.match_no = match_details.match_no
@@ -593,4 +586,129 @@ match_no	country_name	Captain	Goal
 2	Switzerland	Stephan Lichtsteiner	Yann Sommer
 3	Slovakia	Martin Skrtel	MatusKozacik
 3	Wales	Ashley Williams	Danny Ward
+*/
+
+#33. Continuation next SQL day.  Write a query in SQL to find the captain and goal keeper with other information for all the matches for all the team.
+select match_details.match_no, player_mast.player_name
+from match_details inner join player_mast
+on match_details.player_gk = player_mast.player_id
+order by match_details.match_no;  #match_no and goal keeper
+select match_captain.match_no, player_mast.player_name
+from match_captain inner join player_mast
+on match_captain.player_captain = player_mast.player_id
+order by match_captain.match_no;  #match_no and captain
+
+select match_details.match_no, playercaptain.player_name, playergk.player_name
+from match_details, match_captain, player_mast playercaptain, player_mast playergk
+where match_captain.player_captain = playercaptain.player_id
+and match_details.player_gk	 = playergk.player_id
+and match_details.match_no = match_captain.match_no
+order by match_details.match_no; #not correct.  One column GK only.
+/*
+match_no	player_name
+1	Hugo Lloris
+1	Hugo Lloris
+1	Ciprian Tatarusanu
+1	Ciprian Tatarusanu
+2	Etrit Berisha
+2	Etrit Berisha
+2	Yann Sommer
+2	Yann Sommer
+3	MatusKozacik
+3	MatusKozacik
+3	Danny Ward
+3	Danny Ward
+*/
+select match_details.match_no, playercaptain.player_name as "Captain", playergk.player_name as "GK"
+from match_details, match_captain, player_mast playercaptain, player_mast playergk
+where match_captain.player_captain = playercaptain.player_id
+and match_details.player_gk	 = playergk.player_id
+and match_details.match_no = match_captain.match_no
+order by match_details.match_no; #not correct.  Incorrect join match_details.match_no = match_captain.match_no.  Duplicates.
+/*
+match_no	Captain	GK
+1	Hugo Lloris	Hugo Lloris
+1	Vlad Chiriches	Hugo Lloris
+1	Hugo Lloris	Ciprian Tatarusanu
+1	Vlad Chiriches	Ciprian Tatarusanu
+2	Lorik Cana	Etrit Berisha
+2	Stephan Lichtsteiner	Etrit Berisha
+2	Lorik Cana	Yann Sommer
+2	Stephan Lichtsteiner	Yann Sommer
+3	Martin Skrtel	MatusKozacik
+3	Ashley Williams	MatusKozacik
+3	Martin Skrtel	Danny Ward
+3	Ashley Williams	Danny Ward
+*/
+select match_details.match_no, playercaptain.player_name as "Captain", playergk.player_name as "GK"
+from match_details, match_captain, player_mast playercaptain, player_mast playergk
+where match_captain.player_captain = playercaptain.player_id
+and match_details.player_gk	 = playergk.player_id
+and match_details.team_id = match_captain.team_id
+order by match_details.match_no; #not correct.  Duplicates.
+/*
+match_no	Captain	GK
+1	Vlad Chiriches	Ciprian Tatarusanu
+1	Hugo Lloris	Hugo Lloris
+1	Hugo Lloris	Hugo Lloris
+1	Hugo Lloris	Hugo Lloris
+1	Hugo Lloris	Hugo Lloris
+1	Hugo Lloris	Hugo Lloris
+1	Hugo Lloris	Hugo Lloris
+1	Hugo Lloris	Hugo Lloris
+1	Vlad Chiriches	Ciprian Tatarusanu
+1	Vlad Chiriches	Ciprian Tatarusanu
+*/
+select distinct match_details.match_no, playercaptain.player_name as "Captain", playergk.player_name as "GK"
+from match_details, match_captain, player_mast playercaptain, player_mast playergk
+where match_captain.player_captain = playercaptain.player_id
+and match_details.player_gk	 = playergk.player_id
+and match_details.team_id = match_captain.team_id
+order by match_details.match_no; #correct.
+/*
+match_no	Captain	GK
+1	Hugo Lloris	Hugo Lloris
+1	Vlad Chiriches	Ciprian Tatarusanu
+2	Ansi Agolli	Etrit Berisha
+2	Lorik Cana	Etrit Berisha
+2	Stephan Lichtsteiner	Yann Sommer
+3	Ashley Williams	Danny Ward
+3	Martin Skrtel	MatusKozacik
+*/
+select distinct match_details.match_no, playercaptain.player_name as "Captain", playergk.player_name as "GK", soccer_country.country_name
+from match_details, match_captain, player_mast playercaptain, player_mast playergk, soccer_country
+where match_captain.player_captain = playercaptain.player_id
+and match_details.player_gk	 = playergk.player_id
+and match_details.team_id = match_captain.team_id
+and match_details.team_id = soccer_country.country_id
+order by match_details.match_no; #correct with country.
+/*
+match_no	Captain	GK	country_name
+1	Hugo Lloris	Hugo Lloris	France
+1	Vlad Chiriches	Ciprian Tatarusanu	Romania
+2	Ansi Agolli	Etrit Berisha	Albania
+2	Lorik Cana	Etrit Berisha	Albania
+2	Stephan Lichtsteiner	Yann Sommer	Switzerland
+3	Ashley Williams	Danny Ward	Wales
+3	Martin Skrtel	MatusKozacik	Slovakia
+*/
+select distinct match_details.match_no, playercaptain.player_name as "Captain", playergk.player_name as "GK", soccer_country.country_name
+from match_details inner join match_captain
+on match_details.team_id = match_captain.team_id
+inner join player_mast playergk
+on match_details.player_gk = playergk.player_id
+inner join player_mast playercaptain
+on match_captain.player_captain = playercaptain.player_id
+inner join soccer_country
+on match_details.team_id = soccer_country.country_id
+order by 1; #correct with country using joins
+/*
+match_no	Captain	GK	country_name
+1	Hugo Lloris	Hugo Lloris	France
+1	Vlad Chiriches	Ciprian Tatarusanu	Romania
+2	Ansi Agolli	Etrit Berisha	Albania
+2	Lorik Cana	Etrit Berisha	Albania
+2	Stephan Lichtsteiner	Yann Sommer	Switzerland
+3	Ashley Williams	Danny Ward	Wales
+3	Martin Skrtel	MatusKozacik	Slovakia
 */
