@@ -506,7 +506,7 @@ inner join player_mast playercaptain
 on captain.player_captain = playercaptain.player_id
 inner join player_mast playergk
 on match_details.player_gk = playergk.player_id
-order by match_details.match_no;  #RM:  close.  match_details.match_no = captain.match_no is incorrrect.  match_details.team_id= captain.team_id is correct.  Also, add distinct.
+order by match_details.match_no;  #RM:  close.  match_details.match_no = captain.match_no is incorrect.  match_details.team_id= captain.team_id is correct.  Also, add distinct.
 /*
 match_no	Captain	GK	country_name
 1	Hugo Lloris	Hugo Lloris	France
@@ -712,3 +712,138 @@ match_no	Captain	GK	country_name
 3	Ashley Williams	Danny Ward	Wales
 3	Martin Skrtel	MatusKozacik	Slovakia
 */
+
+#34. Write a query in SQL to find the player who was selected for the Man of the Match Award in the finals of EURO cup 2016.
+select player_name
+from player_mast
+where player_id = (
+	select plr_of_match
+	from match_mast
+	where play_stage = 'F');  #RM:  subquery faster.
+select player_mast.player_name, soccer_country.country_name
+from player_mast join match_mast
+on match_mast.plr_of_match = player_mast.player_id
+join soccer_country
+on player_mast.team_id = soccer_country.country_id
+where play_stage = 'F';  #RM:  join
+
+#35. Write a query in SQL to find the substitute players who came into the field in the first half of play within normal play schedule.
+select player_mast.player_name, soccer_country.country_name
+from player_in_out join player_mast
+on player_in_out.player_id = player_mast.player_id
+join soccer_country
+on player_mast.team_id = soccer_country.country_id
+where player_in_out.play_half = 1
+and player_in_out.play_schedule = 'NT'
+and player_in_out.in_out = 'I';
+
+#36. Write a query in SQL to prepare a list for the player of the match against each match.  #RM:  I looked at solution.  Want full information player of the match.
+select mm.match_no, mm.play_date, pm.player_name, pm.jersey_no, sc.country_name
+from match_mast mm join player_mast pm
+on mm.plr_of_match = pm.player_id
+join soccer_country sc
+on pm.team_id = sc.country_id
+order by mm.match_no;
+
+#37. Write a query in SQL to find the player along with his country who taken the penalty shot number 26.
+select pm.player_name, sc.country_name
+from player_mast pm join soccer_country sc
+on pm.team_id = sc.country_id
+join penalty_shootout
+on pm.player_id = penalty_shootout.player_id
+where kick_id = 26;
+
+#38. Write a query in SQL to find the team against which the penalty shot number 26 had been taken.
+select match_no
+from penalty_shootout
+where kick_id = 26;  #return 47
+select team_id
+from match_details
+where match_no in (
+	select match_no
+	from penalty_shootout
+	where kick_id = 26);  #return 1208 and 1211
+select sc.country_name
+from soccer_country sc join match_details md
+on sc.country_id = md.team_id
+where match_no in (
+	select match_no
+	from penalty_shootout
+	where kick_id = 26);  #return Germany and Italy
+select sc.country_name
+from player_mast pm join soccer_country sc
+on pm.team_id = sc.country_id
+join penalty_shootout
+on pm.player_id = penalty_shootout.player_id
+where kick_id = 26;  #return Italy
+select distinct sc.country_name
+from soccer_country sc join match_details md
+on sc.country_id = md.team_id
+where sc.country_name in (
+	select sc.country_name
+	from soccer_country sc join match_details md
+	on sc.country_id = md.team_id
+	where match_no in (
+		select match_no
+		from penalty_shootout
+		where kick_id = 26))
+and sc.country_name <> (
+	select sc.country_name
+	from player_mast pm join soccer_country sc
+	on pm.team_id = sc.country_id
+	join penalty_shootout
+	on pm.player_id = penalty_shootout.player_id
+	where kick_id = 26);  #return Germany correct country answer
+#user solution
+select distinct match_no, country_name
+from soccer_country sc join penalty_shootout ps
+on ps.team_id=sc.country_id
+where match_no in (
+	select match_no
+	from penalty_shootout
+	where kick_id = 26)
+and country_id not in (
+	select country_id
+	from soccer_country sc join penalty_shootout ps
+	on ps.team_id=sc.country_id
+	where kick_id = 26);
+
+#39. Write a query in SQL to find the captain who was also the goalkeeper.
+select player_id, player_name
+from player_mast
+where posi_to_play = 'GK'
+and player_id in (
+	select player_captain
+	from match_captain);  
+#RM:  question wanted the goalkeeper captain for each match
+select mc.match_no, pm.player_name, sc.country_name
+from match_captain mc join player_mast pm
+on mc.player_captain = pm.player_id
+join soccer_country sc
+on mc.team_id = sc.country_id
+where posi_to_play = 'GK'
+order by 1, 2;
+
+#40. Write a query in SQL to find the number of captains who was also the goalkeeper.
+select count(distinct pm.player_name)
+from match_captain mc join player_mast pm
+on mc.player_captain = pm.player_id
+join soccer_country sc
+on mc.team_id = sc.country_id
+where posi_to_play = 'GK'; #return 4
+#RM:  better solution from question #39
+select count(*)
+from player_mast
+where posi_to_play = 'GK'
+and player_id in (
+	select player_captain
+	from match_captain); #return 4
+
+#41. Write a query in SQL to find the players along with their team booked number of times in the tournament. Show the result according to the team and number of times booked in descending order.  #RM:  what's booked?  Looked at solution for ideas.
+select sc.country_name, pm.player_name, count(pm.player_name)
+from player_mast pm join player_booked pb
+on pm.player_id = pb.player_id
+join soccer_country sc
+on pb.team_id = sc.country_id
+group by sc.country_name, pm.player_name
+order by sc.country_name, count(pm.player_name) desc, pm.player_name;
