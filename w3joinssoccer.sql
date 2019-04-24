@@ -847,3 +847,128 @@ join soccer_country sc
 on pb.team_id = sc.country_id
 group by sc.country_name, pm.player_name
 order by sc.country_name, count(pm.player_name) desc, pm.player_name;
+
+#42. Write a query in SQL to find the players who booked most number of times.
+select player_id, count(*)
+from player_booked
+group by player_id
+order by 2 desc;  #answer is 3 the most number booked
+select player_id, max(count(*))
+from player_booked
+group by player_id
+order by 2 desc;  #incorrect.  Returns nothing.
+select player_id, count(*)
+from player_booked
+group by player_id
+having count(*) = 3; #returns the three players with 3 booked
+select player_id, count(player_id)
+from player_booked
+group by player_id
+having count(player_id) = (
+	select count(player_id)
+	from player_booked
+	group by player_id
+	order by count(player_id) desc limit 1);  #correct group by and getting highest count.
+select pm.player_name, sc.country_name, count(pb.player_id)
+from player_booked pb join player_mast pm
+on pb.player_id = pm.player_id
+join soccer_country sc
+on pb.team_id = sc.country_id
+group by pm.player_name, sc.country_name
+having count(pb.player_id) = (
+	select count(player_id)
+	from player_booked
+	group by player_id
+	order by count(player_id) desc limit 1);  #correct group by and getting highest count with player's name and country
+#official solution
+SELECT c.player_name, COUNT(b.*) Booked 
+FROM soccer_country a JOIN player_booked b
+ON a.country_id=b.team_id
+JOIN player_mast c
+ON b.player_id=c.player_id
+GROUP BY c.player_name
+having COUNT(b.*) = (
+	SELECT MAX(mm)
+	FROM (
+		SELECT COUNT(*) mm 
+		FROM player_booked 
+		GROUP BY player_id)
+	inner_result);
+
+#43. Write a query in SQL to find the number of players booked for each team.
+select sc.country_name, count(pb.team_id)
+from player_booked pb, soccer_country sc
+where pb.team_id = sc.country_id
+group by sc.country_name
+order by sc.country_name;
+
+#44. Write a query in SQL to find the most number of cards shown in the matches.  #RM:  looked at answer.  Find matches with highest booked.
+select match_no, count(match_no)
+from player_booked
+group by match_no
+having count(match_no) = (
+	select count(match_no)
+	from player_booked
+	group by match_no
+	order by count(match_no) desc limit 1);  #returns match_no 51 with 10 booked.
+#RM:  a second look an answer.  It's the matches which has the players with most booked?  I don't understand the question.
+
+#45. Write a query in SQL to list the name of assistant referees with their countries for each matches.
+select match_details.match_no, asst_referee_mast.ass_ref_name, soccer_country.country_name
+from match_details join asst_referee_mast
+on match_details.ass_ref = asst_referee_mast.ass_ref_id
+join soccer_country
+on asst_referee_mast.country_id = soccer_country.country_id;
+
+#46. Write a query in SQL to find the assistant referees of each countries assists the number of matches.
+select soccer_country.country_name, count(distinct match_details.match_no) as "Number of Matches Provided"
+from match_details join asst_referee_mast
+on match_details.ass_ref = asst_referee_mast.ass_ref_id
+join soccer_country
+on asst_referee_mast.country_id = soccer_country.country_id
+group by soccer_country.country_name
+order by count(distinct match_details.match_no) desc;  #count(distinct match_details.match_no) distinct to prevent double count.  There are two assistant referees per match.
+
+#47. Write a query in SQL to find the countries from where the assistant referees assist most of the matches.  #RM:  Looked at solution.  Find the countries which provided the highest assistant referees for all the games.
+select soccer_country.country_name, count(distinct match_details.match_no) as "Number of Matches Provided"
+from match_details join asst_referee_mast
+on match_details.ass_ref = asst_referee_mast.ass_ref_id
+join soccer_country
+on asst_referee_mast.country_id = soccer_country.country_id
+group by soccer_country.country_name
+having count(distinct match_details.match_no) = (
+	select count(ass_ref)
+	from match_details
+	group by team_id
+	order by count(ass_ref) desc limit 1)
+order by count(distinct match_details.match_no) desc;  #Correct answer is England 7
+
+#48. Write a query in SQL to list the name of referees with their countries for each match.
+select mm.match_no, rm.referee_name, sc.country_name
+from match_mast mm join referee_mast rm
+on mm.referee_id = rm.referee_id
+join soccer_country sc
+on rm.country_id = sc.country_id;
+
+#49. Write a query in SQL to find the referees of each country managed number of matches.  #RM:  find how many referees participated in all matches per country
+select sc.country_name, count(mm.match_no)
+from match_mast mm join referee_mast rm
+on mm.referee_id = rm.referee_id
+join soccer_country sc
+on rm.country_id = sc.country_id
+group by sc.country_name
+order by 2 desc;
+
+#50. Write a query in SQL to find the countries from where the referees managed most of the matches.  #RM:  find country the referees participated in highest matches
+select sc.country_name, count(mm.match_no)
+from match_mast mm join referee_mast rm
+on mm.referee_id = rm.referee_id
+join soccer_country sc
+on rm.country_id = sc.country_id
+group by sc.country_name
+having count(mm.match_no) = (
+	select count(mm.match_no)
+	from match_mast mm join referee_mast rm
+	on mm.referee_id = rm.referee_id
+	group by rm.country_id
+	order by count(mm.match_no) desc limit 1);
