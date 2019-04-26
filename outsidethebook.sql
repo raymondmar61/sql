@@ -1739,3 +1739,37 @@ from
   on students.sID = applications.sID) as b
 group by b.major;
 
+#https://www.w3resource.com/sql-exercises/soccer-database-exercise/joins-exercises-on-soccer-database.php
+#55. Write a query in SQL to find the referees who booked most number of players.
+select rm.referee_name, count(pb.match_no)
+from player_booked pb join match_mast mm
+on mm.match_no = pb.match_no
+join referee_mast rm
+on mm.referee_id = rm.referee_id
+group by 1
+having count(pb.match_no) = (
+  select count(pb.match_no)
+  from player_booked pb join match_mast mm
+  on mm.match_no = pb.match_no
+  join referee_mast rm
+  on mm.referee_id = rm.referee_id
+  group by rm.referee_name
+  order by count(pb.match_no) desc limit 1)
+order by 2 desc, 1 asc;
+#official solution
+select c.referee_name, count(b.match_no)
+from player_booked a join match_mast b
+on a.match_no=b.match_no
+join referee_mast c
+on b.referee_id=c.referee_id
+group by referee_name
+having count(b.match_no) = (
+  select max(mm)
+  from (
+    select count(b.match_no) mm
+    from player_booked a join match_mast b
+    on a.match_no=b.match_no
+    join referee_mast c
+    on b.referee_id=c.referee_id
+    group by referee_name)
+  hh);

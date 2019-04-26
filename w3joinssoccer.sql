@@ -972,3 +972,135 @@ having count(mm.match_no) = (
 	on mm.referee_id = rm.referee_id
 	group by rm.country_id
 	order by count(mm.match_no) desc limit 1);
+
+#51. Write a query in SQL to find the referees managed the number of matches.
+select mm.referee_id, rm.referee_name, sc.country_name, count(mm.referee_id)
+from match_mast mm join referee_mast rm
+on mm.referee_id = rm.referee_id
+join soccer_country sc
+on rm.country_id = sc.country_id
+group by mm.referee_id, rm.referee_name, sc.country_name
+order by 4 desc, 2 asc;
+
+#52. Write a query in SQL to find those referees who managed most of the match.
+select rm.referee_name, sc.country_name, count(mm.referee_id)
+from match_mast mm join referee_mast rm
+on mm.referee_id = rm.referee_id
+join soccer_country sc
+on rm.country_id = sc.country_id
+group by rm.referee_name, sc.country_name
+having count(mm.referee_id) = (
+	select count(mm.referee_id)
+	from match_mast mm
+	group by mm.referee_id
+	order by count(mm.referee_id) desc limit 1)
+order by 3 desc, 1 asc;
+
+#53. Write a query in SQL to find the referees managed the number of matches in each venue.  #RM:  looked at answer.  Count referees officiated each venue.
+select rm.referee_name, sc.country_name, sv.venue_name, count(mm.referee_id)
+from match_mast mm join referee_mast rm
+on mm.referee_id = rm.referee_id
+join soccer_country sc
+on rm.country_id = sc.country_id
+join soccer_venue sv
+on mm.venue_id = sv.venue_id
+group by rm.referee_name, sc.country_name, sv.venue_name
+order by rm.referee_name asc, count(mm.referee_id) desc;
+
+#54. Write a query in SQL to find the referees and number of booked he made.
+select rm.referee_name, count(pb.match_no)
+from player_booked pb join match_mast mm
+on mm.match_no = pb.match_no
+join referee_mast rm
+on mm.referee_id = rm.referee_id
+group by 1
+order by 2 desc, 1 asc;
+
+#55. Write a query in SQL to find the referees who booked most number of players.
+select rm.referee_name, count(pb.match_no)
+from player_booked pb join match_mast mm
+on mm.match_no = pb.match_no
+join referee_mast rm
+on mm.referee_id = rm.referee_id
+group by 1
+having count(pb.match_no) = (
+	select count(pb.match_no)
+	from player_booked pb join match_mast mm
+	on mm.match_no = pb.match_no
+	join referee_mast rm
+	on mm.referee_id = rm.referee_id
+	group by rm.referee_name
+	order by count(pb.match_no) desc limit 1)
+order by 2 desc, 1 asc;
+#official solution
+select c.referee_name, count(b.match_no)
+from player_booked a join match_mast b
+on a.match_no=b.match_no
+join referee_mast c
+on b.referee_id=c.referee_id
+group by referee_name
+having count(b.match_no) = (
+	select max(mm)
+	from (
+		select count(b.match_no) mm
+		from player_booked a join match_mast b
+		on a.match_no=b.match_no
+		join referee_mast c
+		on b.referee_id=c.referee_id
+		group by referee_name)
+	hh);
+
+#56. Write a query in SQL to find the player of each team who wear jersey number 10.
+select player_mast.player_name, soccer_country.country_name
+from player_mast, soccer_country
+where player_mast.team_id = soccer_country.country_id
+and player_mast.jersey_no = 10;
+
+#57. Write a query in SQL to find the defender who scored goal for his team.
+select pm.player_name, sc.country_name
+from player_mast pm join soccer_country sc
+on pm.team_id = sc.country_id
+join goal_details gd
+on pm.player_id = gd.player_id
+where pm.posi_to_play = 'DF'
+order by pm.player_name;
+
+#58. Write a query in SQL to find the position of a player to play who scored own goal.
+select pm.player_name, sc.country_name
+from player_mast pm join soccer_country sc
+on pm.team_id = sc.country_id
+join goal_details gd
+on pm.player_id = gd.player_id
+where gd.goal_type = 'O'
+order by pm.player_name;
+
+#59. Write a query in SQL to find the results of penalty shootout matches.
+select md.match_no, md.play_stage, sc.country_name, md.win_lose, md.penalty_score
+from match_details md, soccer_country sc
+where md.team_id = sc.country_id
+and penalty_score is not null
+order by md.match_no asc, md.win_lose desc;
+
+#60. Write a query in SQL to find the goal scored by the players according to their playing position.  #RM:  looked at solution.  number of goals scored by country and by position.
+select sc.country_name, pm.posi_to_play, count(gd.player_id)
+from player_mast pm join soccer_country sc
+on pm.team_id = sc.country_id
+join goal_details gd
+on gd.player_id = pm.player_id
+group by sc.country_name, pm.posi_to_play
+order by sc.country_name, pm.posi_to_play;
+
+#61. Write a query in SQL to find those players who came into the field in the most last time of play.
+select max(time_in_out)
+from player_in_out
+where in_out = 'I';  #max time player entered is 120th minute.
+select player_mast.player_name, soccer_country.country_name
+from player_mast join soccer_country
+on player_mast.team_id = soccer_country.country_id
+join player_in_out
+on player_in_out.player_id = player_mast.player_id
+where player_in_out.in_out = 'I'
+and player_in_out.time_in_out = (
+	select select max(time_in_out)
+	from player_in_out
+	where in_out = 'I');
