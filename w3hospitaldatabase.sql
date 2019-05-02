@@ -146,6 +146,51 @@ physician | treatment | certificationdate | certificationexpires
          7 |         6 | 2008-01-01        | 2008-12-31
          7 |         7 | 2008-01-01        | 2008-12-31
 
+Sample table: patient
+    ssn    |       name        |      address       |  phone   | insuranceid | pcp
+-----------+-------------------+--------------------+----------+-------------+-----
+ 100000001 | John Smith        | 42 Foobar Lane     | 555-0256 |    68476213 |   1
+ 100000002 | Grace Ritchie     | 37 Snafu Drive     | 555-0512 |    36546321 |   2
+ 100000003 | Random J. Patient | 101 Omgbbq Street  | 555-1204 |    65465421 |   2
+ 100000004 | Dennis Doe        | 1100 Foobaz Avenue | 555-2048 |    68421879 |   3
+
+Sample table: appointment
+ appointmentid |  patient  | prepnurse | physician |    start_dt_time    |     end_dt_time     | examinationroom
+---------------+-----------+-----------+-----------+---------------------+---------------------+-----------------
+      13216584 | 100000001 |       101 |         1 | 2008-04-24 10:00:00 | 2008-04-24 11:00:00 | A
+      26548913 | 100000002 |       101 |         2 | 2008-04-24 10:00:00 | 2008-04-24 11:00:00 | B
+      36549879 | 100000001 |       102 |         1 | 2008-04-25 10:00:00 | 2008-04-25 11:00:00 | A
+      46846589 | 100000004 |       103 |         4 | 2008-04-25 10:00:00 | 2008-04-25 11:00:00 | B
+      59871321 | 100000004 |           |         4 | 2008-04-26 10:00:00 | 2008-04-26 11:00:00 | C
+      69879231 | 100000003 |       103 |         2 | 2008-04-26 11:00:00 | 2008-04-26 12:00:00 | C
+      76983231 | 100000001 |           |         3 | 2008-04-26 12:00:00 | 2008-04-26 13:00:00 | C
+      86213939 | 100000004 |       102 |         9 | 2008-04-27 10:00:00 | 2008-04-21 11:00:00 | A
+      93216548 | 100000002 |       101 |         2 | 2008-04-27 10:00:00 | 2008-04-27 11:00:00 | B
+
+Sample table: nurse
+ employeeid |      name       |  position  | registered |    ssn
+------------+-----------------+------------+------------+-----------
+        101 | Carla Espinosa  | Head Nurse | t          | 111111110
+        102 | Laverne Roberts | Nurse      | t          | 222222220
+        103 | Paul Flowers    | Nurse      | f          | 333333330
+
+Sample table: prescribes
+ physician |  patient  | medication |        date         | appointment | dose
+-----------+-----------+------------+---------------------+-------------+------
+         1 | 100000001 |          1 | 2008-04-24 10:47:00 |    13216584 | 5
+         9 | 100000004 |          2 | 2008-04-27 10:53:00 |    86213939 | 10
+         9 | 100000004 |          2 | 2008-04-30 16:53:00 |             | 5
+
+Sample table: medication
+ code |     name     |         brand         | description
+------+--------------+-----------------------+-------------
+    1 | Procrastin-X | X                     | N/A
+    2 | Thesisin     | Foo Labs              | N/A
+    3 | Awakin       | Bar Laboratories      | N/A
+    4 | Crescavitin  | Baz Industries        | N/A
+    5 | Melioraurin  | Snafu Pharmaceuticals | N/A
+
+
 
 physician:
 employeeid – this is a unique ID of a physician
