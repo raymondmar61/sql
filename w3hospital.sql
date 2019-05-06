@@ -173,3 +173,164 @@ from room
 where unavailable = 'f'
 group by blockfloor, blockcode
 order by blockfloor, blockcode;
+
+#25. Write a query in SQL to count the number of unavailable rooms for each block in each floor.
+select blockfloor, blockcode, count(unavailable)
+from room
+where unavailable = 't'
+group by blockfloor, blockcode
+order by blockfloor, blockcode;
+#quick count
+select count(*)
+from room
+where unavailable = 't';
+
+#26. Write a query in SQL to find out the floor where the maximum no of rooms are available.
+select blockfloor, count(*)
+from room
+where unavailable = 'f'
+group by blockfloor
+having count(*) = (
+	select count(*)
+	from room
+	where unavailable = 'f'
+	group by blockfloor
+	order by count(*) desc limit 1)
+order by blockfloor;
+#official solution
+select blockfloor as "floor", count(*) as  "no of available rooms"
+from room
+where unavailable='f'
+group by blockfloor
+having count(*) = (
+	select max(getcountsagain) as highest_total
+	from (
+		select blockfloor, count(*) as getcountsagain
+      	from room
+      	where unavailable='f'
+      	group by blockfloor)
+    as temptablegetmaxcount);
+
+#27. Write a query in SQL to find out the floor where the minimum no of rooms are available.
+select blockfloor, count(*)
+from room
+where unavailable = 'f'
+group by blockfloor
+having count(*) = (
+  select count(*)
+  from room
+  where unavailable = 'f'
+  group by blockfloor
+  order by count(*) asc limit 1)
+order by blockfloor;
+#official solution
+select blockfloor as "floor", count(*) as  "no of available rooms"
+from room
+where unavailable='f'
+group by blockfloor
+having count(*) = (
+  select min(getcountsagain) as lowest_total
+  from (
+    select blockfloor, count(*) as getcountsagain
+        from room
+        where unavailable='f'
+        group by blockfloor)
+    as temptablegetmincount);
+
+#28. Write a query in SQL to obtain the name of the patients, their block, floor, and room number where they are admitted.
+select patient.name, room.blockfloor, stay.room, room.blockcode
+from patient join stay
+on patient.ssn = stay.patient
+join room
+on stay.room = room.roomnumber;
+
+#29. Write a query in SQL to obtain the nurses and the block where they are booked for attending the patients on call.
+select nurse.name, on_call.blockfloor, on_call.blockcode
+from nurse, on_call
+where nurse.employeeid = on_call.nurse;
+
+#30. Write a query in SQL to make a report which will show -
+#a) name of the patient, 
+#b) name of the physician who is treating him or her,
+#c) name of the nurse who is attending him or her,
+#d) which treatement is going on to the patient,
+#e) the date of release,
+#f) in which room the patient has admitted and which floor and block the room belongs to respectively.
+select patient.name as "Patient", physician.name as "Physician", nurse.name as "Nurse", undergoes.procedure, undergoes.date, room.blockfloor, room.roomnumber #official solution says undergoes.date is date of release.  It's not stay.end_time.
+from patient join undergoes
+on patient.ssn = undergoes.patient
+join physician
+on undergoes.physician = physician.employeeid
+left join nurse
+on undergoes.assistingnurse = nurse.employeeid #one patient is not assigned a nurse
+join stay
+on undergoes.stay = stay.stayid
+join room
+on stay.room = room.roomnumber;
+
+#31. Write a SQL query to obtain the names of all the physicians performed a medical procedure but they are not ceritifed to perform.  #RM:  double equal signs on a join statement or double joins.
+#List of Physicians undergoes a procedure
+select physician.name, undergoes.procedure
+from physician join undergoes
+on physician.employeeid = undergoes.physician
+order by 1, 2;
+/*
+name	procedure
+Christopher Turk	1
+Christopher Turk	4
+Christopher Turk	6
+John Wen	2
+John Wen	7
+Todd Quinlan	5
+*/
+#List of Physicians with certifications or trained_in
+select physician.name, trained_in.treatment
+from physician join trained_in
+on physician.employeeid = trained_in.physician
+order by 1, 2;
+/*
+name	treatment
+Christopher Turk	1
+Christopher Turk	2
+Christopher Turk	5
+Christopher Turk	6
+Christopher Turk	7
+John Wen	1
+John Wen	2
+John Wen	3
+John Wen	4
+John Wen	5
+John Wen	6
+John Wen	7
+Todd Quinlan	2
+Todd Quinlan	5
+Todd Quinlan	6
+*/
+#official solution
+select name as "Physician"
+from physician
+where employeeid in (
+	select undergoes.physician
+	from undergoes left join trained_in
+	on undergoes.physician=trained_in.physician
+	and undergoes.procedure=trained_in.treatment
+	where treatment is null); #answer is Christopher Turk
+#the subquery if I include trained_in.treatment, then there is a null.  One row is physician 3 and treatment null.
+select undergoes.physician, trained_in.treatment
+from undergoes left join trained_in
+on undergoes.physician=trained_in.physician
+and undergoes.procedure=trained_in.treatment;
+/*
+physician	treatment
+3	1
+3	
+3	6
+*/
+#user solution
+select name, treatment
+from physician p join undergoes u
+on p.employeeid=u.physician
+left join trained_in t
+on u.procedure=t.treatment
+and u.physician=t.physician
+where treatment is null; #answer is Christopher Turk

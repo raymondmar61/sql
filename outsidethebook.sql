@@ -1773,3 +1773,132 @@ having count(b.match_no) = (
     on b.referee_id=c.referee_id
     group by referee_name)
   hh);
+
+#https://www.w3resource.com/sql-exercises/hospital-database-exercise/sql-exercise-on-hospital-database.php
+#8. Write a query in SQL to obtain the name of the physician and the departments they are affiliated with.
+select p.name as "Physician", d.name as "Department"
+from physician p join affiliated_with a
+on p.employeeid = a.physician
+join department d
+on a.department = d.departmentid
+where a.primaryaffiliation = 't';  #RM:  .name is the same.  Must included as "alias".
+
+#26. Write a query in SQL to find out the floor where the maximum no of rooms are available.
+select blockfloor, count(*)
+from room
+where unavailable = 'f'
+group by blockfloor
+having count(*) = (
+  select count(*)
+  from room
+  where unavailable = 'f'
+  group by blockfloor
+  order by count(*) desc limit 1)
+order by blockfloor;
+#official solution
+select blockfloor as "floor", count(*) as  "no of available rooms"
+from room
+where unavailable='f'
+group by blockfloor
+having count(*) = (
+  select max(getcountsagain) as highest_total
+  from (
+    select blockfloor, count(*) as getcountsagain
+        from room
+        where unavailable='f'
+        group by blockfloor)
+    as temptablegetmaxcount);
+
+#27. Write a query in SQL to find out the floor where the minimum no of rooms are available.
+select blockfloor, count(*)
+from room
+where unavailable = 'f'
+group by blockfloor
+having count(*) = (
+  select count(*)
+  from room
+  where unavailable = 'f'
+  group by blockfloor
+  order by count(*) asc limit 1)
+order by blockfloor;
+#official solution
+select blockfloor as "floor", count(*) as  "no of available rooms"
+from room
+where unavailable='f'
+group by blockfloor
+having count(*) = (
+  select min(getcountsagain) as lowest_total
+  from (
+    select blockfloor, count(*) as getcountsagain
+        from room
+        where unavailable='f'
+        group by blockfloor)
+    as temptablegetmincount);
+
+#31. Write a SQL query to obtain the names of all the physicians performed a medical procedure but they are not ceritifed to perform.  #RM:  double equal signs on a join statement or double joins.
+#List of Physicians undergoes a procedure
+select physician.name, undergoes.procedure
+from physician join undergoes
+on physician.employeeid = undergoes.physician
+order by 1, 2;
+/*
+name  procedure
+Christopher Turk  1
+Christopher Turk  4
+Christopher Turk  6
+John Wen  2
+John Wen  7
+Todd Quinlan  5
+*/
+#List of Physicians with certifications or trained_in
+select physician.name, trained_in.treatment
+from physician join trained_in
+on physician.employeeid = trained_in.physician
+order by 1, 2;
+/*
+name  treatment
+Christopher Turk  1
+Christopher Turk  2
+Christopher Turk  5
+Christopher Turk  6
+Christopher Turk  7
+John Wen  1
+John Wen  2
+John Wen  3
+John Wen  4
+John Wen  5
+John Wen  6
+John Wen  7
+Todd Quinlan  2
+Todd Quinlan  5
+Todd Quinlan  6
+*/
+#official solution
+select name as "Physician"
+from physician
+where employeeid in (
+  select undergoes.physician
+  from undergoes left join trained_in
+  on undergoes.physician=trained_in.physician
+  and undergoes.procedure=trained_in.treatment
+  where treatment is null); #answer is Christopher Turk
+#the subquery if I include trained_in.treatment, then there is a null.  One row is physician 3 and treatment null.
+select undergoes.physician, trained_in.treatment
+from undergoes left join trained_in
+on undergoes.physician=trained_in.physician
+and undergoes.procedure=trained_in.treatment;
+/*
+physician treatment
+3 1
+3 
+3 6
+*/
+#user solution
+select name, treatment
+from physician p join undergoes u
+on p.employeeid=u.physician
+left join trained_in t
+on u.procedure=t.treatment
+and u.physician=t.physician
+where treatment is null; #answer is Christopher Turk
+
