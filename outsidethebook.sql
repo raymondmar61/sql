@@ -1902,3 +1902,84 @@ on u.procedure=t.treatment
 and u.physician=t.physician
 where treatment is null; #answer is Christopher Turk
 
+#32. Write a query in SQL to obtain the names of all the physicians, their procedure, date when the procedure was carried out and name of the patient on which procedure have been carried out but those physicians are not cetified for that procedure.   #RM:  double equal signs on a join statement or double joins.
+#Physicians performing procedure on patient and the date
+select physician.name as "Physician", procedure.name "Procedure", undergoes.date, patient.name "Patient"
+from physician join undergoes
+on physician.employeeid = undergoes.physician
+join procedure
+on undergoes.procedure = procedure.code
+join
+patient
+on undergoes.patient = patient.ssn
+order by physician.name;
+#Not certified physicians performing procedure on patient and the date 
+select physician.name as "Physician", procedure.name "Procedure", undergoes.date, patient.name "Patient"
+from physician join undergoes
+on physician.employeeid = undergoes.physician
+join procedure
+on undergoes.procedure = procedure.code
+join
+patient
+on undergoes.patient = patient.ssn
+left outer join trained_in
+on undergoes.physician = trained_in.physician
+and undergoes.procedure = trained_in.treatment
+where trained_in.treatment is null
+order by physician.name;
+
+#33. Write a query in SQL to obtain the name and position of all physicians who completed a medical procedure with certification after the date of expiration of their certificate.  #RM:  double equal signs on a join statement or double joins.
+select physician.name as "Name", physician.position as "Position", trained_in.treatment
+from physician join undergoes
+on physician.employeeid = undergoes.physician
+left outer join trained_in
+on undergoes.physician = trained_in.physician
+and undergoes.procedure = trained_in.treatment
+where undergoes.date > trained_in.certificationexpires;
+
+#36. Write a query in SQL to Obtain the names of all patients who has been prescribed some medication by his/her physician who has carried out primary care and the name of that physician.  #RM:  double equal signs on a join statement or double joins.
+select patient.name as "Patient", prescribes.medication, physician.name as "Primary Care Physician"
+from patient join prescribes
+on patient.ssn = prescribes.patient
+join physician
+on patient.pcp = physician.employeeid
+and prescribes.physician = physician.employeeid;
+#official solution
+select pt.name as "ptient", p.name as "physician"
+from patient pt join prescribes pr
+on pr.patient = pt.ssn
+join physician p
+on pt.pcp = p.employeeid
+where pt.pcp = pr.physician
+and pt.pcp = p.employeeid;
+
+#37. Write a query in SQL to obtain the names of all patients who has been undergone a procedure costing more than $5,000 and the name of that physician who has carried out primary care.  #RM:  two joins same tables different alias different joins same tables
+#Undergoes Physician and PCP Physician
+select patient.name as "Patient", primarycarephysician.name as "Physician PCP", procedure.name as "Procedure", physician.name as "Physician Undergoes", procedure.cost
+from patient join undergoes
+on patient.ssn = undergoes.patient
+join procedure
+on undergoes.procedure = procedure.code
+join physician
+on undergoes.physician = physician.employeeid
+join physician primarycarephysician
+on patient.pcp = primarycarephysician.employeeid
+where procedure.cost > 5000;
+#Undergoes Physician only
+select patient.name as "Patient", procedure.name as "Procedure", physician.name as "Physician Undergoes", procedure.cost
+from patient join undergoes
+on patient.ssn = undergoes.patient
+join procedure
+on undergoes.procedure = procedure.code
+join physician
+on undergoes.physician = physician.employeeid
+where procedure.cost > 5000;
+#official solution
+select pt.name as "ptient", p.name as "primary physician", pd.cost as "porcedure cost"
+from patient pt join undergoes u
+on u.patient=pt.ssn
+join physician p
+on pt.pcp=p.employeeid
+join procedure pd
+on u.procedure=pd.code
+where pd.cost>5000;
