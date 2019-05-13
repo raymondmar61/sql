@@ -1983,3 +1983,14 @@ on pt.pcp=p.employeeid
 join procedure pd
 on u.procedure=pd.code
 where pd.cost>5000;
+
+#https://www.w3resource.com/sql-exercises/employee-database-exercise/index.php
+/* to_char convert number or date to character from oraclesql12cintroduction string conversion number conversion */
+#4. Write a query in SQL to list the emp_name and salary is increased by 15% and expressed as no.of Dollars.
+select emp_name, salary, to_char(salary*1.15,'$99,999') as "15% raise"
+from employees;
+
+#10. Write a query in SQL to display the unique department with jobs.  #RM:  distinct everything or unique everything all columns; all distinct  /* distinct elimates duplicate rows.  distinct is row-based. One distinct operator in query. */
+select distinct dep_id, job_name
+from employees
+order by dep_id, job_name;

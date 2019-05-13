@@ -445,3 +445,44 @@ on pt.pcp=p.employeeid
 join procedure pd
 on u.procedure=pd.code
 where pd.cost>5000;
+
+#38. Write a query in SQL to Obtain the names of all patients who had at least two appointment where the nurse who prepped the appointment was a registered nurse and the physiccian who has carried out primary care.
+#patients at least two appointments
+select patient.name as "Patient", count(appointment.patient)
+from patient join appointment
+on patient.ssn = appointment.patient
+group by patient.name
+having count(appointment.patient) >=2;
+#patients at least two appointments with registered nurse and primary care pcp physician
+select patient.name as "Patient", physician.name as "Physician", count(appointment.patient)
+from patient join appointment
+on patient.ssn = appointment.patient
+join nurse
+on appointment.prepnurse = nurse.employeeid
+join physician
+on physician.employeeid = appointment.physician
+join physician pcp
+on pcp.employeeid = patient.pcp
+where nurse.registered = 't'
+group by patient.name, physician.name
+having count(appointment.patient) >=2;
+#user solution
+select name,A.count from (
+	select pa.name, count(appointmentid)
+	from patient pa join appointment a
+	on pa.ssn=a.patient
+	join nurse n
+	on a.prepnurse=n.employeeid
+	join physician ph
+	on pa.pcp=ph.employeeid
+	where registered='t'
+	group by pa.name) A
+where A.count >= 2;
+
+#39. Write a query in SQL to Obtain the names of all patients whose primary care is taken by a physician who is not the head of any department and name of that physician along with their primary care physician.
+select patient.name as "Patient", physician.name as "Physician"
+from patient join physician
+on patient.pcp = physician.employeeid
+where physician.employeeid not in (
+	select department.head
+	from department);
