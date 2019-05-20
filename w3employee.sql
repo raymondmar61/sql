@@ -196,3 +196,144 @@ where mod(salary,2) <> 0;
 select *
 from employees
 where length(trim(to_char(salary,'9999'))) = 3;
+
+#33. Write a query in SQL to list the employees who joined in the month of APRIL.
+select emp_name
+from employees
+where to_char(hire_date, 'Month') = 'April';  #RM:  doesn't work
+select *
+from employees
+where to_char(hire_date,'mon') = 'apr';  #RM:  does work
+#also
+select *
+from employees
+where to_char(hire_date,'MON') = 'APR';  #RM:  does work
+
+#34. Write a query in SQL to list the employees those who joined in company before 19th of the month.
+select *
+from employees
+where to_char(hire_date,'dd') < 19;  #RM:  doesn't work
+select *
+from employees
+where to_char(hire_date,'DD') < '19';  #RM:  does work
+
+#35. Write a query in SQL to list the employees who are SALESMAN and gathered an experience over 10 years.
+select emp_name, current_date, hire_date, current_date-hire_date as "Days on the job"
+from employees
+where job_name = 'SALESMAN'
+and current_date-hire_date > (365*10);
+#official solution
+select *
+from employees
+where job_name = 'salesman'
+and extract(month from age(current_date, hire_date)) > 10;
+
+#36. Write a query in SQL to list the employees of department id 3001 or 1001 joined in the year 1991.
+select *
+from employees
+where dep_id in (3001, 1001)
+and to_char(hire_date,'YYYY') = '1991';
+
+#37. Write a query in SQL to list the employees of department id 3001 or 1001 joined in the year 1991.
+select *
+from employees
+where dep_id in (3001, 1001)
+and to_char(hire_date,'YYYY') = '1991';
+
+#38. Write a query in SQL to list all the employees of designation CLERK in department no 2001.
+select *
+from employees
+where job_name = 'CLERK'
+and dep_id = 2001;
+
+#39. Write a query in SQL to list the ID, name, salary, and job_name of the employees for 1. Annual salary is below 34000 but receiving some commission which should not be more than the salary, 2. And designation is SALESMAN and working for department 3001.
+select emp_id, emp_name, job_name
+from employees
+where (salary*12 < 34000 and commission < (salary))
+and job_name = 'SALESMAN'
+and dep_id = 3001;
+
+#40. Write a query in SQL to list the employees who are either CLERK or MANAGER.
+select *
+from employees
+where job_name in ('CLERK','MANAGER');
+
+#41. Write a query in SQL to list the employees who joined in any year except the month February.
+select *
+from employees
+where to_char(hire_date,'mon') not in ('feb');
+
+#42. Write a query in SQL to list the employees who joined in the year 91.
+select *
+from employees
+where to_char(hire_date,'YYYY') = '1991';
+#also from official solution
+select *
+from employees
+where hire_date between '1991-01-01' and '1991-12-31';
+
+#43. Write a query in SQL to list the employees who joined in the month of June in 1991.
+select *
+from employees
+where hire_date between '1991-06-01' and '1991-06-30';
+#also from official solution
+select *
+from employees
+where to_char(hire_date,'mon-yyyy') = 'jun-1991';
+#also
+select *
+from employees
+where to_char(hire_date,'YYYY') = '1991'
+and to_char(hire_date,'mon') in ('jun');
+
+#44. Write a query in SQL to list the employees whose annual salary is within the range 24000 and 50000.
+select *
+from employees
+where (salary*12) >= 24000 and (salary*12) <=50000;
+#also from official solution
+select *
+from employees
+where 12*salary between 24000 and 50000;
+
+#45. Write a query in SQL to list the employees who have joined on the following dates 1st May,20th Feb, and 03rd Dec in the year 1991.
+select *
+from employees
+where to_char(hire_date,'MON-DD-YYYY') in ('May-01-1991','Feb-20-1991','Dec-03-1991');
+#user solution
+select *
+from employees
+where hire_date in ('1991-05-01','1991-02-20','1991-12-03');
+
+#46. Write a query in SQL to list the employees working under the managers 63679,68319,66564,69000.
+select *
+from employees
+where manager_id in (63679, 68319, 66564, 69000);
+
+#47. Write a query in SQL to list the employees who joined after the month JUNE in the year 1991.  #RM:  solution is all employees employed July 1991 to Dec 1992?!?
+select *
+from employees
+where hire_date >= '1991-07-01' and hire_date <='1991-12-31';
+
+#48. Write a query in SQL to list the employees who joined in 90's.  #RM:  all employees joined in 90's.
+select *
+from employees
+where to_char(hire_date,'YYYY') >= '1990' and to_char(hire_date,'YYYY') <= '1999';  #Between or Range works for text or quoted numbers?!?
+select *
+from employees
+where to_char(hire_date,'MON-DD-YYYY') between 'Jan-01-1990' and 'Dec-31-1999'; #doesn't work
+
+#49. Write a query in SQL to list the managers of department 1001 or 2001.  #RM:  Find job_name MANAGER in dept_id 1001 or 2001
+select m.emp_name as "Manager", m.dep_id as "Department ID"
+from employees e join employees m
+on (e.manager_id = m.emp_id)
+where m.dep_id in (1001, 2001);  #RM:  incorrect
+select *
+from employees
+where job_name = 'MANAGER'
+and dep_id in (1001, 2001);  #RM:  correct
+
+#50. Write a query in SQL to list the employees, joined in the month FEBRUARY with a salary range between 1001 to 2000. 
+select *
+from employees
+where to_char(hire_date,'mon') = 'feb'
+and salary between 1001 and 2000;
