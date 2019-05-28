@@ -630,3 +630,124 @@ order by e.salary desc;
 select e.*, d.*
 from employees e, department d
 where e.dep_id = d.dep_id;
+
+#88. Write a query in SQL to list the employees who are senior to their own MANAGERS.
+select e.emp_name as "Employee", e.hire_date as "Employee Hire Date", m.emp_name as "Manager", m.hire_date as "Manager Hire Date"
+from employees e join employees m
+on e.manager_id = m.emp_id
+where e.hire_date < m.hire_date;
+
+#89. Write a query in SQL to list the employee id, name, salary, and department id of the employees in ascending order of salary who works in the department 1001.
+select emp_id, emp_name, salary, dep_id
+from employees
+where dep_id = 1001
+order by salary;
+
+#90. Write a query in SQL to find the highest salary from all the employees.
+select *
+from employees
+where salary = (
+	select max(salary)
+	from employees);
+
+#91. Write a query in SQL to find the average salary and average total remuneration(salary and commission) for each type of job.
+select avg(salary)
+from employees;  #return 2214.7857142857142857
+select avg(salary+commission)
+from employees;  #return 2125.0000000000000000
+select avg(salary+commission)
+from employees
+where commission is not null;  #return 2125.0000000000000000
+select avg(salary+commission)
+from employees
+where commission > 0; #return 2300.0000000000000000  RM:  there is an entry with a zero.  Correct answer may be 2300 confirmed on Excel.  Three employees with salary and commission greater than zero.
+select avg(salary+commission)
+from employees
+where commission >= 0; #return 2125.0000000000000000  RM:  there is an entry with a zero.  Correct answer may be 2125 confirmed on Excel.  Four employees with salary and commission not null.
+select avg(salary) as "Avg Salary", avg(salary+commission) as "Avg Salary and Commission"
+from employees;  #return 2214.7857142857142857, 2125.0000000000000000
+select job_name, avg(salary) as "Avg Salary", avg(salary+commission) as "Avg Salary and Commission"
+from employees
+group by job_name;
+
+#92. Write a query in SQL to find the total annual salary distributed against each job in the year 1991.  #RM:  Looked at solution.  Employees hired in 1991 annual salary grouped by job_name.
+select job_name, sum(salary*12) as "Annual Salary"
+from employees
+where to_char(hire_date,'yyyy') = '1991'
+group by job_name;
+
+#93. Write a query in SQL to list the employee id, name, department id, location of all the employees.
+select e.emp_id, e.emp_name, e.dep_id, d.dep_location
+from employees e, department d
+where e.dep_id = d.dep_id;
+
+#94. Write a query in SQL to list the employee id, name, location, department of all the departments 1001 and 2001.
+select e.emp_id, e.emp_name, e.dep_id, d.dep_location
+from employees e, department d
+where e.dep_id = d.dep_id
+and e.dep_id in (1001, 2001);
+
+#95. Write a query in SQL to list the employee id, name, salary, grade of all the employees.
+select e.emp_id, e.emp_name, e.salary, s.grade
+from employees e, salary_grade s
+where e.salary between s.min_sal and s.max_sal
+order by e.salary;
+
+#96. Write a query in SQL to list the manager no and the number of employees working for those managers in ascending order on manager id.
+select manager_id, count(manager_id)
+from employees
+where manager_id is not null
+group by manager_id
+order by manager_id;
+
+#97. Write a query in SQL to display the number of employee for each job in each department.  #RM:  solution wanted group by dep_id and job_name.
+select dep_id, job_name, count(*)
+from employees
+group by dep_id, job_name;
+
+#98. Write a query in SQL to list the department where at least two employees are working.  #RM:  changed question to at least 4.  All departments have at least two.
+select dep_id, count(emp_name)
+from employees
+group by dep_id
+having count(emp_name) >= 4;
+
+#99. Write a query in SQL to display the Grade, Number of employees, and maximum salary of each grade.
+select s.grade, count(e.emp_name), max(e.salary)
+from employees e join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+group by s.grade
+order by s.grade;
+
+#100. Write a query in SQL to display the department name, grade, no. of employees where at least two employees are working as a SALESMAN.
+select d.dep_name, s.grade, count(emp_name)
+from employees e join department d
+on e.dep_id = d.dep_id
+join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+where e.job_name = 'SALESMAN'
+group by d.dep_name, s.grade
+having count(emp_name) >= 2;
+
+#101. Write a query in SQL to list the no. of employees in each department where the [number] is less than 4.
+select dep_id, count(emp_name)
+from employees
+group by dep_id
+having count(emp_name) < 4;
+
+#102. Write a query in SQL to list the name of departments where atleast 2 employees are working in that department.
+select d.dep_name, count(e.emp_name)
+from employees e join department d
+on e.dep_id = d.dep_id
+group by d.dep_name
+having count(e.emp_name) >= 2;
+
+#103. Write a query in SQL to check whether all the employees numbers are indeed unique.
+select emp_id, count(emp_id)
+from employees
+group by emp_id
+having count(emp_id) >= 2;
+
+#104. Write a query in SQL to list the no. of employees and average salary within each department for each job name.
+select dep_id, job_name, count(emp_name), avg(salary)
+from employees
+group by dep_id, job_name;

@@ -2094,3 +2094,24 @@ from employees e, salary_grade s
 where e.salary >= s.min_sal
 and e.salary <= s.max_sal
 order by s.grade;
+
+#91. Write a query in SQL to find the average salary and average total remuneration(salary and commission) for each type of job.
+select avg(salary)
+from employees;  #return 2214.7857142857142857
+select avg(salary+commission)
+from employees;  #return 2125.0000000000000000
+select avg(salary+commission)
+from employees
+where commission is not null;  #return 2125.0000000000000000
+select avg(salary+commission)
+from employees
+where commission > 0; #return 2300.0000000000000000  RM:  there is an entry with a zero.  Correct answer may be 2300 confirmed on Excel.  Three employees with salary and commission greater than zero.
+select avg(salary+commission)
+from employees
+where commission >= 0; #return 2125.0000000000000000  RM:  there is an entry with a zero.  Correct answer may be 2125 confirmed on Excel.  Four employees with salary and commission not null.
+select avg(salary) as "Avg Salary", avg(salary+commission) as "Avg Salary and Commission"
+from employees;  #return 2214.7857142857142857, 2125.0000000000000000
+select job_name, avg(salary) as "Avg Salary", avg(salary+commission) as "Avg Salary and Commission"
+from employees
+group by job_name;
+
