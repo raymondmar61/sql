@@ -751,3 +751,94 @@ having count(emp_id) >= 2;
 select dep_id, job_name, count(emp_name), avg(salary)
 from employees
 group by dep_id, job_name;
+
+#105. Write a query in SQL to list the names of those employees starting with 'A' and with six characters in length.
+select emp_name, lpad(emp_name,6,'*') as "1st 6 characters optional * fill left"
+from employees
+where emp_name like 'A%';  #RM:  wild card is % sign.
+#official solution
+select emp_name
+from employees
+where emp_name like 'A%'
+and length(emp_name) = 6;
+
+#106. Write a query in SQL to list the employees whose name is six characters in length and third character must be 'R'.
+select emp_name
+from employees
+where length(emp_name) = 6
+and emp_name like '__R%';  #return MARKER
+
+#107. Write a query in SQL to list the name of the employee of six characters long and starting with 'A' and ending with 'N'.
+select emp_name
+from employees
+where length(emp_name) = 6
+and emp_name like 'A%N';  #return ADELYN
+
+#108. Write a query in SQL to list the employees who joined in the month of which second character is 'a'.  #RM:  convert the hire_date to mon, search for the second character a.
+select *
+from employees
+where to_char(hire_date,'mon') like '_a%';  #RM:  to_char(hire_date,'mon') is three letter month abbreviation all lower case.
+
+#109. Write a query in SQL to list the employees whose names containing the character set 'AR' together.
+select *
+from employees
+where emp_name like '%AR%';
+
+#110. Write a query in SQL to list the employees those who joined in 90's.  #RM:  wild card year wild card years
+select *
+from employees
+where to_char(hire_date,'yyyy') = '1990';
+select *
+from employees
+where to_char(hire_date,'yyyy') in ('1990','1991'); #employees hire date 1990 and 1991
+#official solution
+select *
+from employees
+where to_char(hire_date,'yy') like '9%';
+
+#111. Write a query in SQL to list the employees whose ID not starting with digit 68.  #partial number search partial
+select *
+from employees
+where emp_id < 68000 or emp_id >= 69000;
+#also
+select *
+from employees
+where emp_id not between 68000 and 68999;
+#official solution #convert number to text
+select emp_id, trim(to_char(emp_id,'99999'))
+from employees
+where trim(to_char(emp_id,'99999')) not like '68%';
+select *
+from employees
+where to_char(emp_id,'99999') not like '68%';  #incorrect.  Returns starting 68 digits
+select *
+from employees
+where trim(to_char(emp_id,'99999')) not like '68%';  #returns correct employees.  Why trim?
+select *
+from employees
+where to_char(emp_id) not like '68%';  #returns nothing
+#user solution
+select *
+from employees
+where cast(emp_id as varchar) not like '68%';
+
+#112. Write a query in SQL to list the employees whose names containing the letter 'A'.
+select *
+from employees
+where emp_name like '%A%';
+
+#113. Write a query in SQL to list the employees whose name is ending with 'S' and six characters long.
+select *
+from employees
+where emp_name like '%S'
+and length(emp_name) = 6;
+
+#114. Write a query in SQL to list the employees who joined in the month having char 'A' at any position.  #extract month from date
+select *, to_char(hire_date,'MONTH') as "Full Month in CAPS"
+from employees
+where to_char(hire_date,'MONTH') like '%A%';
+
+#115. Write a query in SQL to list the employees who joined in the month having second char is 'A'.
+select *, to_char(hire_date,'MONTH') as "Full Month in CAPS"
+from employees
+where to_char(hire_date,'MONTH') like '_A%';
