@@ -2172,3 +2172,20 @@ where cast(emp_id as varchar) not like '68%';
 select *, to_char(hire_date,'MONTH') as "Full Month in CAPS"
 from employees
 where to_char(hire_date,'MONTH') like '%A%';
+
+#https://www.w3resource.com/sql-exercises/employee-database-exercise/subqueries-exercises-on-employee-database.php
+#11. Write a query in SQL to list the employees whose salary is same as the salary of FRANK or SANDRINE. List the result in descending order of salary.
+select *
+from employees
+where salary in (
+  select salary
+  from employees
+  where emp_name in ('FRANK','SANDRINE'));
+select *
+from employees
+where salary in (
+  select subquery.salary
+  from employees subquery
+  where subquery.emp_name in ('FRANK','SANDRINE')
+  and employees.emp_id <> subquery.emp_id)    #RM:  prevent Frank and Sandrine duplicates.
+order by salary desc;
