@@ -143,3 +143,134 @@ where p.salary in (
 	where sub.emp_name in ('FRANK','SANDRINE')
 	and p.emp_id <> sub.emp_id)
 order by p.salary desc;  #Primary is a reserved word.  Use p.
+
+#12. Write a query in SQL to list the employees whose designation are same as the designation of MARKER or salary is more than the salary of ADELYN.
+select *
+from employees
+where job_name = (
+	select job_name
+	from employees
+	where emp_name = 'MARKER')
+or salary > (
+	select salary
+	from employees
+	where emp_name = 'ADELYN');
+
+#13. Write a query in SQL to list the employees whose salary is more than the total remuneration of the SALESMAN.  #RM:  looked at solution.  salary is greater than the highest total remuneration or salary plus commission of the SALESMAN.
+select *
+from employees
+where salary > (
+	select max(salary+commission)
+	from employees
+	where job_name = 'SALESMAN' 
+	and commission > 0);
+
+#14. Write a query in SQL to list the employees who are senior to BLAZE and working at PERTH or BRISBANE.
+select *
+from employees e join department d
+on e.dep_id = d.dep_id
+where d.dep_location in ('PERTH','BRISBANE')
+and hire_date < (
+	select hire_date
+	from employees
+	where emp_name = 'BLAZE');
+
+#15. Write a query in SQL to list the employees of grade 3 and 4 working in the department of FINANCE or AUDIT and whose salary is more than the salary of ADELYN and experience is more than FRANK. List the result in the ascending order of experience.
+select *
+from employees e join department d
+on e.dep_id = d.dep_id
+join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+where s.grade in (3,4)
+and d.dep_name in ('FINANCE','AUDIT')
+and salary > (
+	select salary
+	from employees
+	where emp_name = 'ADELYN')
+and hire_date < (
+	select hire_date
+	from employees
+	where emp_name = 'FRANK');
+
+#16. Write a query in SQL to list the employees whose designation is same as the designation of SANDRINE or ADELYN.
+select *
+from employees
+where job_name in (
+	select job_name
+	from employees
+	where emp_name in ('SANDRINE','ADELYN'));
+
+#17. Write a query in SQL to list any job of department ID 1001 those that are not found in department ID 2001.
+select *
+from employees
+where job_name in (
+	select job_name
+	from employees
+	where dep_id in (1001))
+and job_name not in (
+	select job_name
+	from employees
+	where dep_id in (2001));
+#official solution
+select e.job_name
+from employees e
+where e.dep_id = 1001
+and e.job_name not in (
+	select job_name
+    from employees
+    where dep_id =2001);
+
+#18. Write a query in SQL to find the details of highest paid employee.
+select *
+from employees
+where salary = (
+	select max(salary)
+	from employees);
+
+#19. Write a query in SQL to find the highest paid employees in the department MARKETING.
+select *
+from employees e join department d
+on e.dep_id = d.dep_id
+where d.dep_name = 'MARKETING'
+and e.salary = (
+	select max(salary)
+	from employees e join department d
+	on e.dep_id = d.dep_id
+	where d.dep_name = 'MARKETING');
+#official solution
+select *
+from employees
+where salary in (
+	select max(salary)
+    from employees
+    where dep_id in (
+    	select d.dep_id
+        from department d
+        where d.dep_name = 'MARKETING'));
+
+#20. Write a query in SQL to list the employees of grade 3 who have been hired in most recently and belongs to PERTH.
+select *
+from employees e join department d
+on e.dep_id = d.dep_id
+join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+where s.grade in (3)
+and d.dep_location = 'PERTH'
+and e.hire_date = (
+	select max(e.hire_date)
+	from employees e join department d
+	on e.dep_id = d.dep_id
+	join salary_grade s
+	on e.salary between s.min_sal and s.max_sal
+	where s.grade in (3)
+	and d.dep_location = 'PERTH');
+#official solution
+select e.emp_id, e.emp_name, e.job_name, e.hire_date,e.salary
+from employees e, department d
+where d.dep_location = 'PERTH'
+and hire_date in (
+	select max(hire_date)
+    from employees e, salary_grade s
+    where salary between min_sal and max_sal
+    and grade = 3);
+
