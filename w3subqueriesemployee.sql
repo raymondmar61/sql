@@ -274,3 +274,194 @@ and hire_date in (
     where salary between min_sal and max_sal
     and grade = 3);
 
+#21. Write a query in SQL to list the employees who are senior to most recently hired employee working under KAYLING.  #RM:  sub-subquery.  Two subqueries.  Multiple subqueries.
+#official solution
+select *
+from employees
+where hire_date < (
+	select max(hire_date)
+	from employees
+	where manager_id in (
+		select emp_id
+		from employees
+		where emp_name = 'KAYLING'));
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id
+66928	BLAZE	MANAGER	68319	1991-05-01	2750.00		3001
+65646	JONAS	MANAGER	68319	1991-04-02	2957.00		2001
+64989	ADELYN	SALESMAN	66928	1991-02-20	1700.00	400.00	3001
+65271	WADE	SALESMAN	66928	1991-02-22	1350.00	600.00	3001
+63679	SANDRINE	CLERK	69062	1990-12-18	900.00		2001
+*/
+#RM:  I interpret question find employees working under KAYLING and hired before KAYLING.  Regardless, questions makes no sense.
+select *
+from employees
+where manager_id in (
+	select emp_id
+	from employees
+	where emp_name = 'KAYLING')
+and hire_date < (
+	select hire_date
+	from employees
+	where emp_name = 'KAYLING');
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id
+66928	BLAZE	MANAGER	68319	1991-05-01	2750.00		3001
+67832	CLARE	MANAGER	68319	1991-06-09	2550.00		1001
+65646	JONAS	MANAGER	68319	1991-04-02	2957.00		2001
+*/
+
+#22. Write a query in SQL to list the details of the employees within grade 3 to 5 and belongs to SYDNEY. The employees are not in PRESIDENT designated and salary is more than the highest paid employee of PERTH where no MANAGER and SALESMAN are working under KAYLING.  #RM:  confusing question.
+select *
+from employees e join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+join department d
+on e.dep_id = d.dep_id
+where s.grade between 3 and 5
+and d.dep_location = 'SYDNEY';
+#official solution
+select *
+from employees
+where dep_id in (
+	select dep_id
+	from department
+	where department.dep_location ='SYDNEY')
+and emp_id in (
+	select emp_id
+	from employees e, salary_grade s
+	where e.salary between s.min_sal and s.max_sal
+	and s.grade in (3, 4, 5))
+and job_name != 'PRESIDENT'
+and salary > (
+	select max(salary)
+	from employees
+	where dep_id in (
+		select dep_id
+		from department
+		where department.dep_location = 'PERTH')
+	and job_name in ('MANAGER', 'SALESMAN')
+	and manager_id not in (
+		select emp_id
+		from employees
+		where emp_name = 'KAYLING'));
+
+#23. Write a query in SQL to list the details of the senior employees as on year 1991.  #RM:  find the earliest hire in the year 1991
+select *
+from employees
+where hire_date = (
+	select min(hire_date)
+	from employees
+	where to_char(hire_date,'yyyy') = '1991');
+
+#24. Write a query in SQL to list the employees who joined in 1991 in a designation same as the most senior person of the year 1991.  #RM:  find the earliest hire's job_name in the year 1991.  Find employees matching the job_name and hired in 1991.  sub-subquery  subsubquery.
+select *
+from employees
+where job_name in (
+  select job_name
+  from employees
+  where hire_date in (
+    select min(hire_date)
+    from employees
+    where to_char(hire_date,'YYYY') = '1991'));
+#user solution
+select *
+from employees
+where date_part('year',hire_date)='1991'
+and job_name in (
+  select job_name
+  from employees
+  where hire_date in (
+    select min(hire_date)
+    from employees
+    where date_part('year',hire_date)='1991'));
+
+#25. Write a query in SQL to list the most senior employee working under KAYLING and grade is more than 3.  #sub-subquery subsubquery.
+select *
+from employees, salary_grade
+where manager_id in (
+	select emp_id
+	from employees
+	where emp_name = 'KAYLING')
+and hire_date in (
+	select min(hire_date)
+	from employees
+	where manager_id in (
+		select emp_id
+		from employees
+		where emp_name = 'KAYLING'))
+and employees.salary between salary_grade.min_sal and salary_grade.max_sal
+and salary_grade.grade > 3;
+#user solution
+select *
+from employees e join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+where hire_date in (
+	select min(hire_date)
+	from employees
+	where manager_id in (
+		select emp_id
+		from employees
+		where emp_name='KAYLING'))
+and grade > 3;
+
+#26. Write a query in SQL to find the total salary given to the MANAGER.
+select sum(salary)
+from employees
+where job_name in ('MANAGER');
+
+#27. Write a query in SQL to display the total salary of employees belonging to grade 3.
+select sum(employees.salary)
+from employees, salary_grade
+where employees.salary between salary_grade.min_sal and salary_grade.max_sal
+and salary_grade.grade = 3;
+
+#28. Write a query in SQL to list the employees in department 1001 whose salary is more than the average salary of employees in department 2001.
+select *
+from employees
+where dep_id = 1001
+and salary > (
+	select avg(salary)
+	from employees
+	where dep_id = 2001);
+
+#29. Write a query in SQL to list the details of the departments where maximum number of employees are working.  #RM:  find the department with the largest amount of employees.  Most amount of employees.  aggregate subquery aggregate
+select d.dep_name, count(e.dep_id)
+from employees e join department d
+on e.dep_id = d.dep_id
+group by d.dep_name
+order by count(e.dep_id) desc limit 1;
+#better
+select d.*, count(e.dep_id)
+from employees e join department d
+on e.dep_id = d.dep_id
+group by d.dep_id
+order by count(e.dep_id) desc limit 1;
+#official solution
+select *
+from department
+where dep_id in (
+  select dep_id
+  from employees
+  group by dep_id
+  having count(*) in (
+    select max (mycount)
+    from (
+      select count(*) mycount
+      from employees
+      group by dep_id) a));
+#user solution
+select d.*, count(emp_id)
+from employees e join department d
+on e.dep_id=d.dep_id
+group by d.dep_id
+having d.dep_id in (
+  select dep_id
+  from employees
+  group by dep_id
+  having count(emp_id)>=all(
+    select count(emp_id)
+    from employees
+    group by dep_id));
+
+
+
