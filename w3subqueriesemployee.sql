@@ -463,5 +463,118 @@ having d.dep_id in (
     from employees
     group by dep_id));
 
+#30. Write a query in SQL to display the employees whose manager name is JONAS.
+select *
+from employees
+where manager_id = (
+	select emp_id
+	from employees
+	where emp_name = 'JONAS');
 
+#31. Write a query in SQL to list the employees who are not working in the department MARKETING.
+select *
+from employees e, department d
+where e.dep_id = d.dep_id
+and e.dep_id != (
+	select d.dep_id
+	from department d
+	where d.dep_name = 'MARKETING');
+#official solution
+select *
+from employees
+where dep_id not in (
+	select dep_id
+	from department
+	where dep_name = 'MARKETING');
 
+#32. Write a query in SQL to list the name, job name, department name, location for those who are working as a manager.
+select e.emp_name, e.job_name, d.dep_name, d.dep_location
+from employees e, department d
+where e.dep_id = d.dep_id
+and emp_id in (
+	select manager_id
+	from employees);
+
+#33. Write a query in SQL to list the name of the employees who are getting the highest salary of each department.  #RM:  dumb solution.  what if the max salary is not the max salary for another department?  Sometimes tells me the solution is incomplete.  Too easy.
+select dep_id, max(salary)
+from employees
+group by dep_id;
+select max(salary)
+from employees
+group by dep_id;
+#my solution and official solution
+select *
+from employees
+where salary in (
+	select max(salary)
+	from employees
+	group by dep_id);
+
+#34. Write a query in SQL to list the employees whose salary is equal or more to the average of maximum and minimum salary.
+select min(salary), max(salary), round((min(salary)+max(salary))/2,2)
+from employees;
+select *
+from employees
+where salary >= (
+	select round((min(salary)+max(salary))/2,2)
+	from employees);
+
+#35. Write a query in SQL to list the managers whose salary is more than the average salary his employess.
+select manager_id, round(avg(salary),2)
+from employees
+where manager_id is not null
+group by manager_id;
+select round(avg(salary),2)
+from employees
+where manager_id is not null
+group by manager_id;
+select *
+from employees
+where emp_id in (
+	select manager_id
+	from employees);
+select *
+from employees
+where emp_id in (
+	select manager_id
+	from employees
+and salary > (
+	select round(avg(salary),2)
+	from employees
+	where manager_id is not null
+	group by manager_id);  #incorrect
+select *
+from employees
+where emp_id in (
+	select manager_id
+	from employees
+	where salary > (
+		select round(avg(salary),2)
+		from employees
+		where manager_id is not null
+		group by manager_id);  #incorrect
+#official solution
+select *
+from employees m
+where m.emp_id in (
+	select manager_id
+    from employees)
+and m.salary > (
+	select avg(e.salary)
+    from employees e
+    where e.manager_id = m.emp_id);  #no group by manager_id?
+
+#36. Write a query in SQL to list the employees whose salary is less than the salary of his manager but more than the salary of any other manager.
+#copied solution
+select distinct w.emp_id, w.emp_name, w.salary
+from (
+	select w.emp_id, w.emp_name, w.salary
+	from employees w, employees m
+	where w.manager_id = m.emp_id
+	and w.salary<m.salary) w, (
+		select *
+		from employees
+		where emp_id in (
+			select manager_id
+			from employees)) a
+			where w.salary > a.salary;

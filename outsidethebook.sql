@@ -2316,3 +2316,79 @@ having d.dep_id in (
     select count(emp_id)
     from employees
     group by dep_id));
+
+#33. Write a query in SQL to list the name of the employees who are getting the highest salary of each department.  #RM:  dumb solution.  what if the max salary is not the max salary for another department?  Sometimes tells me the solution is incomplete.  Too easy.
+select dep_id, max(salary)
+from employees
+group by dep_id;
+select max(salary)
+from employees
+group by dep_id;
+#my solution and official solution
+select *
+from employees
+where salary in (
+  select max(salary)
+  from employees
+  group by dep_id);
+
+#35. Write a query in SQL to list the managers whose salary is more than the average salary his employess.
+select manager_id, round(avg(salary),2)
+from employees
+where manager_id is not null
+group by manager_id;
+select round(avg(salary),2)
+from employees
+where manager_id is not null
+group by manager_id;
+select *
+from employees
+where emp_id in (
+  select manager_id
+  from employees);
+select *
+from employees
+where emp_id in (
+  select manager_id
+  from employees
+and salary > (
+  select round(avg(salary),2)
+  from employees
+  where manager_id is not null
+  group by manager_id);  #incorrect
+select *
+from employees
+where emp_id in (
+  select manager_id
+  from employees
+  where salary > (
+    select round(avg(salary),2)
+    from employees
+    where manager_id is not null
+    group by manager_id);  #incorrect
+#official solution
+select *
+from employees m
+where m.emp_id in (
+  select manager_id
+    from employees)
+and m.salary > (
+  select avg(e.salary)
+    from employees e
+    where e.manager_id = m.emp_id);  #no group by manager_id?
+
+#36. Write a query in SQL to list the employees whose salary is less than the salary of his manager but more than the salary of any other manager.
+#copied solution
+select distinct w.emp_id, w.emp_name, w.salary
+from (
+  select w.emp_id, w.emp_name, w.salary
+  from employees w, employees m
+  where w.manager_id = m.emp_id
+  and w.salary<m.salary) w, (
+    select *
+    from employees
+    where emp_id in (
+      select manager_id
+      from employees)) a
+      where w.salary > a.salary;
+
