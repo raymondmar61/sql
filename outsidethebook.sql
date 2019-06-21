@@ -2563,5 +2563,42 @@ where salary in (
   group by job_name)
 order by salary desc;
 
+#52. Write a query in SQL to find the most recently hired emps in each department order by hire_date.
+select dep_id, hire_date
+from employees
+where hire_date in (
+  select max(hire_date)
+  from employees
+  group by dep_id)
+order by hire_date;  #incorrect because the max date for dep_id 3001 1991-12-03 is included for an employee in dep_id 2001.  dep_id 2001 max date is 1997-05-23.
+#user solution
+select *
+from (
+  select dep_id, max(hire_date)
+  from employees
+  group by dep_id) A
+left join (
+  select *
+  from employees) B
+on A.dep_id=B.dep_id and A.max=B.hire_date;
+
+#53. Write a query in SQL to list the name,salary, and department id for each employee who earns a salary greater than the average salary for their department and list the result in ascending order on department id.  #subquery join subquery.  on statement > on statement greater than.
+#official solution
+select e.emp_name, e.salary, e.dep_id
+from employees e
+where salary > (
+  select avg(salary)
+  from employees
+  where e.dep_id = dep_id)
+order by dep_id;
+#user solution
+select emp_name, salary, e.dep_id
+from employees e
+join (
+  select dep_id, avg(salary)
+  from employees
+  group by dep_id) a 
+on e.dep_id=a.dep_id and e.salary>a.avg
+order by e.dep_id;
 
 
