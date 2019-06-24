@@ -2601,4 +2601,57 @@ join (
 on e.dep_id=a.dep_id and e.salary>a.avg
 order by e.dep_id;
 
+#55. Write a query in SQL to list the name, designation, and salary of the employees who does not work in the department 1001 but works in same designation and salary as the employees in department 3001
+select *
+from (
+	select *
+	from employees
+	where dep_id not in (1001)) randomnamea
+where dep_id = 3001;
+#official solution
+select emp_name, job_name, salary
+from employees
+where dep_id != 1001
+and job_name in (
+	select job_name
+	from employees
+	where dep_id = 3001)
+and salary in (
+	select salary
+	from employees
+	where dep_id = 3001);
+#modified from official solution and my solution
+select emp_name, job_name, salary
+from (
+	select *
+	from employees 
+	where dep_id not in (1001)) randomnamea
+where dep_id = 3001;
+
+#56. Write a query in SQL to list the department id, name, designation, salary, and net salary (salary+commission) of the SALESMAN who are earning maximum net salary.  #two step process:  find the max salary plus commission first, then find the emp_id earning the max the max salary plus commission second
+select dep_id, emp_name, job_name, salary, commission, salary+commission as "Salesman Salary"
+from employees
+where emp_id in (
+	select emp_id
+	from employees
+	where salary+commission in (
+		select max(salary+commission) as "Salesman Salary"
+		from employees
+		where commission >= 0));
+#official solution
+select dep_id, emp_name, job_name, salary, salary+commission "net salary"
+from employees
+where job_name = 'salesman'
+and salary+commission in (
+	select max(salary+commission)
+	from employees
+	where commission is not null);
+
+#57. Write a query in SQL to list the department id, name, designation, salary, and net salary of the employees only who gets a commission and earn the second highest earnings.
+select dep_id, emp_name, job_name, salary, commission, salary+commission as "Salesman Salary"
+from (
+	select employees.*, rank() over (order by salary+commission desc) rank
+	from employees
+	where commission >=0) employee_rank
+	where rank = 2;
 

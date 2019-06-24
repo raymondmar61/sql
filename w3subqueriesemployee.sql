@@ -852,3 +852,92 @@ where emp_id in (
 		select max(salary + commission)
 		from employees
 		where commission is not null));  #SQL is maximum sum of salary and commission together.
+
+#55. Write a query in SQL to list the name, designation, and salary of the employees who does not work in the department 1001 but works in same designation and salary as the employees in department 3001
+select *
+from (
+	select *
+	from employees
+	where dep_id not in (1001)) randomnamea
+where dep_id = 3001;
+#official solution
+select emp_name, job_name, salary
+from employees
+where dep_id != 1001
+and job_name in (
+	select job_name
+	from employees
+	where dep_id = 3001)
+and salary in (
+	select salary
+	from employees
+	where dep_id = 3001);
+#modified from official solution and my solution
+select emp_name, job_name, salary
+from (
+	select *
+	from employees 
+	where dep_id not in (1001)) randomnamea
+where dep_id = 3001;
+
+#56. Write a query in SQL to list the department id, name, designation, salary, and net salary (salary+commission) of the SALESMAN who are earning maximum net salary.  #two step process:  find the max salary plus commission first, then find the emp_id earning the max the max salary plus commission second
+select dep_id, emp_name, job_name, salary, commission, salary+commission as "Salesman Salary"
+from employees
+where emp_id in (
+	select emp_id
+	from employees
+	where salary+commission in (
+		select max(salary+commission) as "Salesman Salary"
+		from employees
+		where commission >= 0));
+#official solution
+select dep_id, emp_name, job_name, salary, salary+commission "net salary"
+from employees
+where job_name = 'salesman'
+and salary+commission in (
+	select max(salary+commission)
+	from employees
+	where commission is not null);
+
+#57. Write a query in SQL to list the department id, name, designation, salary, and net salary of the employees only who gets a commission and earn the second highest earnings.
+select dep_id, emp_name, job_name, salary, commission, salary+commission as "Salesman Salary"
+from (
+	select employees.*, rank() over (order by salary+commission desc) rank
+	from employees
+	where commission >=0) employee_rank
+	where rank = 2;
+
+#58. Write a query in SQL to list the department ID and their average salaries for those department where the average salary is less than the averages for all departments.
+select dep_id, avg(salary)
+from employees
+group by dep_id
+having avg(salary) < (
+	select avg(salary)
+	from employees);
+
+#59. Write a query in SQL to display the unique department of the employees.  #RM:  find the distinct department name and distinct department location from the employees.  Or find the departments in the employees table.
+select *
+from department
+where dep_id in (
+	select distinct dep_id
+	from employees);
+
+#60. Write a query in SQL to list the details of the employees working at PERTH.
+select *
+from employees
+where dep_id in (
+	select dep_id
+	from department
+	where dep_location in ('PERTH'));
+
+#61. Write a query in SQL to list the employees of grade 2 and 3 who belongs to the city PERTH.
+select employees.*
+from employees, salary_grade
+where employees.salary between salary_grade.min_sal and salary_grade.max_sal
+and salary_grade.grade in (2,3)
+and dep_id in (
+	select dep_id
+	from department
+	where dep_location in ('PERTH'));
+
+#62. Write a query in SQL to list the employees whose designation is same as either the designation of ADLYNE or the salary is more than salary of WADE.
