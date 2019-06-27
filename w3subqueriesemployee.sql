@@ -940,4 +940,105 @@ and dep_id in (
 	from department
 	where dep_location in ('PERTH'));
 
-#62. Write a query in SQL to list the employees whose designation is same as either the designation of ADLYNE or the salary is more than salary of WADE.
+#62. Write a query in SQL to list the employees whose designation is same as either the designation of ADELYN or the salary is more than salary of WADE.
+select *
+from employees
+where job_name in (
+	select job_name
+	from employees
+	where emp_name = 'ADELYN')
+or
+salary > (
+	select salary
+	from employees
+	where emp_name = 'WADE');
+#also
+select *
+from employees
+where job_name in (
+	select job_name
+	from employees
+	where emp_name = 'ADELYN')
+join
+select *
+from employees
+where salary > (
+	select salary
+	from employees
+	where emp_name = 'WADE');
+
+#63. Write a query in SQL to list the employees of department 1001 whose salary is more than the salary of ADELYN.
+select *
+from employees
+where dep_id = 1001
+and salary > (
+	select salary
+	from employees
+	where emp_name = 'ADELYN');
+
+#64. Write a query in SQL to list the managers who are senior to KAYLING 11/18/91 and who are junior to SANDRINE 12/19/90.  Want 12/20/19 to 11/17/91.
+select distinct m.emp_name as "manager", m.hire_date as "manager hire date"
+from employees e, employees m
+where e.manager_id = m.emp_id
+and e.hire_date < (
+	select hire_date
+	from employees
+	where emp_name = 'KAYLING')
+and e.hire_date > (
+	select hire_date
+	from employees
+	where emp_name = 'SANDRINE')
+and e.manager_id is not null;  #return KAYLING and BLAZE
+#official solution
+select *
+from employees
+where emp_id in (
+	select manager_id
+	from employees
+	where hire_date < (
+		select hire_date
+		from employees
+		where emp_name = 'KAYLING')
+	and hire_date > (
+		select hire_date
+		from employees
+		where emp_name = 'SANDRINE'))
+and manager_id is not null;  #return BLAZE
+
+#65. Write a query in SQL to list the ID, name,location,salary, and department of the all the employees belonging to the department where KAYLING works.
+select e.emp_id, e.emp_name, d.dep_location, e.salary, d.dep_name
+from employees e join department d
+on e.dep_id = d.dep_id
+where e.dep_id in (
+	select dep_id
+	from employees
+	where emp_name = 'KAYLING')
+and e.emp_name <> 'KAYLING';
+
+#66. Write a query in SQL to list the employees whose salary grade are greater than the grade of MARKER.
+select e.*
+from employees e join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+where s.grade > (
+	select s.grade
+	from salary_grade s join employees e
+	on e.salary between s.min_sal and s.max_sal
+	where e.emp_name = 'MARKER');
+
+#67. Write a query in SQL to list the employees of the grade same as the grade of TUCKER or experience is more than SANDRINE and who are belonging to SYDNEY or PERTH.
+select e.*
+from employees e join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+where s.grade = (
+	select s.grade
+	from salary_grade s join employees e
+	on e.salary between s.min_sal and s.max_sal
+	where e.emp_name = 'TUCKER')
+or (e.hire_date < (
+	select hire_date
+	from employees
+	where emp_name = 'SANDRINE')
+and e.dep_id in (
+	select dep_id
+	from department
+	where dep_location in ('SYDNEY','PERTH')));
