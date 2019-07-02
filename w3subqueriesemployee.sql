@@ -2,6 +2,11 @@
 #https://www.w3resource.com/sql-exercises/index.php
 #https://www.w3resource.com/sql-exercises/employee-database-exercise/subqueries-exercises-on-employee-database.php
 #RM:  Use the editor from https://www.w3resource.com/sql-exercises/employee-database-exercise/index.php
+/*  RM:  employee and manager join relation
+select e.emp_name, m.emp_name
+from employees e join employees m
+on e.manager_id = m.emp_id
+*/
 
 #1. Write a query in SQL to display all the details of managers.
 select *
@@ -1042,3 +1047,70 @@ and e.dep_id in (
 	select dep_id
 	from department
 	where dep_location in ('SYDNEY','PERTH')));
+
+#68. Write a query in SQL to list the employees whose salary is same as any one of the employee.
+select emp_name, salary
+from employees
+where emp_name in (
+	select salary1.emp_name
+	from employees salary1 join employees salary2
+	on salary1.salary = salary2.salary
+	group by salary1.emp_name
+	having count(salary1.emp_name) >=2);
+#official solution
+select *
+from employees
+where salary in (
+	select salary
+	from employees e
+	where employees.emp_id <> e.emp_id);
+#user solution
+select *
+from employees e join employees m
+on e.salary=m.salary
+and e.emp_id<>m.emp_id;
+
+#69. Write a query in SQL to list the total remuneration (salary+commission) of all sales person of MARKETING department.
+select e.emp_name, (e.salary + e.commission) as "total remuneration"
+from employees e join department d
+on e.dep_id = d.dep_id
+where d.dep_name = 'MARKETING'
+and e.job_name = 'SALESMAN';
+
+#70. Write a query in SQL to list the details of most recently hired employees of department 3001.
+select *
+from employees
+where dep_id = 3001
+and hire_date in (
+	select max(hire_date)
+	from employees
+	where dep_id = 3001);
+
+#71. Write a query in SQL to list the highest paid employees of PERTH who joined before the most recently hired employee of grade 2.
+select *
+from employees e join department d
+on e.dep_id = d.dep_id
+where (d.dep_location = 'PERTH'
+and e.salary = (
+	select max(e.salary)
+	from employees e join department d
+	on e.dep_id = d.dep_id
+	where d.dep_location = 'PERTH'))
+and hire_date < (
+	select max(e.hire_date)
+	from employees e join salary_grade s
+	on e.salary between s.min_sal and s.max_sal
+	where s.grade = 2);
+
+#72. Write a query in SQL to list the highest paid employees working under KAYLING.
+select e.*, m.emp_name as "manager"
+from employees e join employees m
+on e.manager_id = m.emp_id
+where m.emp_name = 'KAYLING'
+and e.salary = (
+	select max(e.salary)
+	from employees e
+	where e.manager_id = (
+		select e.emp_id
+		from employees e
+		where e.emp_name = 'KAYLING'));
