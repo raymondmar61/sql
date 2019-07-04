@@ -2655,3 +2655,19 @@ from (
 	where commission >=0) employee_rank
 	where rank = 2;
 
+#73. Write a query in SQL to list the name, salary, and commission for those employees whose net pay is greater than or equal to the salary of any other employee in the company.  RM:  dumb question
+#copied solution
+select e.emp_name, e.salary, e.commission
+from employees e
+where (
+  select max(salary+commission)
+  from employees) >= any (
+  select salary
+  from employees);
+#user solution which I think is correct
+select emp_name, salary, commission
+from employees
+where (salary+commission) >= any (
+  select salary
+  from employees);
+

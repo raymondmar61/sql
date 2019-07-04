@@ -1114,3 +1114,76 @@ and e.salary = (
 		select e.emp_id
 		from employees e
 		where e.emp_name = 'KAYLING'));
+
+#73. Write a query in SQL to list the name, salary, and commission for those employees whose net pay is greater than or equal to the salary of any other employee in the company.  RM:  dumb question
+#copied solution
+select e.emp_name, e.salary, e.commission
+from employees e
+where (
+	select max(salary+commission)
+	from employees) >= any (
+	select salary
+	from employees);
+#user solution which I think is correct
+select emp_name, salary, commission
+from employees
+where (salary+commission) >= any (
+	select salary
+	from employees);
+
+#74. Write a query in SQL to find out the employees whose salaries are greater than the salaries of their managers. scarlet frank
+select e.emp_name as "employee", e.salary as "employee salary", m.emp_name as "manager", m.salary as "manager salary"
+from employees e join employees m
+on e.manager_id = m.emp_id
+where e.salary > m.salary;
+#official solution subquery
+select *
+from employees e, (
+	select *
+	from employees
+	where emp_id in (
+		select manager_id
+		from employees)) a
+where e.salary > a.salary
+and e.manager_id = a.emp_id;
+
+#75. Write a query in SQL to find the maximum average salary drawn for each job name except for PRESIDENT.
+select job_name, avg(salary)
+from employees
+where job_name not in ('PRESIDENT')
+group by job_name;
+
+select job_name, avg(salary)
+from employees
+group by job_name
+having avg(salary) = (
+	select max(maximumaveragesalary)
+	from (
+		select avg(salary) maximumaveragesalary
+		from employees
+		where job_name not in ('PRESIDENT')
+		group by job_name) a);
+#official solution
+select max(myavg)
+from (
+	select avg(salary) myavg
+	from employees
+	where job_name != 'president'
+	group by job_name) a;
+
+#76. Write a query in SQL to find the number of employees are performing the duty of a manager.
+select distinct count(manager_id)
+from employees;  #RM:  there are six managers
+#official solution subquery
+select count(*)
+from employees
+where emp_id in (
+	select manager_id
+	from employees);
+
+#77. Write a query in SQL to list the department where there are no employees.
+select *
+from department
+where dep_id not in (
+	select dep_id
+	from employees);
