@@ -1,7 +1,9 @@
 #https://www.w3resource.com/sql/tutorials.php
 #https://www.w3resource.com/sql-exercises/index.php
 #https://www.w3resource.com/sql-exercises/sql-retrieve-from-table.php
-
+#https://www.w3resource.com/sql-exercises/sql-boolean-operators.php
+#https://www.w3resource.com/sql-exercises/sql-wildcard-special-operators.php
+#https://www.w3resource.com/sql-exercises/sql-aggregate-functions.php
 #1. Write a SQL statement to display all the information of all salesmen.
 select *
 from salesman;
@@ -338,3 +340,147 @@ where cust_name like '%n';
 select *
 from salesman
 where name like 'N__l%';
+
+#12. Write a SQL statement to find those rows from the table testtable which contain the escape character underscore ( _ ) in its column 'col1'.  #RM:  underscore _ is a wildcard character.
+select *
+from testtable
+where col1 like '%/_%' escape '/';
+#RM:  Oracle SQl escape character http://www.dba-oracle.com/t_special_characters_like_sql_query.htm
+/*
+set escape '\'
+select stuff
+from mytable
+where mycool like '%\_to\_%';
+#also
+select stuff
+from mytable
+where mycool like '%\_to\_%' escape '\';
+*/
+
+#13. Write a SQL statement to find those rows from the table testtable which does not contain the character underscore ( _ ) in its column 'col1'.
+select *
+from testtable
+where col1 not like '%/_%' escape '/';
+
+#14. Write a SQL statement to find those rows from the table testtable which contain the escape character ( / ) in its column 'col1'.
+select *
+from testtable
+where col1 like '%//%' escape '/';
+
+#15. Write a SQL statement to find those rows from the table testtable which does not contain the escape character ( / ) in its column 'col1'.
+select *
+from testtable
+where col1 not like '%//%' escape '/';
+
+#16. Write a SQL statement to find those rows from the table testtable which contain the string ( _/ ) in its column 'col1'.
+select *
+from testtable
+where col1 like '%/_//%' escape '/';
+
+#17. Write a SQL statement to find those rows from the table testtable which does not contain the string ( _/ ) in its column 'col1'.
+select *
+from testtable
+where col1 not like '%/_//%' escape '/';
+
+#18. Write a SQL statement to find those rows from the table testtable which contain the character ( % ) in its column 'col1'.
+select *
+from testtable
+where col1 like '%/%%' escape '/';
+
+#19. Write a SQL statement to find those rows from the table testtable which does not contain the character ( % ) in its column 'col1'.
+select *
+from testtable
+where col1 not like '%/%%' escape '/';
+
+#20. Write a SQL statement to find that customer with all information who does not get any grade except NULL.
+select *
+from customer
+where grade is null;
+
+#21. Write a SQL statement to find that customer with all information who gets a grade except NULL value.
+select *
+from customer
+where grade is not null;
+
+#22. Write a query in SQL to display all the data of employees whose last name begins with an 'D'.
+select *
+from emp_details
+where emp_lname like 'D%';
+
+#https://www.w3resource.com/sql-exercises/sql-aggregate-functions.php
+#1. Write a SQL statement to find the total purchase amount of all orders.
+select sum(purch_amt)
+from orders;
+
+#2. Write a SQL statement to find the average purchase amount of all orders.
+select avg(purch_amt)
+from orders;
+
+#3. Write a SQL statement to find the number of salesmen currently listing for all of their customers.
+select count(distinct salesman_id)
+from orders;
+
+#4. Write a SQL statement know how many customer have listed their names.  #RM:  assumption one customer per row.
+select count(cust_name)
+from customer;
+
+#5. Write a SQL statement find the number of customers who gets at least a gradation for his/her performance.
+select count(grade)
+from customer
+where grade is not null;
+#official solution
+select count(all grade)
+from customer;  #RM:  works for Oracle?
+
+#6. Write a SQL statement to get the maximum purchase amount of all the orders.
+select max(purch_amt)
+from orders;
+
+#7. Write a SQL statement to get the minimum purchase amount of all the orders.
+select min(purch_amt)
+from orders;
+
+#8. Write a SQL statement which selects the highest grade for each of the cities of the customers.
+select city, max(grade)
+from customer
+group by city;
+
+#9. Write a SQL statement to find the highest purchase amount ordered by the each customer with their ID and highest purchase amount.
+select customer_id, max(purch_amt)
+from orders
+group by customer_id;
+
+#10. Write a SQL statement to find the highest purchase amount ordered by the each customer on a particular date with their ID, order date and highest purchase amount.
+select customer_id, ord_date, max(purch_amt)
+from orders
+group by customer_id, ord_date;
+
+#11. Write a SQL statement to find the highest purchase amount on a date '2012-08-17' for each salesman with their ID.
+select salesman_id, max(purch_amt)
+from orders
+where ord_date = '2018-08-07'
+group by salesman_id;
+
+#12. Write a SQL statement to find the highest purchase amount with their ID and order date, for only those customers who have highest purchase amount in a day is more than 2000.  #RM:  find customers highest purchase amount greater than 2000.
+select customer_id, ord_date, max(purch_amt)
+from orders
+group by customer_id, ord_date
+having max(purch_amt) > 2000;
+
+#13. Write a SQL statement to find the highest purchase amount with their ID and order date, for those customers who have a higher purchase amount in a day is within the range 2000 and 6000.
+select customer_id, ord_date, max(purch_amt)
+from orders
+group by customer_id, ord_date
+having max(purch_amt) between 2000 and 6000;
+
+#14. Write a SQL statement to find the highest purchase amount with their ID and order date, for only those customers who have a higher purchase amount in a day is within the list 2000, 3000, 5760 and 6000.
+select customer_id, ord_date, max(purch_amt)
+from orders
+group by customer_id, ord_date
+having max(purch_amt) in (2000, 3000, 5760, 6000);
+
+#15. Write a SQL statement to find the highest purchase amount with their ID, for only those customers whose ID is within the range 3002 and 3007.
+select customer_id, max(purch_amt)
+from orders
+where customer_id between 3002 and 3007
+group by customer_id;
