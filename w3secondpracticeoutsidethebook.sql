@@ -57,3 +57,16 @@ where grade is not null;
 select count(all grade)
 from customer;  #RM:  works for Oracle?
 
+#23. Write a SQL query to display the average price of each company's products, along with their code.  #groupby group by group-by aggregate function before aggregate function first
+select pro_com, avg(pro_price)
+from item_mast
+group by pro_com;
+#also
+select avg(pro_price), pro_com
+from item_mast
+group by pro_com;
+
+#https://www.w3resource.com/sql-exercises/sql-fromatting-output-exercises.php
+#1. Write a SQL statement to display the commission with the percent sign ( % ) with salesman ID, name and city columns for all the salesmen.  #RM:  concatenate concat combine.  CONCAT() works for two arguments only.
+select commission*100 || '%' as "Commission Percentage", salesman_id, name, city
+from salesman;

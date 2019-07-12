@@ -4,6 +4,7 @@
 #https://www.w3resource.com/sql-exercises/sql-boolean-operators.php
 #https://www.w3resource.com/sql-exercises/sql-wildcard-special-operators.php
 #https://www.w3resource.com/sql-exercises/sql-aggregate-functions.php
+#https://www.w3resource.com/sql-exercises/sql-fromatting-output-exercises.php
 #1. Write a SQL statement to display all the information of all salesmen.
 select *
 from salesman;
@@ -484,3 +485,85 @@ select customer_id, max(purch_amt)
 from orders
 where customer_id between 3002 and 3007
 group by customer_id;
+
+#16. Write a SQL statement to display customer details (ID and purchase amount) whose IDs are within the range 3002 and 3007 and highest purchase amount is more than 1000.
+select customer_id, max(purch_amt)
+from orders
+where customer_id between 3002 and 3007
+group by customer_id
+having max(purch_amt) > 1000;
+
+#17. Write a SQL statement to find the highest purchase amount with their ID, for only those salesmen whose ID is within the range 5003 and 5008.
+select salesman_id, max(purch_amt)
+from orders
+where salesman_id between 5003 and 5008
+group by salesman_id;
+
+#18. Write a SQL statement that counts all orders for a date August 17th, 2012.
+select count(*)
+from orders
+where ord_date = '2012-08-17';
+
+#19. Write a SQL statement that count the number of salesmen for whom a city is specified. Note that there may be spaces or no spaces in the city column if no city is specified.
+select city, count(*)
+from salesman
+group by city;
+
+#20. Write a query that counts the number of salesmen with their order date and ID registering orders for each day.
+select salesman_id, ord_date, count(*)
+from orders
+group by salesman_id, ord_date
+order by salesman_id asc, ord_date desc;
+
+#21. Write a SQL query to calculate the average price of all the products.
+select avg(pro_price)
+from item_mast;
+
+#22. Write a SQL query to find the number of products with a price more than or equal to Rs.350.
+select count(*)
+from item_mast
+where pro_price >= 350;
+
+#23. Write a SQL query to display the average price of each company's products, along with their code.
+select pro_com, avg(pro_price)
+from item_mast
+group by pro_com;
+#also
+select avg(pro_price), pro_com
+from item_mast
+group by pro_com;
+
+#24. Write a query in SQL to find the sum of the allotment amount of all departments.
+select sum(dpt_allotment)
+from emp_department;
+
+#25. Write a query in SQL to find the number of employees in each department along with the department code.
+select emp_dept, count(*)
+from emp_details
+group by emp_dept;
+
+#https://www.w3resource.com/sql-exercises/sql-fromatting-output-exercises.php
+#1. Write a SQL statement to display the commission with the percent sign ( % ) with salesman ID, name and city columns for all the salesmen.  #RM:  concatenate concat combine CONCAT() works for two arguments only.
+select commission*100 || '%' as "Commission Percentage", salesman_id, name, city
+from salesman;
+
+#2. Write a SQL statement to find out the number of orders booked for each day and display it in such a format like "For 2001-10-10 there are 15 orders".
+select 'For ' || ord_date || ' there are ' || count(*) || ' orders.' as "Orders"
+from orders
+group by ord_date
+order by ord_date;
+
+#3. Write a query to display the orders according to the order number arranged by ascending order.
+select *
+from orders
+order by ord_no;
+
+#4. Write a SQL statement to arrange the orders according to the order date in such a manner that the latest date will come first then previous dates.
+select *
+from orders
+order by ord_no desc;
+
+#5. Write a SQL statement to display the orders with all information in such a manner that, the older order date will come first and the highest purchase amount of same day will come first.
+select *
+from orders
+order by ord_no desc, purch_amt desc;
