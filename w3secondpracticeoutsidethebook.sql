@@ -70,3 +70,44 @@ group by pro_com;
 #1. Write a SQL statement to display the commission with the percent sign ( % ) with salesman ID, name and city columns for all the salesmen.  #RM:  concatenate concat combine.  CONCAT() works for two arguments only.
 select commission*100 || '%' as "Commission Percentage", salesman_id, name, city
 from salesman;
+
+#https://www.w3resource.com/sql-exercises/sql-exercises-quering-on-multiple-table.php
+#1. Write a query to find those customers with their name and those salesmen with their name and city who lives in the same city.
+select cust_name, name, c.city
+from customer c, salesman s
+where c.salesman_id = s.salesman_id
+and c.city = s.city; #incorrect, want to match customer city and salesmen city only.
+#correct solution
+select cust_name, name, c.city
+from customer c, salesman s
+where c.city = s.city;
+#user solution
+select cust_name, name, c.city
+from customer c inner join salesman s
+on c.city = s.city;
+
+#3. Write a SQL statement to display all those orders by the customers not located in the same cities where their salesmen live.
+select o.*
+from orders o inner join customer c
+on o.customer_id = c.customer_id
+inner join salesman s
+on c.city <> s.city;  #incorrect.  Cartesian return.
+select o.*
+from orders o inner join customer c
+and o.customer_id = c.customer_id
+inner join salesman s
+on s.salesman_id = c.salesman_id
+and c.city <> s.city;    #incorrect.  Return nothing.
+#official solution
+select o.*
+from salesman s, customer c, orders o
+where c.city <> s.city
+and o.customer_id = c.customer_id
+and o.salesman_id = s.salesman_id;  #correct
+#user solution
+select o.*
+from orders o inner join customer c
+on o.customer_id = c.customer_id
+inner join salesman s
+on o.salesman_id = s.salesman_id
+where c.city <> s.city;

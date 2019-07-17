@@ -5,6 +5,7 @@
 #https://www.w3resource.com/sql-exercises/sql-wildcard-special-operators.php
 #https://www.w3resource.com/sql-exercises/sql-aggregate-functions.php
 #https://www.w3resource.com/sql-exercises/sql-fromatting-output-exercises.php
+#https://www.w3resource.com/sql-exercises/sql-exercises-quering-on-multiple-table.php
 #1. Write a SQL statement to display all the information of all salesmen.
 select *
 from salesman;
@@ -567,3 +568,77 @@ order by ord_no desc;
 select *
 from orders
 order by ord_no desc, purch_amt desc;
+
+#6. Write a SQL statement to display the customer name, city, and grade, etc. and the display will be arranged according to the smallest customer ID.
+select cust_name, city, grade
+from orders
+order by customer_id;
+
+#7. Write a SQL statement to make a report with salesman ID, order date and highest purchase amount in such an arrangement that, the smallest salesman ID will come first along with their smallest order date.
+select salesman_id, ord_date, max(purch_amt)
+from orders
+group by salesman_id, ord_date
+order by salesman_id, ord_date;
+
+#8. Write a SQL statement to display customer name, city and grade in such a manner that, the customer holding highest grade will come first.
+select cust_name, city, grade
+from orders
+order by grade desc;
+
+#9. Write a SQL statement to make a report with customer ID in such a manner that, the largest number of orders booked by the customer will come first along with their highest purchase amount.  #RM:  get number of orders per customer and get the maximum purchase amount per customer sort by number of orders per customer highest to smallest.
+select customer_id, count(distinct ord_no) max(purch_amt)
+from orders
+group by customer_id
+order by count(distinct ord_no) desc;
+
+#10. Write a SQL statement to make a report with order date in such a manner that, the latest order date will come last along with the total purchase amount and total commission (15% for all salesmen) for that date.  #RM:  sum purchase amount per date and calculate the total commission which is 15% of purchase amount sort date earlest to latest.
+select ord_date, sum(purch_amt), sum(purch_amt*15) as "Total Commission"
+from orders
+group by ord_date
+order by ord_date;
+
+#https://www.w3resource.com/sql-exercises/sql-exercises-quering-on-multiple-table.php
+#1. Write a query to find those customers with their name and those salesmen with their name and city who lives in the same city.
+select cust_name, name, c.city
+from customer c, salesman s
+where c.salesman_id = s.salesman_id
+and c.city = s.city; #incorrect, want to match customer city and salesmen city only.
+#correct solution
+select cust_name, name, c.city
+from customer c, salesman s
+where c.city = s.city;
+#user solution
+select cust_name, name, c.city
+from customer c inner join salesman s
+on c.city = s.city;
+
+#2. Write a SQL statement to find the names of all customers along with the salesmen who works for them.
+select cust_name, name,
+from customer c, salesman s
+where c.salesman_id = s.salesman_id;
+
+#3. Write a SQL statement to display all those orders by the customers not located in the same cities where their salesmen live.
+select o.*
+from orders o inner join customer c
+on o.customer_id = c.customer_id
+inner join salesman s
+on c.city <> s.city;  #incorrect.  Cartesian return.
+select o.*
+from orders o inner join customer c
+and o.customer_id = c.customer_id
+inner join salesman s
+on s.salesman_id = c.salesman_id
+and c.city <> s.city;    #incorrect.  Return nothing.
+#official solution
+select o.*
+from salesman s, customer c, orders o
+where c.city <> s.city
+and o.customer_id = c.customer_id
+and o.salesman_id = s.salesman_id;  #correct
+#user solution
+select o.*
+from orders o inner join customer c
+on o.customer_id = c.customer_id
+inner join salesman s
+on o.salesman_id = s.salesman_id
+where c.city <> s.city;
