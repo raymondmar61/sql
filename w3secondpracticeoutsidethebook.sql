@@ -72,20 +72,6 @@ select commission*100 || '%' as "Commission Percentage", salesman_id, name, city
 from salesman;
 
 #https://www.w3resource.com/sql-exercises/sql-exercises-quering-on-multiple-table.php
-#1. Write a query to find those customers with their name and those salesmen with their name and city who lives in the same city.
-select cust_name, name, c.city
-from customer c, salesman s
-where c.salesman_id = s.salesman_id
-and c.city = s.city; #incorrect, want to match customer city and salesmen city only.
-#correct solution
-select cust_name, name, c.city
-from customer c, salesman s
-where c.city = s.city;
-#user solution
-select cust_name, name, c.city
-from customer c inner join salesman s
-on c.city = s.city;
-
 #3. Write a SQL statement to display all those orders by the customers not located in the same cities where their salesmen live.
 select o.*
 from orders o inner join customer c

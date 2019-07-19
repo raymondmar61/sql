@@ -604,16 +604,16 @@ from customer c, salesman s
 where c.salesman_id = s.salesman_id
 and c.city = s.city; #incorrect, want to match customer city and salesmen city only.
 #correct solution
-select cust_name, name, c.city
+select c.cust_name, s.name, c.city
 from customer c, salesman s
 where c.city = s.city;
 #user solution
-select cust_name, name, c.city
+select c.cust_name, s.name, c.city
 from customer c inner join salesman s
 on c.city = s.city;
 
 #2. Write a SQL statement to find the names of all customers along with the salesmen who works for them.
-select cust_name, name,
+select c.cust_name, s.name
 from customer c, salesman s
 where c.salesman_id = s.salesman_id;
 
@@ -642,3 +642,31 @@ on o.customer_id = c.customer_id
 inner join salesman s
 on o.salesman_id = s.salesman_id
 where c.city <> s.city;
+
+#RM:  Review questions 1-3.  I need more practice on joins.
+#4. Write a SQL statement that finds out each order number followed by the name of the customers who made the order.
+select o.ord_no, c.cust_name
+from orders o, customer c
+where o.customer_id = c.customer_id;
+#also
+select o.ord_no, c.cust_name
+from orders o join customer c
+on o.customer_id = c.customer_id;
+
+#5. Write a SQL statement that sorts out the customer and their grade who made an order. Each of the customers must have a grade and served by at least a salesman, who belongs to a city.
+select c.cust_name, c.grade, o.ord_no
+from customer c join orders o
+on c.customer_id = o.customer_id
+join salesman s
+on c.salesman_id = s.salesman_id
+where s.city is not null
+and c.grade is not null;
+#also
+select c.cust_name, c.grade, o.ord_no
+from customer c, orders o, salesman s
+where c.customer_id = o.customer_id
+and c.salesman_id = s.salesman_id
+and s.city is not null
+and c.grade is not null;
+
+#6. Write a query that produces all customers with their name, city, salesman and commission, who served by a salesman and the salesman works at a rate of the commission within 12% to 14%.
