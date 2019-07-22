@@ -6,6 +6,7 @@
 #https://www.w3resource.com/sql-exercises/sql-aggregate-functions.php
 #https://www.w3resource.com/sql-exercises/sql-fromatting-output-exercises.php
 #https://www.w3resource.com/sql-exercises/sql-exercises-quering-on-multiple-table.php
+#https://www.w3resource.com/sql-exercises/sql-joins-exercises.php
 #1. Write a SQL statement to display all the information of all salesmen.
 select *
 from salesman;
@@ -670,3 +671,220 @@ and s.city is not null
 and c.grade is not null;
 
 #6. Write a query that produces all customers with their name, city, salesman and commission, who served by a salesman and the salesman works at a rate of the commission within 12% to 14%.
+select c.cust_name, c.city, s.name, s.commission
+from customer c, salesman s
+where c.salesman_id = s.salesman_id
+and s.commission between 0.12 and 0.14;
+#also
+select c.cust_name, c.city, s.name, s.commission
+from customer c join salesman s
+on c.salesman_id = s.salesman_id
+where s.commission between 0.12 and 0.14;
+
+#7. Write a SQL statement that produces all orders with the order number, customer name, commission rate and earned commission amount for those customers who carry their grade is 200 or more and served by an existing salesman.
+select c.cust_name, c.grade, s.name, s.commission, (s.commission*o.purch_amt) as "earned commission", o.ord_no
+from customer c join salesman s
+on c.salesman_id = s.salesman_id
+join orders o
+on c.customer_id = o.customer_id
+where c.grade >= 200;
+#also
+select c.cust_name, c.grade, s.name, s.commission, (s.commission*o.purch_amt) as "earned commission", o.ord_no
+from customer c, salesman s, orders o
+where c.salesman_id = s.salesman_id
+and c.customer_id = o.customer_id
+and c.grade >= 200;
+
+#https://www.w3resource.com/sql-exercises/sql-joins-exercises.php
+#1. Write a SQL statement to prepare a list with salesman name, customer name and their cities for the salesmen and customer who belongs to the same city.
+select s.name, c.cust_name, c.city
+from customer c, salesman s
+where c.city = s.city;
+#also
+select s.name, c.cust_name, c.city
+from customer c inner join salesman s
+on c.city = s.city;
+
+#2. Write a SQL statement to make a list with order no, purchase amount, customer name and their cities for those orders which order amount between 500 and 2000.
+select o.ord_no, o.purch_amt, c.cust_name, c.city
+from orders o, customer c
+where o.customer_id = c.customer_id
+and o.purch_amt between 500 and 2000;
+#also
+select o.ord_no, o.purch_amt, c.cust_name, c.city
+from orders o join customer c
+on o.customer_id = c.customer_id
+where o.purch_amt between 500 and 2000;
+
+#3. Write a SQL statement to know which salesman are working for which customer.
+select s.name, c.cust_name
+from customer c, salesman s
+where c.salesman_id = s.salesman_id;
+
+#4. Write a SQL statement to find the list of customers who appointed a salesman for their jobs who gets a commission from the company is more than 12%.
+select c.cust_name, s.name, s.commission
+from customer c join salesman s
+on c.salesman_id = s.salesman_id
+where s.commission > .12;
+
+#5. Write a SQL statement to find the list of customers who appointed a salesman for their jobs who does not live in the same city where their customer lives, and gets a commission is above 12%.
+select c.cust_name, c.city, s.name, s.city, s.commission
+from customer c, salesman s
+where c.salesman_id = s.salesman_id
+and c.city <> s.city
+and s.commission > .12;
+
+#6. Write a SQL statement to find the details of a order i.e. order number, order date, amount of order, which customer gives the order and which salesman works for that customer and how much commission he gets for an order.
+select o.ord_no, o.ord_date, o.purch_amt, c.cust_name, s.name, s.commission
+from orders o join customer c
+on o.customer_id = c.customer_id
+join salesman s
+on o.salesman_id = s.salesman_id;
+
+#7. Write a SQL statement to make a join on the tables salesman, customer and orders in such a form that the same column of each table will appear once and only the relational rows will come.
+select o.*, c.*, s.*
+from orders o, customer c, salesman s
+where o.customer_id = c.customer_id
+and o.salesman_id = s.salesman_id;  #RM:  printed all orders no duplicate matching columns from two or more tables
+#official solution
+select *
+from orders
+natural join customer
+natural join salesman;  #user feedback:  Because NATURAL JOIN will compare ALL matched columns (with same column name), in this case both salesman_id and city will take into account, so that only 6 records are left, this is because city column has only three same cities: four records of NY, one London and one Paris.
+
+#8. Write a SQL statement to make a list in ascending order for the customer who works either through a salesman or by own.
+select c.*, s.*
+from customer c left join salesman s
+on c.salesman_id = s.salesman_id
+order by c.customer_id;
+
+#9. Write a SQL statement to make a list in ascending order for the customer who holds a grade less than 300 and works either through a salesman or by own.
+select c.*, s.*
+from customer c, salesman s
+where c.salesman_id >= s.salesman_id
+order by c.customer_id;  #incorrect.  Returns a caratesian.
+select c.*, s.*
+from customer c left join salesman s
+on c.salesman_id = s.salesman_id
+where grade < 300
+order by c.customer_id;  #correct
+
+#10. Write a SQL statement to make a report with customer name, city, order number, order date, and order amount in ascending order according to the order date to find that either any of the existing customers have placed no order or placed one or more orders.
+select c.cust_name, c.city, o.ord_no, o.ord_date, o.purch_amt
+from orders o right join customer c
+on o.customer_id = c.customer_id
+order by o.ord_date;
+
+#11. Write a SQL statement to make a report with customer name, city, order number, order date, order amount salesman name and commission to find that either any of the existing customers have placed no order or placed one or more orders by their salesman or by own.
+select c.cust_name, c.city, o.ord_no, o.ord_date, o.purch_amt, s.name, s.commission
+from orders o right join customer c
+on o.customer_id = c.customer_id
+right join salesman s
+on s.salesman_id = o.salesman_id
+order by o.ord_date;
+#also
+select c.cust_name, c.city, o.ord_no, o.ord_date, o.purch_amt, s.name, s.commission
+from orders o right join customer c
+on o.customer_id = c.customer_id
+right join salesman s
+on o.salesman_id = s.salesman_id; #RM:  no difference in seoncd on statement "on s.salesman_id = o.salesman_id" and "on o.salesman_id = s.salesman_id"
+
+#12. Write a SQL statement to make a list in ascending order for the salesmen who works either for one or more customer or not yet join under any of the customers.
+select s.name, c.cust_name
+from salesman s left join customer c
+on s.salesman_id = c.salesman_id
+order by s.salesman_id;
+
+#13. Write a SQL statement to make a list for the salesmen who works either for one or more customer or not yet join under any of the customers who placed either one or more orders or no order to their supplier.
+select s.name, c.cust_name
+from salesman s left join customer c
+on s.salesman_id = c.salesman_id
+left join orders o
+on c.customer_id = o.customer_id;
+
+#14. Write a SQL statement to make a list for the salesmen who either work for one or more customers or yet to join any of the customer. The customer may have placed, either one or more orders on or above order amount 2000 and must have a grade, or he may not have placed any order to the associated supplier.
+select s.name, c.cust_name
+from salesman s left join customer c
+on s.salesman_id = c.salesman_id
+left join orders o
+on c.customer_id = o.customer_id
+where (o.purch_amt >= 2000
+and c.grade is not null)
+or o.purch_amt is null;
+
+#15. Write a SQL statement to make a report with customer name, city, order no. order date, purchase amount for those customers from the existing list who placed one or more orders or which order(s) have been placed by the customer who is not on the list.
+select c.cust_name, c.city, o.ord_no, o.ord_date, o.purch_amt
+from customer c left join orders o
+on c.customer_id = o.customer_id;
+
+#16. Write a SQL statement to make a report with customer name, city, order no. order date, purchase amount for only those customers on the list who must have a grade and placed one or more orders or which order(s) have been placed by the customer who is neither in the list not have a grade.
+select c.cust_name, c.city, o.ord_no, o.ord_date, o.purch_amt
+from customer c left join orders o
+on c.customer_id = o.customer_id
+where (grade is not null
+and purch_amt is not null)
+or (grade is null
+and purch_amt is null);
+
+#17. Write a SQL statement to make a cartesian product between salesman and customer i.e. each salesman will appear for all customer and vice versa.
+select *
+from salesman s, customer c;
+#official solution
+select *
+from salesman s cross join customer c
+
+#18. Write a SQL statement to make a cartesian product between salesman and customer i.e. each salesman will appear for all customer and vice versa for that customer who belongs to a city.  #RM:  copied solution
+select *
+from salesman s cross join customer c
+where s.city is not null;
+
+#19. Write a SQL statement to make a cartesian product between salesman and customer i.e. each salesman will appear for all customer and vice versa for those salesmen who belongs to a city and the customers who must have a grade.
+select *
+from salesman s cross join customer c
+where s.city is not null
+and c.grade is not null;
+
+#20. Write a SQL statement to make a cartesian product between salesman and customer i.e. each salesman will appear for all customer and vice versa for those salesmen who must belong a city which is not the same as his customer and the customers should have an own grade.
+select *
+from salesman s cross join customer c
+where s.city is not null
+and c.grade is not null
+and s.city <> c.city;
+
+#21. Write a SQL query to display all the data from the item_mast, including all the data for each item's producer company.
+select i.*, c.*
+from company_mast c, item_mast i
+where c.com_id = i.pro_com;
+
+#22. Write a SQL query to display the item name, price, and company name of all the products.
+select i.pro_name, i.pro_price, c.com_name
+from company_mast c, item_mast i
+where c.com_id = i.pro_com;
+
+#23. Write a SQL query to display the average price of items of each company, showing the name of the company.
+select c.com_name, avg(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name;
+
+#24. Write a SQL query to display the names of the company whose products have an average price larger than or equal to Rs. 350.
+select c.com_name, avg(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name
+having avg(i.pro_price) >= 350;
+
+#25. Write a SQL query to display the name of each company along with the ID and price for their most expensive product.
+select c.com_name, max(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name;
+#official solution
+select c.com_name, i.pro_id, i.pro_name, i.pro_price
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+and i.pro_price = (
+	select max(i.pro_price)
+	from item_mast i
+	where i.pro_com = c.com_id);
+

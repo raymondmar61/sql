@@ -97,3 +97,40 @@ on o.customer_id = c.customer_id
 inner join salesman s
 on o.salesman_id = s.salesman_id
 where c.city <> s.city;
+
+#https://www.w3resource.com/sql-exercises/sql-joins-exercises.php
+#7. Write a SQL statement to make a join on the tables salesman, customer and orders in such a form that the same column of each table will appear once and only the relational rows will come.
+select o.*, c.*, s.*
+from orders o, customer c, salesman s
+where o.customer_id = c.customer_id
+and o.salesman_id = s.salesman_id;  #RM:  printed all orders no duplicate matching columns from two or more tables
+#official solution
+select *
+from orders
+natural join customer
+natural join salesman;  #user feedback:  Because NATURAL JOIN will compare ALL matched columns (with same column name), in this case both salesman_id and city will take into account, so that only 6 records are left, this is because city column has only three same cities: four records of NY, one London and one Paris.
+
+#14. Write a SQL statement to make a list for the salesmen who either work for one or more customers or yet to join any of the customer. The customer may have placed, either one or more orders on or above order amount 2000 and must have a grade, or he may not have placed any order to the associated supplier.
+select s.name, c.cust_name
+from salesman s left join customer c
+on s.salesman_id = c.salesman_id
+left join orders o
+on c.customer_id = o.customer_id
+where (o.purch_amt >= 2000
+and c.grade is not null)
+or o.purch_amt is null;
+
+#25. Write a SQL query to display the name of each company along with the ID and price for their most expensive product.
+select c.com_name, max(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name;
+#official solution
+select c.com_name, i.pro_id, i.pro_name, i.pro_price
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+and i.pro_price = (
+	select max(i.pro_price)
+	from item_mast i
+	where i.pro_com = c.com_id);
+
