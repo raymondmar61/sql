@@ -7,6 +7,7 @@
 #https://www.w3resource.com/sql-exercises/sql-fromatting-output-exercises.php
 #https://www.w3resource.com/sql-exercises/sql-exercises-quering-on-multiple-table.php
 #https://www.w3resource.com/sql-exercises/sql-joins-exercises.php
+#https://www.w3resource.com/sql-exercises/subqueries/index.php
 #1. Write a SQL statement to display all the information of all salesmen.
 select *
 from salesman;
@@ -888,3 +889,187 @@ and i.pro_price = (
 	from item_mast i
 	where i.pro_com = c.com_id);
 
+#26. Write a query in SQL to display all the data of employees including their department.
+select emp_details.*, emp_department.dpt_name
+from emp_details, emp_department
+where emp_details.emp_dept = emp_department.dpt_code;
+
+#27. Write a query in SQL to display the first name and last name of each employee, along with the name and sanction amount for their department.
+select emp_details.emp_fname, emp_details.emp_lname, emp_department.dpt_name, emp_department.dpt_allotment
+from emp_details, emp_department
+where emp_details.emp_dept = emp_department.dpt_code;
+
+#28. Write a query in SQL to find the first name and last name of employees working for departments with a budget more than Rs. 50000.
+select emp_details.emp_fname, emp_details.emp_lname
+from emp_details, emp_department
+where emp_details.emp_dept = emp_department.dpt_code
+and emp_department.dpt_allotment > 50000;
+
+#29. Write a query in SQL to find the names of departments where more than two employees are working.
+select emp_department.dpt_name, count(emp_details.emp_dept)
+from emp_details, emp_department
+where emp_details.emp_dept = emp_department.dpt_code
+group by emp_details.emp_dept;  #returns nothing
+select emp_department.dpt_name, count(emp_details.emp_dept)
+from emp_details, emp_department
+where emp_details.emp_dept = emp_department.dpt_code
+group by emp_department.dpt_name
+order by 2 desc;  #correct
+select emp_department.dpt_name, count(emp_details.emp_dept)
+from emp_details, emp_department
+where emp_details.emp_dept = emp_department.dpt_code
+group by emp_department.dpt_name
+having count(emp_details.emp_dept) > 2
+order by 2 desc;  #correct answering question
+
+#https://www.w3resource.com/sql-exercises/subqueries/index.php
+#1. Write a query to display all the orders from the orders table issued by the salesman 'Paul Adam'.
+select *
+from orders
+where salesman_id = (
+	select salesman_id
+	from salesman
+	where name = 'Paul Adam');
+#also
+select o.*
+from orders o, salesman s
+where o.salesman_id = s.salesman_id
+and s.name = 'Paul Adam';
+
+#2. Write a query to display all the orders for the salesman who belongs to the city London.
+select *
+from orders
+where salesman_id in (
+	select salesman_id
+	from salesman
+	where city = 'London');
+
+#3. Write a query to find all the orders issued against the salesman who may works for customer whose id is 3007.
+select *
+from orders
+where salesman_id in (
+	select salesman_id
+	from orders
+	where customer_id = 3007));
+
+#4. Write a query to display all the orders which values are greater than the average order value for 10th October 2012.
+select *
+from orders
+where purch_amt > (
+	select avg(purch_amt)
+	from orders
+	where ord_date = '2012-10-10');
+
+#5. Write a query to find all orders attributed to a salesman in New york.
+select *
+from orders
+where salesman_id in (
+	select salesman_id
+	from salesman
+	where city = 'New York');
+#also
+select o.*
+from orders o, salesman s
+where o.salesman_id = s.salesman_id
+and s.city = 'New York';
+
+#6. Write a query to display the commission of all the salesmen servicing customers in Paris.
+select commission
+from salesman
+where salesman_id in (
+	select salesman_id
+	from customer
+	where city = 'Paris');
+
+#7. Write a query to display all the customers whose id is 2001 bellow the salesman ID of Mc Lyon.  #RM:  correction id is 2001 and salesman ID is less than salesman ID of Mc Lyon.
+select *
+from customer
+where customer_id = 3001
+and salesman_id <= (
+	select salesman_id
+	from salesman
+	where name = 'Mc Lyon');
+
+#8. Write a query to count the customers with grades above New York's average.
+select count(*)
+from customer
+where grade > (
+	select avg(grade)
+	from customer
+	where city = 'New York');
+#question wants group-by grade which makes no sense
+select grade, count (*)
+from customer
+group by grade
+having grade > (
+	select avg(grade)
+	from customer
+	where city = 'New York');
+
+#9. Write a query to display all customers with orders on October 5, 2012.
+select *
+from customer
+where customer_id in (
+	select customer_id
+	from orders
+	where ord_date = '2012-10-05');
+#also
+select c.*
+from customer c, orders o
+where c.customer_id = o.customer_id
+and o.ord_date = '2012-10-05';
+#incorrect
+select c.*
+from customer c, orders o
+where c.salesman_id = o.salesman_id
+and o.ord_date = '2012-10-05';
+
+#10. Write a query to display all the customers with orders issued on date 17th August, 2012.
+select cust_name
+from customer
+where customer_id in (
+	select customer_id
+	from orders
+	where ord_date = '2012-08-17');
+#also
+select cust_name
+from customer c, orders o
+where c.salesman_id = o.salesman_id
+and o.ord_date = '2012-08-17';
+
+#11. Write a query to find the name and numbers of all salesmen who had more than one customer.
+select salesman_id, name
+from salesman
+where salesman_id in (
+	select salesman_id
+	from customer
+	group by salesman_id
+	having count(salesman_id) > 1);
+#official solution
+select salesman_id,name 
+from salesman a 
+where 1 < (
+	select count(*)
+	from customer 
+	where salesman_id=a.salesman_id);
+#also
+select s.salesman_id, s.name 
+from salesman s
+where 1 < (
+	select count(*)
+	from customer c
+	where c.salesman_id=s.salesman_id);
+
+#12. Write a query to find all orders with order amounts which are above-average amounts for their customers.
+select *
+from orders
+where purch_amt > (
+	select avg(purch_amt)
+	from orders);
+#official solution.  Find customer's orders above average for each customer
+select * 
+from orders a
+where purch_amt > (
+	select avg(purch_amt)
+	from orders b
+	where b.customer_id = a.customer_id);

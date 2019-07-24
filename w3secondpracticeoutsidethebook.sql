@@ -1,3 +1,67 @@
+#new, new new
+#24. Write a SQL query to find all the details of 1970 winners by the ordered to subject and winner name; but the list contain the subject Economics and Chemistry at last.
+#official solution
+select *
+from nobel_win
+where year = 1970
+order by case
+	when subject in ('Economics','Chemistry') then 1 else 0 end asc,
+subject, winner;
+
+#25. Write a SQL query to display the name of each company along with the ID and price for their most expensive product.
+select c.com_name, max(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name;
+#official solution
+select c.com_name, i.pro_id, i.pro_name, i.pro_price
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+and i.pro_price = (
+	select max(i.pro_price)
+	from item_mast i
+	where i.pro_com = c.com_id);
+
+#11. Write a query to find the name and numbers of all salesmen who had more than one customer.
+select salesman_id, name
+from salesman
+where salesman_id in (
+	select salesman_id
+	from customer
+	group by salesman_id
+	having count(salesman_id) > 1);
+#official solution
+select salesman_id,name 
+from salesman a 
+where 1 < (
+	select count(*)
+	from customer 
+	where salesman_id=a.salesman_id);
+#also
+select s.salesman_id, s.name 
+from salesman s
+where 1 < (
+	select count(*)
+	from customer c
+	where c.salesman_id=s.salesman_id);
+#12. Write a query to find all orders with order amounts which are above-average amounts for their customers.
+select *
+from orders
+where purch_amt > (
+	select avg(purch_amt)
+	from orders);
+#official solution.  Find customer's orders above average for each customer
+select * 
+from orders a
+where purch_amt > (
+	select avg(purch_amt)
+	from orders b
+	where b.customer_id = a.customer_id);
+
+
+
+
+
 #https://www.w3resource.com/sql-exercises/sql-retrieve-from-table.php
 #24. Write a SQL query to find all the details of 1970 winners by the ordered to subject and winner name; but the list contain the subject Economics and Chemistry at last.
 #official solution
@@ -134,3 +198,78 @@ and i.pro_price = (
 	from item_mast i
 	where i.pro_com = c.com_id);
 
+#29. Write a query in SQL to find the names of departments where more than two employees are working.
+select emp_department.dpt_name, count(emp_details.emp_dept)
+from emp_details, emp_department
+where emp_details.emp_dept = emp_department.dpt_code
+group by emp_details.emp_dept;  #returns nothing
+select emp_department.dpt_name, count(emp_details.emp_dept)
+from emp_details, emp_department
+where emp_details.emp_dept = emp_department.dpt_code
+group by emp_department.dpt_name
+order by 2 desc;  #correct
+select emp_department.dpt_name, count(emp_details.emp_dept)
+from emp_details, emp_department
+where emp_details.emp_dept = emp_department.dpt_code
+group by emp_department.dpt_name
+having count(emp_details.emp_dept) > 2
+order by 2 desc;  #correct answering question
+
+#https://www.w3resource.com/sql-exercises/subqueries/index.php
+#1. Write a query to display all the orders from the orders table issued by the salesman 'Paul Adam'.
+select *
+from orders
+where salesman_id = (
+	select salesman_id
+	from salesman
+	where name = 'Paul Adam');
+#also
+select o.*
+from orders o, salesman s
+where o.salesman_id = s.salesman_id
+and s.name = 'Paul Adam';
+
+#3. Write a query to find all the orders issued against the salesman who may works for customer whose id is 3007.
+select *
+from orders
+where salesman_id in (
+	select salesman_id
+	from orders
+	where customer_id = 3007));
+
+#11. Write a query to find the name and numbers of all salesmen who had more than one customer.
+select salesman_id, name
+from salesman
+where salesman_id in (
+	select salesman_id
+	from customer
+	group by salesman_id
+	having count(salesman_id) > 1);
+#official solution
+select salesman_id,name 
+from salesman a 
+where 1 < (
+	select count(*)
+	from customer 
+	where salesman_id=a.salesman_id);
+#also
+select s.salesman_id, s.name 
+from salesman s
+where 1 < (
+	select count(*)
+	from customer c
+	where c.salesman_id=s.salesman_id);
+
+#12. Write a query to find all orders with order amounts which are above-average amounts for their customers.
+select *
+from orders
+where purch_amt > (
+	select avg(purch_amt)
+	from orders);
+#official solution.  Find customer's orders above average for each customer
+select * 
+from orders a
+where purch_amt > (
+	select avg(purch_amt)
+	from orders b
+	where b.customer_id = a.customer_id);
