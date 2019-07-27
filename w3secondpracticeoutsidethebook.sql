@@ -57,6 +57,67 @@ where purch_amt > (
 	select avg(purch_amt)
 	from orders b
 	where b.customer_id = a.customer_id);
+#14. Write a query to find the sums of the amounts from the orders table, grouped by date, eliminating all those dates where the sum was not at least 1000.00 above the maximum order amount for that date.
+select ord_date, sum(purch_amt)
+from orders a
+group by ord_date
+having sum(purch_amt) > (
+	select max(purch_amt) + 1000
+	from orders b
+	where a.ord_date = b.ord_date);
+#16. Write a query to find the salesmen who have multiple customers.
+select s.name, c.salesman_id, count(c.salesman_id)
+from customer c join salesman s
+on c.salesman_id = s.salesman_id
+group by s.name, c.salesman_id
+having count(c.salesman_id) >= 2;  #correct
+#user solution
+select *
+from salesman s
+where 1 < (
+	select count(*)
+	from customer a
+	where s.salesman_id = a.salesman_id);
+#18. Write a query that extract the rows of all salesmen who have customers with more than one orders.
+select *
+from salesman s
+where 1 < (
+	select count(customer_id)
+	from orders o
+	where s.salesman_id = o.salesman_id);
+#19. Write a query to find salesmen with all information who lives in the city where any of the customers lives.
+select distinct s.*
+from salesman s, customer c
+where s.city = c.city;  #it works
+select *
+from salesman
+where salesman_id in (
+	select s.salesman_id
+	from salesman s, customer c
+	where s.city = c.city);
+#official solution
+select *
+from salesman
+where city = any (
+	select city
+	from customer);
+#22. Write a query to display the customers who have a greater gradation than any customer who belongs to the alphabetically lower than the city New York.
+select *
+from customer
+where grade > any (
+	select grade
+	from customer
+	where city < 'New York');
+#26. Write a query to display only those customers whose grade are, in fact, higher than every customer in New York.
+select *
+from customer
+where grade > all (
+	select grade
+	from customer
+	where city = 'New York');
+
+
+
 
 
 
@@ -273,3 +334,68 @@ where purch_amt > (
 	select avg(purch_amt)
 	from orders b
 	where b.customer_id = a.customer_id);
+
+#14. Write a query to find the sums of the amounts from the orders table, grouped by date, eliminating all those dates where the sum was not at least 1000.00 above the maximum order amount for that date.
+select ord_date, sum(purch_amt)
+from orders a
+group by ord_date
+having sum(purch_amt) > (
+	select max(purch_amt) + 1000
+	from orders b
+	where a.ord_date = b.ord_date);
+
+#16. Write a query to find the salesmen who have multiple customers.
+select s.name, c.salesman_id, count(c.salesman_id)
+from customer c join salesman s
+on c.salesman_id = s.salesman_id
+group by s.name, c.salesman_id
+having count(c.salesman_id) >= 2;  #correct
+#user solution
+select *
+from salesman s
+where 1 < (
+	select count(*)
+	from customer a
+	where s.salesman_id = a.salesman_id);
+
+#18. Write a query that extract the rows of all salesmen who have customers with more than one orders.
+select *
+from salesman s
+where 1 < (
+	select count(customer_id)
+	from orders o
+	where s.salesman_id = o.salesman_id);
+
+#19. Write a query to find salesmen with all information who lives in the city where any of the customers lives.
+select distinct s.*
+from salesman s, customer c
+where s.city = c.city;  #it works
+select *
+from salesman
+where salesman_id in (
+	select s.salesman_id
+	from salesman s, customer c
+	where s.city = c.city);
+#official solution
+select *
+from salesman
+where city = any (
+	select city
+	from customer);
+
+#22. Write a query to display the customers who have a greater gradation than any customer who belongs to the alphabetically lower than the city New York.
+select *
+from customer
+where grade > any (
+	select grade
+	from customer
+	where city < 'New York');
+
+#26. Write a query to display only those customers whose grade are, in fact, higher than every customer in New York.
+select *
+from customer
+where grade > all (
+	select grade
+	from customer
+	where city = 'New York');
+
