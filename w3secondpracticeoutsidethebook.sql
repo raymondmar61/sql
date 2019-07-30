@@ -1,4 +1,4 @@
-#new, new new
+#NEW, NEW NEW
 #24. Write a SQL query to find all the details of 1970 winners by the ordered to subject and winner name; but the list contain the subject Economics and Chemistry at last.
 #official solution
 select *
@@ -115,9 +115,40 @@ where grade > all (
 	select grade
 	from customer
 	where city = 'New York');
-
-
-
+#33. Write a SQL query to display the name of each company, price for their most expensive product along with their Name.
+select company.com_name, max(item.pro_price)
+from item_mast item, company_mast company
+where item.pro_com = company.com_id
+group by company.com_name;  #partially correct.  Need the product name matching the most expensive product.
+select company.com_name, item.pro_name, item.pro_price
+from item_mast item, company_mast company
+where item.pro_com = company.com_id
+and item.pro_price = (
+	select max(itemb.pro_price)
+	from item_mast itemb
+	where item.pro_id = itemb.pro_id);  #incorrect.  Returns all items.
+select company.com_name, item.pro_name, item.pro_price
+from item_mast item, company_mast company
+where item.pro_com = company.com_id
+and item.pro_price = (
+	select max(itemb.pro_price)
+	from item_mast itemb
+	where itemb.pro_com = company.com_id
+	group by itemb.pro_com);  #correct
+#39. Write a query in SQL to find the first name and last name of employees working for departments which sanction amount is second lowest.
+select *
+from emp_details
+where emp_dept in (
+	select dpt_code from (
+		select dpt_code, rank() over (order by dpt_allotment asc) rank from emp_department) neednamehere
+		where rank = 2);
+#user solution
+select *
+from emp_details
+where emp_dept = (
+	select dpt_code
+	from emp_department
+	order by dpt_allotment limit 1 offset 1);
 
 
 
@@ -399,3 +430,54 @@ where grade > all (
 	from customer
 	where city = 'New York');
 
+#33. Write a SQL query to display the name of each company, price for their most expensive product along with their Name.
+select company.com_name, max(item.pro_price)
+from item_mast item, company_mast company
+where item.pro_com = company.com_id
+group by company.com_name;  #partially correct.  Need the product name matching the most expensive product.
+select company.com_name, item.pro_name, item.pro_price
+from item_mast item, company_mast company
+where item.pro_com = company.com_id
+and item.pro_price = (
+	select max(itemb.pro_price)
+	from item_mast itemb
+	where item.pro_id = itemb.pro_id);  #incorrect.  Returns all items.
+select company.com_name, item.pro_name, item.pro_price
+from item_mast item, company_mast company
+where item.pro_com = company.com_id
+and item.pro_price = (
+	select max(itemb.pro_price)
+	from item_mast itemb
+	where itemb.pro_com = company.com_id
+	group by itemb.pro_com);  #correct
+
+#38. Write a query in SQL to find the names of departments with more than two employees are working.
+select *
+from emp_department
+where dpt_code in (
+	select emp_dept
+	from emp_details
+	group by emp_dept
+	having count(emp_dept) > 2);
+#also
+select *
+from emp_department
+where 2 < (
+	select count(*)
+	from emp_details
+	where emp_department.dpt_code = emp_details.emp_dept);
+
+#39. Write a query in SQL to find the first name and last name of employees working for departments which sanction amount is second lowest.
+select *
+from emp_details
+where emp_dept in (
+	select dpt_code from (
+		select dpt_code, rank() over (order by dpt_allotment asc) rank from emp_department) neednamehere
+		where rank = 2);
+#user solution
+select *
+from emp_details
+where emp_dept = (
+	select dpt_code
+	from emp_department
+	order by dpt_allotment limit 1 offset 1);
