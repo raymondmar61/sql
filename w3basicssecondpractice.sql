@@ -1355,4 +1355,117 @@ where emp_dept = (
 	from emp_department
 	order by dpt_allotment limit 1 offset 1);
 
-#next https://www.w3resource.com/sql-exercises/union/sql-union.php.  RM:  link pasted on top.
+#https://www.w3resource.com/sql-exercises/union/sql-union.php
+#UNION operator shows only distinct rows, duplicate row appears once.  UNION ALL includes any duplicates when sets of data are added.
+#The MINUS operator returns the difference between two sets. Effectively, you use it to subtract one set from another set.
+#The INTERSECT operator determines the common values between two sets.
+--Set Operators combine the result of more than one query and return as one result.  Queries that set operators used are called compound queries.  Except union all operator, duplicate rows are eliminated automatically.  The column headings on the results are from the first query or top query.
+--Union returns rows of both queries eliminating duplicate rows.  Union All returns rows of both queries including duplicate rows.  Intersect returns rows which exist in both queries.  Minus returns rows which exist in first query, but not in the second query or return rows exist in first table and not second table.
+/*
+UNION ALL Returns all the rows retrieved by the queries, including duplicate rows
+UNION Returns all non-duplicate rows retrieved by the queries
+INTERSECT Returns rows that are retrieved by both queries
+MINUS Returns the remaining rows when the rows retrieved by the second query are subtracted from the rows retrieved by the first query
+*/
+#1. Write a query to display all salesmen and customer located in London.
+select name, salesman_id, 'Salesman'
+from salesman
+where city = 'London'
+union
+(select cust_name, customer_id, 'Customer'
+from customer
+where city = 'London');
+
+#2. Write a query to display distinct salesman and their cities.
+select salesman_id, city
+from salesman
+union
+(select salesman_id, city
+from customer);
+
+#3. Write a query to display all the salesmen and customer involved in this inventory management system.
+select customer_id, salesman_id
+from orders
+union
+(select customer_id, salesman_id
+from customer);
+
+#4. Write a query to make a report of which salesman produce the largest and smallest orders on each date.
+select s.name, o.purch_amt
+from salesman s, orders o
+where s.salesman_id = o.salesman_id
+order by o.purch_amt asc limit 1 offset 0
+union
+(select s.name, o.purch_amt
+from salesman s, orders o
+where s.salesman_id = o.salesman_id
+order by o.purch_amt desc limit 1 offset 0);  #RM: order by doesn't work.
+select s.name, o.purch_amt
+from salesman s, orders o
+where s.salesman_id = o.salesman_id
+and o.purch_amt = (
+	select min(purch_amt)
+	from orders)
+union
+(select s.name, o.purch_amt
+from salesman s, orders o
+where s.salesman_id = o.salesman_id
+and o.purch_amt = (
+	select max(purch_amt)
+	from orders));  #RM:  partially correct.  Smallest and largest orders all-time.
+select s.name, o.purch_amt, 'highest on', o.ord_date
+from salesman s, orders o
+where s.salesman_id = o.salesman_id
+and o.purch_amt = (
+	select max(o2.purch_amt)
+	from orders o2
+	where o2.ord_date = o.ord_date)
+union
+(select s.name, o.purch_amt, 'lowest on', o.ord_date
+from salesman s, orders o
+where s.salesman_id = o.salesman_id
+and o.purch_amt = (
+	select min(o2.purch_amt)
+	from orders o2
+	where o2.ord_date = o.ord_date))
+order by ord_date, purch_amt desc;  #RM:  correct.  Exclude the table alias at the order by statement.
+
+#5. Write a query to make a report of which salesman produce the largest and smallest orders on each date and arranged the orders number in smallest to the largest number.
+select o.ord_no, s.name, o.purch_amt, 'highest on', o.ord_date
+from salesman s, orders o
+where s.salesman_id = o.salesman_id
+and o.purch_amt = (
+	select max(o2.purch_amt)
+	from orders o2
+	where o2.ord_date = o.ord_date)
+union
+(select o.ord_no, s.name, o.purch_amt, 'lowest on', o.ord_date
+from salesman s, orders o
+where s.salesman_id = o.salesman_id
+and o.purch_amt = (
+	select min(o2.purch_amt)
+	from orders o2
+	where o2.ord_date = o.ord_date))
+order by ord_no;  #RM:  Exclude the table alias at the order by statement.  Column in order by statement must be included in select statement.  And Order By . . . limit 1 statement doesn't work in union.  Use subquery.
+
+#6. Write a query to list all the salesmen, and indicate those who do not have customers in their cities, as well as whose who do.
+#official solution
+select salesman.salesman_id, name, cust_name, commission
+from salesman, customer
+where salesman.city = customer.city
+union
+(select salesman_id, name, 'no match', commission
+from salesman
+where not city = any
+	(select city
+	from customer))
+order by 2 desc;
+#user solution
+select s.salesman_id, name, s.city as "Salesman City", c.city as "Customer City", commission, customer_id
+from salesman s join customer c
+on s.city=c.city
+union
+(select s.salesman_id, name, 'NO MATCH', c.city as "Customer City", commission, customer_id
+from salesman s join customer c
+on s.salesman_id = c.salesman_id
+and s.city<>c.city);

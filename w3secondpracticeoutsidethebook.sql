@@ -481,3 +481,45 @@ where emp_dept = (
 	select dpt_code
 	from emp_department
 	order by dpt_allotment limit 1 offset 1);
+
+#https://www.w3resource.com/sql-exercises/union/sql-union.php
+#5. Write a query to make a report of which salesman produce the largest and smallest orders on each date and arranged the orders number in smallest to the largest number.
+select o.ord_no, s.name, o.purch_amt, 'highest on', o.ord_date
+from salesman s, orders o
+where s.salesman_id = o.salesman_id
+and o.purch_amt = (
+	select max(o2.purch_amt)
+	from orders o2
+	where o2.ord_date = o.ord_date)
+union
+(select o.ord_no, s.name, o.purch_amt, 'lowest on', o.ord_date
+from salesman s, orders o
+where s.salesman_id = o.salesman_id
+and o.purch_amt = (
+	select min(o2.purch_amt)
+	from orders o2
+	where o2.ord_date = o.ord_date))
+order by ord_no;  #RM:  Exclude the table alias at the order by statement.  Column in order by statement must be included in select statement.  And Order By . . . limit 1 statement doesn't work in union.  Use subquery.
+
+#6. Write a query to list all the salesmen, and indicate those who do not have customers in their cities, as well as whose who do.
+#official solution
+select salesman.salesman_id, name, cust_name, commission
+from salesman, customer
+where salesman.city = customer.city
+union
+(select salesman_id, name, 'no match', commission
+from salesman
+where not city = any
+	(select city
+	from customer))
+order by 2 desc;
+#user solution
+select s.salesman_id, name, s.city as "Salesman City", c.city as "Customer City", commission, customer_id
+from salesman s join customer c
+on s.city=c.city
+union
+(select s.salesman_id, name, 'NO MATCH', c.city as "Customer City", commission, customer_id
+from salesman s join customer c
+on s.salesman_id = c.salesman_id
+and s.city<>c.city);
+
