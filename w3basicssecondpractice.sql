@@ -1399,7 +1399,7 @@ union
 (select s.name, o.purch_amt
 from salesman s, orders o
 where s.salesman_id = o.salesman_id
-order by o.purch_amt desc limit 1 offset 0);  #RM: order by doesn't work.
+order by o.purch_amt desc limit 1 offset 0);  #RM: order by doesn't work.  Order By . . . limit 1 statement doesn't work in union.  Use subquery.
 select s.name, o.purch_amt
 from salesman s, orders o
 where s.salesman_id = o.salesman_id
@@ -1469,3 +1469,71 @@ union
 from salesman s join customer c
 on s.salesman_id = c.salesman_id
 and s.city<>c.city);
+
+#7. Write a query to that appends strings to the selected fields, indicating whether or not a specified salesman was matched to a customer in his city.  #RM:  I don't understand the question.  Looked at solution.  Check all salesman in salesman table.  Do the salesman match their customer's city.  Yes or No, or Match or No Match.
+#official solution incorrect
+select s.salesman_id, s.name, s.city, 'Match'
+from salesman s, customer c
+where s.salesman_id = c.salesman_id
+and s.city = c.city
+union
+(select s.salesman_id, s.name, s.city, 'No Match'
+from salesman s
+where not s.city = any (
+	select c2.city
+	from customer c2));
+#user solution for which I was correct
+select s.salesman_id, s.name, s.city, 'Match'
+from salesman s join customer c
+on s.city = c.city 
+union
+(select s.salesman_id, s.name, s.city,'NO MATCH'
+from salesman s join customer c 
+on s.salesman_id = c.salesman_id 
+and s.city not in (
+	select c2.city
+	from customer c2));
+
+#8. Create a union of two queries that shows the names, cities, and ratings of all customers. Those with a rating of 200 or greater will also have the words "High Rating", while the others will have the words "Low Rating".
+select cust_name, city, grade, 'High Rating'
+from customer
+where grade >= 200
+union
+(select cust_name, city, grade, 'Low Rating'
+from customer
+where grade < 200);
+
+#9. Write a command that produces the name and number of each salesman and each customer with more than one current order. Put the results in alphabetical order.
+#customers with more than one order 3002, 3009, 3005
+select c.customer_id, c.cust_name
+from customer c
+where c.customer_id in (
+	select customer_id
+	from orders
+	group by customer_id
+	having count(customer_id) > 1);
+#salesman with more than one order 5002, 5003, 5001
+select s.salesman_id, s.name
+from salesman s
+where s.salesman_id in (
+	select salesman_id
+	from orders
+	group by salesman_id
+	having count(salesman_id) > 1);
+#union
+select c.customer_id as "ID Number", c.cust_name as "Name", 'Customer'
+from customer c
+where c.customer_id in (
+	select customer_id
+	from orders
+	group by customer_id
+	having count(customer_id) > 1)
+union
+(select s.salesman_id, s.name, 'Salesman'
+from salesman s
+where s.salesman_id in (
+	select salesman_id
+	from orders
+	group by salesman_id
+	having count(salesman_id) > 1))
+order by 2 asc;

@@ -523,3 +523,37 @@ from salesman s join customer c
 on s.salesman_id = c.salesman_id
 and s.city<>c.city);
 
+#9. Write a command that produces the name and number of each salesman and each customer with more than one current order. Put the results in alphabetical order.
+#customers with more than one order 3002, 3009, 3005
+select c.customer_id, c.cust_name
+from customer c
+where c.customer_id in (
+	select customer_id
+	from orders
+	group by customer_id
+	having count(customer_id) > 1);
+#salesman with more than one order 5002, 5003, 5001
+select s.salesman_id, s.name
+from salesman s
+where s.salesman_id in (
+	select salesman_id
+	from orders
+	group by salesman_id
+	having count(salesman_id) > 1);
+#union
+select c.customer_id as "ID Number", c.cust_name as "Name", 'Customer'
+from customer c
+where c.customer_id in (
+	select customer_id
+	from orders
+	group by customer_id
+	having count(customer_id) > 1)
+union
+(select s.salesman_id, s.name, 'Salesman'
+from salesman s
+where s.salesman_id in (
+	select salesman_id
+	from orders
+	group by salesman_id
+	having count(salesman_id) > 1))
+order by 2 asc;
