@@ -557,3 +557,23 @@ where s.salesman_id in (
 	group by salesman_id
 	having count(salesman_id) > 1))
 order by 2 asc;
+
+#https://www.w3resource.com/sql-exercises/employee-database-exercise/index.php
+#8. Write a query in SQL to count the no. of characters with out considering the spaces for each name.  length, len, count character count characters count string count
+select emp_name, length(trim(emp_name))
+from employees;
+
+#29. Write a query in SQL to list the id, name, salary, and experience of all the employees who earn more than 100 as daily salary.  RM:  salary must be monthly.  Also, looked up solution for experience.
+select emp_id, emp_name, salary, age(current_date, hire_date) "Experience"
+from employees
+where (salary/30) > 100;
+
+#30. Write a query in SQL to list the employees who are retiring after 31-Dec-99 after completion of 8 years of service period.
+#official solution
+select emp_name
+from employees
+where hire_date + interval '96 months' > '1999-12-31';
+#user solution which makes sense
+select *
+from employees
+where age('1999-12-31', hire_date) > '8 years';
