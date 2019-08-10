@@ -567,6 +567,7 @@ from employees;
 select emp_id, emp_name, salary, age(current_date, hire_date) "Experience"
 from employees
 where (salary/30) > 100;
+#RM:  age(current_date, hire_date) returns data like 27 years 8 mons 21 days
 
 #30. Write a query in SQL to list the employees who are retiring after 31-Dec-99 after completion of 8 years of service period.
 #official solution
@@ -574,6 +575,40 @@ select emp_name
 from employees
 where hire_date + interval '96 months' > '1999-12-31';
 #user solution which makes sense
+select *, age('1999-12-31',hire_date)
+from employees
+where age('1999-12-31',hire_date) > '8 years';
+#RM:  age('1999-12-31',hire_date) returns data like 8 years 1 mon 13 days or 9 years 13 days
+
+#34. Write a query in SQL to list the employees those who joined in company before 19th of the month.  RM:  to_char(hire_date, 'dd') extracts the date number, to_number(to_char(hire_date, 'dd'),'99') converts date number to a two digit or one digit number.
+select *, to_number(to_char(hire_date, 'dd'),'99') as "extract day number convert to number"
+from employees
+where to_number(to_char(hire_date, 'dd'),'99') < 19;
+#official solution
 select *
 from employees
-where age('1999-12-31', hire_date) > '8 years';
+where to_char(hire_date,'dd') < '19';  #we run comparisons with numbers converted to string
+#user solution
+select *
+from employees
+where extract(day from age(current_date, hire_date)) < 19;
+#reference extract(day from age(current_date, hire_date))
+select hire_date, age(current_date, hire_date), extract(day from age(current_date, hire_date))
+from employees;
+'''
+hire_date	age	date_part
+1991-11-18	27 years 8 mons 21 days	21
+1991-05-01	28 years 3 mons 8 days	8
+1991-06-09	28 years 2 mons	0
+1991-04-02	28 years 4 mons 7 days	7
+1991-02-20	28 years 5 mons 17 days	17
+1991-02-22	28 years 5 mons 15 days	15
+1991-09-28	27 years 10 mons 11 days	11
+1991-09-08	27 years 11 mons 1 day	1
+1997-05-23	22 years 2 mons 17 days	17
+1991-12-03	27 years 8 mons 6 days	6
+1992-01-23	27 years 6 mons 17 days	17
+1997-04-19	22 years 3 mons 20 days	20
+1991-12-03	27 years 8 mons 6 days	6
+1990-12-18	28 years 7 mons 22 days	22
+'''

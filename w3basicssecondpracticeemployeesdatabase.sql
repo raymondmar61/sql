@@ -167,6 +167,7 @@ where manager_id = 68319;
 select emp_id, emp_name, salary, age(current_date, hire_date) "Experience"
 from employees
 where (salary/30) > 100;
+#RM:  age(current_date, hire_date) returns data like 27 years 8 mons 21 days
 
 #30. Write a query in SQL to list the employees who are retiring after 31-Dec-99 after completion of 8 years of service period.
 #official solution
@@ -174,6 +175,75 @@ select emp_name
 from employees
 where hire_date + interval '96 months' > '1999-12-31';
 #user solution which makes sense
-select *
+select *, age('1999-12-31',hire_date)
 from employees
 where age('1999-12-31',hire_date) > '8 years';
+#RM:  age('1999-12-31',hire_date) returns data like 8 years 1 mon 13 days or 9 years 13 days
+
+#31. Write a query in SQL to list those employees whose salary is an odd value.
+select *
+from employees
+where mod(salary,2) <> 0;
+#also from user solution
+select *
+from employees
+where salary % 2 = 1;
+
+#32. Write a query in SQL to list those employees whose salary contain only 3 digits.
+select salary as "6000.00", to_char(salary,'9999') as "6000 to_char", length(to_char(salary,'9999')) as "5", trim(to_char(salary,'9999')) as "6000 trim", length(trim(to_char(salary,'9999'))) as "4"
+from employees;
+'''
+6000.00	6000 to_char	5	6000 trim	4
+6000.00	6000	5	6000	4
+2750.00	2750	5	2750	4
+2550.00	2550	5	2550	4
+2957.00	2957	5	2957	4
+1700.00	1700	5	1700	4
+1350.00	1350	5	1350	4
+1350.00	1350	5	1350	4
+1600.00	1600	5	1600	4
+1200.00	1200	5	1200	4
+1050.00	1050	5	1050	4
+1400.00	1400	5	1400	4
+3100.00	3100	5	3100	4
+3100.00	3100	5	3100	4
+900.00	900		5	900	    3
+'''
+
+#33. Write a query in SQL to list the employees who joined in the month of APRIL.
+select *
+from employees
+where to_char(hire_date,'mon') = 'apr';
+
+#34. Write a query in SQL to list the employees those who joined in company before 19th of the month.  RM:  to_char(hire_date, 'dd') extracts the date number, to_number(to_char(hire_date, 'dd'),'99') converts date number to a two digit or one digit number.
+select *, to_number(to_char(hire_date, 'dd'),'99') as "extract day number convert to number"
+from employees
+where to_number(to_char(hire_date, 'dd'),'99') < 19;
+#official solution
+select *
+from employees
+where to_char(hire_date,'dd') < '19';  #we run comparisons with numbers converted to string
+#user solution
+select *
+from employees
+where extract(day from age(current_date, hire_date)) < 19;
+#reference extract(day from age(current_date, hire_date))
+select hire_date, age(current_date, hire_date), extract(day from age(current_date, hire_date))
+from employees;
+'''
+hire_date	age	date_part
+1991-11-18	27 years 8 mons 21 days	21
+1991-05-01	28 years 3 mons 8 days	8
+1991-06-09	28 years 2 mons	0
+1991-04-02	28 years 4 mons 7 days	7
+1991-02-20	28 years 5 mons 17 days	17
+1991-02-22	28 years 5 mons 15 days	15
+1991-09-28	27 years 10 mons 11 days	11
+1991-09-08	27 years 11 mons 1 day	1
+1997-05-23	22 years 2 mons 17 days	17
+1991-12-03	27 years 8 mons 6 days	6
+1992-01-23	27 years 6 mons 17 days	17
+1997-04-19	22 years 3 mons 20 days	20
+1991-12-03	27 years 8 mons 6 days	6
+1990-12-18	28 years 7 mons 22 days	22
+'''
