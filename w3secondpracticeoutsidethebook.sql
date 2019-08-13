@@ -612,3 +612,45 @@ hire_date	age	date_part
 1991-12-03	27 years 8 mons 6 days	6
 1990-12-18	28 years 7 mons 22 days	22
 '''
+
+#48. Write a query in SQL to list the employees who joined in 90's.
+select *
+from employees
+where to_char(hire_date,'yyyy') >= '1990'
+and to_char(hire_date,'yyyy') <= '1999';
+#also
+select *
+from employees
+where to_char(hire_date,'yyyy') between '1990' and '1999';
+#also
+select *
+from employees
+where hire_date between '1990-01-01' and '1999-12-31';
+
+#51. Write a query in SQL to list all the employees who joined before or after 1991.
+select *
+from employees
+where hire_date <= '1990-12-31'
+and hire_date >= '1992-01-01';  #returns nothing
+#use union
+select *
+from employees
+where hire_date <= '1990-12-31'
+union
+(select *
+from employees
+where hire_date >= '1992-01-01');  #returns correct rows
+#also
+select *
+from employees
+where to_char(hire_date,'yyyy') <> '1991';
+
+#53. Write a query in SQL to list the name, job name, annual salary, department id, department name and grade of the employees who earn 60000 in a year or not working as an ANALYST.
+select e.emp_name, e.job_name, e.salary*12 as "annual salary", e.dep_id, d.dep_name, s.grade
+from employees e join department d
+on e.dep_id = d.dep_id
+join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+where e.salary*12 >= 60000
+or e.job_name <> 'ANALYST';
+

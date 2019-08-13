@@ -213,3 +213,25 @@ DPT_CODE DPT_NAME        DPT_ALLOTMENT
 (14 rows)
 */
 
+#department
+/*
+ dep_id |  dep_name  | dep_location
+--------+------------+--------------
+   1001 | FINANCE    | SYDNEY
+   2001 | AUDIT      | MELBOURNE
+   3001 | MARKETING  | PERTH
+   4001 | PRODUCTION | BRISBANE
+(4 rows)
+*/
+
+#salary_grade
+/*
+ grade | min_sal | max_sal
+-------+---------+---------
+     1 |     800 |    1300
+     2 |    1301 |    1500
+     3 |    1501 |    2100
+     4 |    2101 |    3100
+     5 |    3101 |    9999
+(5 rows)
+*/
