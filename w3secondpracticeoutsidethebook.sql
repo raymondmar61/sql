@@ -654,3 +654,8 @@ on e.salary between s.min_sal and s.max_sal
 where e.salary*12 >= 60000
 or e.job_name <> 'ANALYST';
 
+#91. Write a query in SQL to find the average salary and average total remuneration(salary and commission) for each type of job.  #RM:  must label columns to return the two averages. 
+select job_name, round(avg(salary),2) as "average salary", round(avg(salary+commission),2) as "average salary plus commission"
+from employees
+group by job_name;
+
