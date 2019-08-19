@@ -150,7 +150,18 @@ where emp_dept = (
 	from emp_department
 	order by dpt_allotment limit 1 offset 1);
 
-
+#111. Write a query in SQL to list the employees whose ID not starting with digit 68.
+select *
+from employees
+where emp_id < 68000 or emp_id >= 69000;
+#official solution #convert number to text
+select emp_id, trim(to_char(emp_id,'99999'))
+from employees
+where trim(to_char(emp_id,'99999')) not like '68%';
+#user solution
+select *
+from employees
+where cast(emp_id as varchar) not like '68%';
 
 
 
@@ -658,4 +669,17 @@ or e.job_name <> 'ANALYST';
 select job_name, round(avg(salary),2) as "average salary", round(avg(salary+commission),2) as "average salary plus commission"
 from employees
 group by job_name;
+
+#111. Write a query in SQL to list the employees whose ID not starting with digit 68.
+select *
+from employees
+where emp_id < 68000 or emp_id >= 69000;
+#official solution #convert number to text
+select emp_id, trim(to_char(emp_id,'99999'))
+from employees
+where trim(to_char(emp_id,'99999')) not like '68%';
+#user solution
+select *
+from employees
+where cast(emp_id as varchar) not like '68%';
 

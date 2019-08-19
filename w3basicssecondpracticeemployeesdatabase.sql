@@ -648,3 +648,161 @@ where salary = (
 select job_name, round(avg(salary),2) as "average salary", round(avg(salary+commission),2) as "average salary plus commission"
 from employees
 group by job_name;
+
+#92. Write a query in SQL to find the total annual salary distributed against each job in the year 1991.  #RM:  stupid question.  Take the sum of monthly salary multiply by 12 group by job_name for hire_date in 1991.
+select job_name, sum(salary*extract(age(hire_date,'1991-12-31')))
+from employees
+where to_char(hire_date,'yyyy') = '1991'
+group by job_name;
+#another SQL
+select hire_date, salary*(('1991-12-31' - hire_date)/12)
+from employees
+where hire_date <= '1991-12-31';
+#corret answer
+select job_name, sum(salary*12)
+from employees
+where to_char(hire_date,'yyyy') = '1991'
+group by job_name;
+
+#93. Write a query in SQL to list the employee id, name, department id, location of all the employees.
+select e.emp_id, e.emp_name, d.dep_id, d.dep_location
+from employees e, department d
+where e.dep_id = d.dep_id;
+
+#94. Write a query in SQL to list the employee id, name, location, department of all the departments 1001 and 2001.
+select e.emp_id, e.emp_name, d.dep_id, d.dep_location
+from employees e, department d
+where e.dep_id = d.dep_id
+and e.dep_id in (1001, 2001);
+
+#95. Write a query in SQL to list the employee id, name, salary, grade of all the employees.
+select e.emp_id, e.emp_name, e.salary, g.grade
+from employees e, salary_grade s
+where e.salary between s.min_sal and s.max_sal;
+
+#96. Write a query in SQL to list the manager no and the number of employees working for those managers in ascending order on manager id.
+select e.manager_id, count(m.emp_id)
+from employees m, employees e
+where e.manager_id = m.emp_id
+group by e.manager_id
+order by e.manager_id;
+#better answer
+select manager_id, count(manager_id)
+from employees
+group by manager_id
+order by manager_id;
+
+#97. Write a query in SQL to display the number of employee for each job in each department.
+select dep_id, job_name, count(*)
+from employees
+group by dep_id, job_name;
+
+#98. Write a query in SQL to list the department where at least two employees are working.
+select dep_id
+from employees
+group by dep_id
+having count(dep_id) >= 2;
+
+#99. Write a query in SQL to display the Grade, Number of employees, and maximum salary of each grade.
+select s.grade, count(*), max(e.salary)
+from employees e join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+group by s.grade
+order by s.grade;
+
+#100. Write a query in SQL to display the department name, grade, no. of employees where at least two employees are working as a SALESMAN.
+select d.dep_name, s.grade, count(*)
+from employees e, department d, salary_grade s
+where e.dep_id = d.dep_id
+and e.salary between s.min_sal and s.max_sal
+and job_name = 'SALESMAN'
+group by 1, 2
+having count(*) >= 2;
+
+#101. Write a query in SQL to list the no. of employees in each department where the no. is less than 4.
+select dep_id, count(*)
+from employees
+group by dep_id
+having count(*) < 4;
+
+#102. Write a query in SQL to list the name of departments where atleast 2 employees are working in that department.
+select dep_name, count(*)
+from employees, department
+where employees.dep_id = department.dep_id
+group by dep_name
+having count(*) > 2;
+
+#103. Write a query in SQL to check whether all the employees numbers are indeed unique.
+select emp_id, count(*)
+from employees
+group by emp_id
+having count(*) > 1;
+
+#104. Write a query in SQL to list the no. of employees and average salary within each department for each job name.
+select dep_id, job_name, count(*), avg(salary)
+from employees
+group by dep_id, job_name
+order by dep_id, job_name;
+
+#105. Write a query in SQL to list the names of those employees starting with 'A' and with six characters in length.
+select *
+from employees
+where emp_name like 'A_____';
+
+#106. Write a query in SQL to list the employees whose name is six characters in length and third character must be 'R'.
+select *
+from employees
+where emp_name like '__R___';
+
+#107. Write a query in SQL to list the name of the employee of six characters long and starting with 'A' and ending with 'N'.
+select *
+from employees
+where emp_name like 'A____N';
+
+#108. Write a query in SQL to list the employees who joined in the month of which second character is 'a'.
+select *, to_char(hire_date,'Month') as "January"
+from employees
+where to_char(hire_date,'Month') like '_a%';
+
+#109. Write a query in SQL to list the employees whose names containing the character set 'AR' together.
+select *
+from employees
+where emp_name like '%AR%';
+
+#110. Write a query in SQL to list the employees those who joined in 90's.
+select *
+from employees
+where to_char(hire_date,'yyyy') = '1990';
+
+#111. Write a query in SQL to list the employees whose ID not starting with digit 68.
+select *
+from employees
+where emp_id < 68000 or emp_id >= 69000;
+#official solution #convert number to text
+select emp_id, trim(to_char(emp_id,'99999'))
+from employees
+where trim(to_char(emp_id,'99999')) not like '68%';
+#user solution
+select *
+from employees
+where cast(emp_id as varchar) not like '68%';
+
+#112. Write a query in SQL to list the employees whose names containing the letter 'A'.
+select *
+from employees
+where emp_name like '%A%';
+
+#113. Write a query in SQL to list the employees whose name is ending with 'S' and six characters long.
+select *
+from employees
+where emp_name like '_____S';
+
+#114. Write a query in SQL to list the employees who joined in the month having char 'A' at any position.
+select *, to_char(hire_date,'month') as "january"
+from employees
+where to_char(hire_date,'month') like '%a%';
+
+#115. Write a query in SQL to list the employees who joined in the month having second char is 'A'.
+select *, to_char(hire_date,'MONTH') as "JANUARY"
+from employees
+where to_char(hire_date,'MONTH') like '_A%';
