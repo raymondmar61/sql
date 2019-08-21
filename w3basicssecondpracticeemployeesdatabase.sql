@@ -1,6 +1,7 @@
 #https://www.w3resource.com/sql/tutorials.php
 #https://www.w3resource.com/sql-exercises/index.php
 #https://www.w3resource.com/sql-exercises/employee-database-exercise/index.php
+#https://www.w3resource.com/sql-exercises/employee-database-exercise/subqueries-exercises-on-employee-database.php
 #1. Write a query in SQL to display all the information of the employees.
 select *
 from employees;
@@ -614,7 +615,7 @@ select e.*, d.dep_name, d.dep_location
 from employees e join department d
 on e.dep_id = d.dep_id;
 
-#88. Write a query in SQL to list the employees who are senior to their own MANAGERS.
+#88. Write a query in SQL to list the employees who are senior to their own [MANAGER].
 select e.*, m.hire_date
 from employees e, employees m
 where e.manager_id = m.emp_id
@@ -806,3 +807,208 @@ where to_char(hire_date,'month') like '%a%';
 select *, to_char(hire_date,'MONTH') as "JANUARY"
 from employees
 where to_char(hire_date,'MONTH') like '_A%';
+
+#https://www.w3resource.com/sql-exercises/employee-database-exercise/subqueries-exercises-on-employee-database.php
+#Use weblink for the editor https://www.w3resource.com/sql-exercises/employee-database-exercise/index.php#SQLEDITOR
+#1. Write a query in SQL to display all the details of managers.
+select *
+from employees
+where emp_id in (
+	select manager_id
+	from employees);
+
+#2. Write a query in SQL to display the employee ID, name, job name, hire date, and experience of all the managers.
+select emp_id, emp_name, job_name, hire_date, age(current_date, hire_date)
+from employees
+where emp_id in (
+	select manager_id
+	from employees);
+
+#3. Write a query in SQL to list the employee ID, name, salary, department name of all the '[MANAGER]' and 'ANALYST' working in SYDNEY, PERTH with an exp more than 5 years without receiving the commission and display the list in ascending order of location.
+select emp_id, emp_name, salary, dep_name
+from employees join department
+on employees.dep_id = department.dep_id
+where job_name in ('MANAGER','ANALYST')
+and dep_location in ('SYDNEY','PERTH')
+and extract(year from age(current_date,hire_date)) > 5
+and commission is null
+order by dep_location;
+
+#4. Write a query in SQL to display the employee ID, name, salary, department name, location, department ID, job name of all the employees working at SYDNEY or working in the FINANCE deparment with an annual salary above 28000, but the monthly salary should not be 3000 or 2800 and who does not works as a MANAGER and whose ID containing a digit of '3' or '7' in 3rd position. List the result in ascending order of department ID and descending order of job name.
+select e.emp_id, e.emp_name, e.salary, d.dep_name, d.dep_location, d.dep_id, e.job_name
+from employees e join department d
+on e.dep_id = d.dep_id
+where (d.dep_location in ('SYDNEY')
+or d.dep_name in ('FINANCE'))
+and (e.salary > 28000/12
+and e.salary not in (3000, 2800))
+and e.job_name not in ('MANAGER')
+and (trim(to_char(e.emp_id,'99999')) like '__3%'
+or trim(to_char(e.emp_id,'99999')) like '__7%')
+order by d.dep_id, e.job_name desc;  #RM:  wild card like search numbers convert to string wild card number wild card search number
+
+#5. Write a query in SQL to list all the employees of grade 2 and 3.
+select *
+from employees
+where salary between (
+	select min_sal
+	from salary_grade
+	where grade = 2)
+and (
+	select max_sal
+	from salary_grade
+	where grade = 3);
+
+#6. Write a query in SQL to display all the employees of grade 4 and 5 who are working as ANALYST or MANAGER.
+select *
+from employees e join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+where e.job_name in ('ANALYST','MANAGER')
+and s.grade in (4,5);
+
+#7. Write a query in SQL to list the details of the employees whose salary is more than the salary of JONAS.
+select *
+from employees
+where salary > (
+	select salary
+	from employees
+	where emp_name = 'JONAS')
+
+#8. Write a query in SQL to list the employees who works in the same designation as FRANK.
+select *
+from employees
+where job_name = (
+	select job_name
+	from employees
+	where emp_name = 'FRANK');
+
+#9. List the employees who are senior to ADELYN.
+select *
+from employees
+where hire_date < (
+	select hire_date
+	from employees
+	where emp_name = 'ADELYN');
+
+#10. Write a query in SQL to list the employees of department ID 2001 who works in the designation same as department ID 1001.  #RM:  designation is job_name.  Same job_name.
+select *
+from employees
+where dep_id = 2001
+and job_name in (
+	select job_name
+	from employees
+	where dep_id = 1001);
+
+#11. Write a query in SQL to list the employees whose salary is same as the salary of FRANK or SANDRINE. List the result in descending order of salary.
+select *
+from employees
+where salary in (
+	select salary
+	from employees
+	where emp_name in ('FRANK','SANDRINE'));
+
+#12. Write a query in SQL to list the employees whose designation are same as the designation of [employee] MARKER or salary is more than the salary of ADELYN.
+select *
+from employees
+where job_name in (
+	select job_name
+	from employees
+	where emp_name = 'MARKER')
+or salary > (
+	select salary
+	from employees
+	where emp_name = 'ADELYN');
+
+#13. Write a query in SQL to list the employees whose salary is more than the total remuneration of the SALESMAN.
+select *
+from employees
+where salary > (
+	select max(salary + commission)
+	from employees
+	where job_name = 'SALESMAN');
+
+#14. Write a query in SQL to list the employees who are senior to BLAZE and working at PERTH or BRISBANE.
+select *
+from employees e, department d
+where e.dep_id = d.dep_id
+and e.hire_date < (
+	select hire_date
+	from employees
+	where emp_name = 'BLAZE')
+and e.dep_id in (
+	select dep_id
+	from department
+	where dep_location in ('PERTH','BRISBANE'));
+
+#15. Write a query in SQL to list the employees of grade 3 and 4 working in the department of FINANCE or AUDIT and whose salary is more than the salary of ADELYN and experience is more than FRANK. List the result in the ascending order of experience.
+select *, age(current_date,e.hire_date)
+from employees e join department d
+on e.dep_id = d.dep_id
+join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+where s.grade in (3,4)
+and d.dep_name in ('FINANCE','AUDIT')
+and e.salary > (
+	select salary
+	from employees
+	where emp_name = 'ADELYN')
+and age(current_date,e.hire_date) > (
+	select age(current_date,hire_date)
+	from employees
+	where emp_name = 'FRANK')
+order by age(current_date,e.hire_date);
+
+#16. Write a query in SQL to list the employees whose designation is same as the designation of SANDRINE or ADELYN.  #RM:  designation is job_name.
+select *
+from employees
+where job_name in (
+	select job_name
+	from employees
+	where emp_name in ('SANDRINE','ADELYN'));
+
+#17. Write a query in SQL to list any job of department ID 1001 those that are not found in department ID 2001. 
+select job_name
+from employees
+where dep_id = 1001
+and job_name not in (
+	select job_name
+	from employees
+	where dep_id = 2001);
+#another solution using minus?  I can't get it to work.
+select job_name
+from employees
+where dep_id = 1001
+minus (
+select job_name
+from employees
+where dep_id = 2001);
+
+#18. Write a query in SQL to find the details of highest paid employee.
+select *
+from employees
+where salary = (
+	select max(salary)
+	from employees);
+
+#19. Write a query in SQL to find the highest paid employees in the department MARKETING.
+select *
+from employees
+where salary = (
+	select max(e.salary)
+	from employees e, department d
+	where e.dep_id = d.dep_id
+	and d.dep_name = 'MARKETING');
+
+#20. Write a query in SQL to list the employees of grade 3 who have been hired in most recently and belongs to PERTH.
+select *
+from employees
+where salary in (
+	select e.salary
+	from employees e, salary_grade s
+	where e.salary between s.min_sal and s.max_sal
+	and s.grade = 3)
+and dep_id in (
+	select dep_id
+	from department
+	where dep_location = 'PERTH');
+order by hire_date desc limit 1;

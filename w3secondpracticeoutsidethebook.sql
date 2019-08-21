@@ -683,3 +683,30 @@ select *
 from employees
 where cast(emp_id as varchar) not like '68%';
 
+
+#https://www.w3resource.com/sql-exercises/employee-database-exercise/subqueries-exercises-on-employee-database.php
+#4. Write a query in SQL to display the employee ID, name, salary, department name, location, department ID, job name of all the employees working at SYDNEY or working in the FINANCE deparment with an annual salary above 28000, but the monthly salary should not be 3000 or 2800 and who does not works as a MANAGER and whose ID containing a digit of '3' or '7' in 3rd position. List the result in ascending order of department ID and descending order of job name.
+select e.emp_id, e.emp_name, e.salary, d.dep_name, d.dep_location, d.dep_id, e.job_name
+from employees e join department d
+on e.dep_id = d.dep_id
+where (d.dep_location in ('SYDNEY')
+or d.dep_name in ('FINANCE'))
+and (e.salary > 28000/12
+and e.salary not in (3000, 2800))
+and e.job_name not in ('MANAGER')
+and (trim(to_char(e.emp_id,'99999')) like '__3%'
+or trim(to_char(e.emp_id,'99999')) like '__7%')
+order by d.dep_id, e.job_name desc;  #RM:  wild card like search numbers convert to string wild card number wild card search number
+
+#5. Write a query in SQL to list all the employees of grade 2 and 3.
+select *
+from employees
+where salary between (
+	select min_sal
+	from salary_grade
+	where grade = 2)
+and (
+	select max_sal
+	from salary_grade
+	where grade = 3);
+
