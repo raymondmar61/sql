@@ -2,6 +2,7 @@
 #https://www.w3resource.com/sql-exercises/index.php
 #https://www.w3resource.com/sql-exercises/employee-database-exercise/index.php
 #https://www.w3resource.com/sql-exercises/employee-database-exercise/subqueries-exercises-on-employee-database.php
+#Use weblink for the editor https://www.w3resource.com/sql-exercises/employee-database-exercise/index.php#SQLEDITOR
 #1. Write a query in SQL to display all the information of the employees.
 select *
 from employees;
@@ -1012,3 +1013,163 @@ and dep_id in (
 	from department
 	where dep_location = 'PERTH');
 order by hire_date desc limit 1;
+
+#21. Write a query in SQL to list the employees who are senior to most recently hired employee working under KAYLING.
+select *
+from employees
+where hire_date < (
+	select max(hire_date)
+	from employees
+	where manager_id = (
+		select emp_id
+		from employees
+		where emp_name = 'KAYLING'));
+
+#22. Write a query in SQL to list the details of the employees within grade 3 to 5 and belongs to SYDNEY. The employees are not in PRESIDENT designated and salary is more than the highest paid employee of PERTH where no MANAGER and SALESMAN are working under KAYLING.
+select *
+from employees e join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+join department d
+on e.dep_id = d.dep_id
+where s.grade between 3 and 5
+and d.dep_location = 'SYDNEY'
+and e.job_name not in ('PRESIDENT')
+and e.salary > (
+	select max(salary)
+	from employees e2 join department d2
+	on e2.dep_id = d2.dep_id
+	where d2.dep_location = 'PERTH')
+and manager_id not in (
+	select emp_id
+	from employees
+	where emp_name = 'KAYLING'
+	and job_name not in ('MANAGER','SALESMAN'));
+#official solution is incorrect.  There is no employee.
+
+#23. Write a query in SQL to list the details of the senior employees as on year 1991.
+select *
+from employees
+where to_char(hire_date,'yyyy') < '1991';
+
+#24. Write a query in SQL to list the employees who joined in 1991 in a designation same as the most senior person of the year 1991.
+select *
+from employees
+where to_char(hire_date,'yyyy') = '1991'
+and job_name in (
+	select job_name
+	from employees
+	where hire_date = (
+		select min(hire_date)
+		from employees
+		where to_char(hire_date,'yyyy') = '1991'));
+
+#25. Write a query in SQL to list the most senior employee working under KAYLING and grade is more than 3.
+select *
+from employees e, salary_grade s
+where e.salary between s.min_sal and s.max_sal
+and e.hire_date = (
+	select min(hire_date)
+	from employees
+	where manager_id = (
+		select emp_id
+		from employees
+		where emp_name = 'KAYLING'))
+and s.grade > 3;
+
+#26. Write a query in SQL to find the total salary given to the MANAGER.
+select sum(salary)
+from employees
+where job_name in ('MANAGER');
+
+#27. Write a query in SQL to display the total salary of employees belonging to grade 3.
+select sum(salary)
+from employees, salary_grade
+where salary between min_sal and max_sal
+and grade = 3;
+
+#28. Write a query in SQL to list the employees in department 1001 whose salary is more than the average salary of employees in department 2001.
+select *
+from employees
+where dep_id = 1001
+and salary > (
+	select avg(salary)
+	from employees
+	where dep_id = 2001);
+
+#29. Write a query in SQL to list the details of the departments where maximum number of employees are working.  #RM:  question asks highest number of employees
+select *
+from department
+where dep_id = (
+	select dep_id
+	from employees
+	group by dep_id
+	having max(count(emp_id)));  #incorrect
+select dep_id, count(dep_id)
+from employees
+group by dep_id;
+/*
+dep_id	count
+1001	3
+3001	6
+2001	5
+*/
+select count(dep_id)
+from employees
+group by dep_id;
+/*
+count
+3
+6
+5
+*/
+select max(alias1)
+from (
+	select count(dep_id) alias1
+	from employees
+	group by dep_id) alias2;
+/*
+max
+6
+*/
+select *
+from department
+where dep_id = (
+	select dep_id
+	from department
+	group by dep_id
+	having count(*) = (
+		select max(alias1)
+		from (
+			select count(e.dep_id) alias1
+			from employees e
+			group by e.dep_id) alias2));  #incorrect.  first subquery department is incorrect.
+select *
+from department
+where dep_id = (
+	select dep_id
+	from employees
+	group by dep_id
+	having count(dep_id) = (
+		select max(alias1)
+		from (
+			select count(e.dep_id) alias1
+			from employees e
+			group by e.dep_id) alias2));  #correct.  first subquery employees is correct.
+#user solution
+select dep_name, count(emp_id)
+from employees e join department d
+on e.dep_id=d.dep_id
+group by dep_name
+having count(emp_id) >= all(
+  select count(emp_id)
+  from employees e join department d
+  on e.dep_id=d.dep_id
+  group by dep_name);
+
+#30. Write a query in SQL to display the employees whose manager name is JONAS.
+select *
+from employees
+where manager_id = (
+	select emp_id
+	from employees
+	where emp_name = 'JONAS');

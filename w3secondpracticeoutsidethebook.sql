@@ -162,6 +162,77 @@ where trim(to_char(emp_id,'99999')) not like '68%';
 select *
 from employees
 where cast(emp_id as varchar) not like '68%';
+#29. Write a query in SQL to list the details of the departments where maximum number of employees are working.  #RM:  question asks highest number of employees
+select *
+from department
+where dep_id = (
+	select dep_id
+	from employees
+	group by dep_id
+	having max(count(emp_id)));  #incorrect
+select dep_id, count(dep_id)
+from employees
+group by dep_id;
+/*
+dep_id	count
+1001	3
+3001	6
+2001	5
+*/
+select count(dep_id)
+from employees
+group by dep_id;
+/*
+count
+3
+6
+5
+*/
+select max(alias1)
+from (
+	select count(dep_id) alias1
+	from employees
+	group by dep_id) alias2;
+/*
+max
+6
+*/
+select *
+from department
+where dep_id = (
+	select dep_id
+	from department
+	group by dep_id
+	having count(*) = (
+		select max(alias1)
+		from (
+			select count(e.dep_id) alias1
+			from employees e
+			group by e.dep_id) alias2));  #incorrect.  first subquery department is incorrect.
+select *
+from department
+where dep_id = (
+	select dep_id
+	from employees
+	group by dep_id
+	having count(dep_id) = (
+		select max(alias1)
+		from (
+			select count(e.dep_id) alias1
+			from employees e
+			group by e.dep_id) alias2));  #correct.  first subquery employees is correct.
+#user solution
+select dep_name, count(emp_id)
+from employees e join department d
+on e.dep_id=d.dep_id
+group by dep_name
+having count(emp_id) >= all(
+  select count(emp_id)
+  from employees e join department d
+  on e.dep_id=d.dep_id
+  group by dep_name);
+
+
 
 
 
@@ -709,4 +780,73 @@ and (
 	select max_sal
 	from salary_grade
 	where grade = 3);
+#29. Write a query in SQL to list the details of the departments where maximum number of employees are working.  #RM:  question asks highest number of employees
+select *
+from department
+where dep_id = (
+	select dep_id
+	from employees
+	group by dep_id
+	having max(count(emp_id)));  #incorrect
+select dep_id, count(dep_id)
+from employees
+group by dep_id;
+/*
+dep_id	count
+1001	3
+3001	6
+2001	5
+*/
+select count(dep_id)
+from employees
+group by dep_id;
+/*
+count
+3
+6
+5
+*/
+select max(alias1)
+from (
+	select count(dep_id) alias1
+	from employees
+	group by dep_id) alias2;
+/*
+max
+6
+*/
+select *
+from department
+where dep_id = (
+	select dep_id
+	from department
+	group by dep_id
+	having count(*) = (
+		select max(alias1)
+		from (
+			select count(e.dep_id) alias1
+			from employees e
+			group by e.dep_id) alias2));  #incorrect.  first subquery department is incorrect.
+select *
+from department
+where dep_id = (
+	select dep_id
+	from employees
+	group by dep_id
+	having count(dep_id) = (
+		select max(alias1)
+		from (
+			select count(e.dep_id) alias1
+			from employees e
+			group by e.dep_id) alias2));  #correct.  first subquery employees is correct.
+#user solution
+select dep_name, count(emp_id)
+from employees e join department d
+on e.dep_id=d.dep_id
+group by dep_name
+having count(emp_id) >= all(
+  select count(emp_id)
+  from employees e join department d
+  on e.dep_id=d.dep_id
+  group by dep_name);
 
