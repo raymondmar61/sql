@@ -160,7 +160,7 @@ select *
 from employees
 where hire_date = '1991-05-01';
 
-#28. Write a query in SQL to list the id, name, salry, and experiences of all the employees working for the manger 68319.
+#28. Write a query in SQL to list the id, name, [salary], and experiences of all the employees working for the manger 68319.
 select *
 from employees
 where manager_id = 68319;
@@ -1173,3 +1173,162 @@ where manager_id = (
 	select emp_id
 	from employees
 	where emp_name = 'JONAS');
+
+#31. Write a query in SQL to list the employees who are not working in the department MARKETING.
+select *
+from employees e, department d
+where e.dep_id = d.dep_id
+and d.dep_name <> 'MARKETING';
+
+#32. Write a query in SQL to list the name, job name, department name, location for those who are working as a manager.  #RM:  solution is not job_name is manager.  Solution is emp_name has a manager_id.
+select emp_name, job_name, dep_name, dep_location
+from employees e, department d
+where e.dep_id = d.dep_id
+and e.emp_id in (
+	select manager_id
+	from employees);
+
+#33. Write a query in SQL to list the name of the employees who are getting the highest salary of each department.
+select dep_id, max(salary)
+from employees
+group by dep_id;
+select emp_name, salary
+from employees
+group by emp_name, salary
+having max(salary) in (
+	select max(salary)
+	from employees
+	group by dep_id);
+#official solution and a user solution
+select emp_name, dep_id
+from employees
+where salary in (
+	select max(salary)
+	from employees
+	group by dep_id);
+
+#34. Write a query in SQL to list the employees whose salary is equal or more to the average of maximum and minimum salary.
+select *
+from employees
+where salary >= (
+	select round((min(salary)+max(salary))/2,2)
+	from employees);
+
+#35. Write a query in SQL to list the employees who are SALESMAN and gathered an experience which month portion is more than 10.
+select *
+from employees
+where job_name = 'SALESMAN'
+and extract(month from age(current_date, hire_date)) > 10;
+#35. Write a query in SQL to list the managers whose salary is more than the average salary his employees.  #RM:  solution for #35 is a different question.
+select *
+from employees
+where emp_id in (
+	select manager_id
+	from employees)
+and salary > (
+	select avg(e2.salary)
+	from employees e2
+	group by e2.manager_id);  #returns nothing
+#official solution
+select *
+from employees m
+where m.emp_id in (
+	select manager_id
+	from employees)
+and m.salary > (
+	select avg(e.salary)
+	from employees e
+	where e.manager_id = m.emp_id);  #RM:  I don't understand the solution; specifically the second subquery.  I think the question is all managers who salary is greater than all employees in company.  It's not salary is greater than manager's employees which makes sense because manager's earn highest salary in manager's department.
+select e1.*
+from employees e1
+where e1.emp_id in (
+	select e2.manager_id
+	from employees e2)
+and e1.salary > (
+	select avg(e3.salary)
+	from employees e3
+	where e3.emp_id not in (
+		select e4.manager_id
+		from employees e4
+		where e4.manager_id is not null)); #incorrect results
+#user solution
+select *
+from employees
+where emp_id in (
+	select emp_id
+	from (
+		select emp_id, salary
+		from employees
+		where emp_id in (
+			select manager_id
+			from employees)) a
+join (
+select manager_id, avg(salary)
+from employees
+group by manager_id) b
+on a.emp_id=b.manager_id and a.salary>b.avg);
+
+#36. Write a query in SQL to list the employees whose salary is less than the salary of his manager but more than the salary of any other manager.
+#copied solution
+select *
+from employees e, employees m
+where e.manager_id = m.emp_id
+and e.salary < m.salary
+and e.salary > any (
+	select salary
+	from employees
+	where emp_id in (
+		select manager_id
+		from employees));
+
+#37. Write a query in SQL to list the name and average salary of employees in department wise.
+#copied solution
+select e.emp_name, d.maxsal, e.dep_id as "current salary"
+from employees e, (
+	select avg(salary) maxsal, dep_id
+	from employees
+	group by dep_id) d
+where e.dep_id=d.dep_id;
+#user solution
+select emp_id, emp_name, b.dep_id, avg
+from employees a left join (
+	select avg(salary), dep_id
+	from employees group by dep_id) b
+on a.dep_id=b.dep_id;
+select a.emp_id, a.emp_name, a.dep_id, b.avg a 
+from employees a join (
+	select dep_id, avg(salary)
+	from employees
+	group by dep_id) b
+on a.dep_id=b.dep_id;
+
+#38. Write a query in SQL to find out the least 5 earners of the company.
+select *
+from employees
+where salary in (
+	select salary
+	from employees
+	order by salary limit 5 offset 0);
+#user solution
+select *
+from employees
+where salary in (
+	select salary from (
+		select salary, rank() over (order by salary asc) rank from employees) neednamehere
+		where rank <= 5);
+
+#39. Write a query in SQL to list the managers who are not working under the PRESIDENT.  #answer is frank and scarlet
+select m.emp_name
+from employees m, employees e
+where e.manager_id = m.emp_id
+and e.manager_id not in (
+	select emp_id
+	from employees
+	where job_name in ('PRESIDENT'))
+and e.manager_id not in (
+	select emp_id
+	from employees
+	where manager_id = (
+		select emp_id
+		from employees
+		where job_name in ('PRESIDENT')));

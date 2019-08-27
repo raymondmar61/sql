@@ -232,6 +232,20 @@ having count(emp_id) >= all(
   on e.dep_id=d.dep_id
   group by dep_name);
 
+#38. Write a query in SQL to find out the least 5 earners of the company.
+select *
+from employees
+where salary in (
+	select salary
+	from employees
+	order by salary limit 5 offset 0);
+#user solution
+select *
+from employees
+where salary in (
+	select salary from (
+		select salary, rank() over (order by salary asc) rank from employees) neednamehere
+		where rank <= 5);
 
 
 
@@ -850,3 +864,70 @@ having count(emp_id) >= all(
   on e.dep_id=d.dep_id
   group by dep_name);
 
+#33. Write a query in SQL to list the name of the employees who are getting the highest salary of each department.
+select dep_id, max(salary)
+from employees
+group by dep_id;
+select emp_name, salary
+from employees
+group by emp_name, salary
+having max(salary) in (
+	select max(salary)
+	from employees
+	group by dep_id);
+#official solution and a user solution
+select emp_name, dep_id
+from employees
+where salary in (
+	select max(salary)
+	from employees
+	group by dep_id);
+
+#36. Write a query in SQL to list the employees whose salary is less than the salary of his manager but more than the salary of any other manager.
+#copied solution
+select *
+from employees e, employees m
+where e.manager_id = m.emp_id
+and e.salary < m.salary
+and e.salary > any (
+	select salary
+	from employees
+	where emp_id in (
+		select manager_id
+		from employees));
+
+#37. Write a query in SQL to list the name and average salary of employees in department wise.
+#copied solution
+select e.emp_name, d.maxsal, e.dep_id as "current salary"
+from employees e, (
+	select avg(salary) maxsal, dep_id
+	from employees
+	group by dep_id) d
+where e.dep_id=d.dep_id;
+#user solution
+select emp_id, emp_name, b.dep_id, avg
+from employees a left join (
+	select avg(salary), dep_id
+	from employees group by dep_id) b
+on a.dep_id=b.dep_id;
+select a.emp_id, a.emp_name, a.dep_id, b.avg a 
+from employees a join (
+	select dep_id, avg(salary)
+	from employees
+	group by dep_id) b
+on a.dep_id=b.dep_id;
+
+#38. Write a query in SQL to find out the least 5 earners of the company.
+select *
+from employees
+where salary in (
+	select salary
+	from employees
+	order by salary limit 5 offset 0);
+#user solution
+select *
+from employees
+where salary in (
+	select salary from (
+		select salary, rank() over (order by salary asc) rank from employees) neednamehere
+		where rank <= 5);
