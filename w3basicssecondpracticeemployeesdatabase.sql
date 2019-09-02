@@ -1293,7 +1293,8 @@ where e.dep_id=d.dep_id;
 select emp_id, emp_name, b.dep_id, avg
 from employees a left join (
 	select avg(salary), dep_id
-	from employees group by dep_id) b
+	from employees
+	group by dep_id) b
 on a.dep_id=b.dep_id;
 select a.emp_id, a.emp_name, a.dep_id, b.avg a 
 from employees a join (
@@ -1332,3 +1333,226 @@ and e.manager_id not in (
 		select emp_id
 		from employees
 		where job_name in ('PRESIDENT')));
+
+#40. Write a query in SQL to list the name, salary, commission and netpay for those employees whose netpay is more than any other employee.  #RM:  dumb question; however, learned another SQL technique.
+#official solution.
+/*
+ emp_name | salary  | commission | netpay
+----------+---------+------------+---------
+ KAYLING  | 6000.00 |            | 8500.00
+ BLAZE    | 2750.00 |            | 8500.00
+ CLARE    | 2550.00 |            | 8500.00
+ JONAS    | 2957.00 |            | 8500.00
+ SCARLET  | 3100.00 |            | 8500.00
+ FRANK    | 3100.00 |            | 8500.00
+ SANDRINE |  900.00 |            | 8500.00
+ ADELYN   | 1700.00 |     400.00 | 8500.00
+ WADE     | 1350.00 |     600.00 | 8500.00
+ MADDEN   | 1350.00 |    1500.00 | 8500.00
+ TUCKER   | 1600.00 |       0.00 | 8500.00
+ ADNRES   | 1200.00 |            | 8500.00
+ JULIUS   | 1050.00 |            | 8500.00
+ MARKER   | 1400.00 |            | 8500.00
+(14 rows)
+*/
+select e.emp_name, e.salary, e.commission, (
+	select sum(salary+commission)
+	from employees) as "netpay"
+from employees e
+where (
+	select sum(salary+commission)
+	from employees) > any (
+		select salary
+		from employees
+		where emp_id=e.emp_id);
+#user solution
+select emp_name, salary, commission, (
+	select sum(salary+commission)
+	from employees)
+from employees;
+
+#41. Write a query in SQL to list the name of the department where number of employees is equal to the number of characters in the department name.
+/*
+dep_id	count
+1001	3
+3001	6
+2001	5
+*/
+select dep_id, count(*)
+from employees
+group by dep_id;
+/*
+dep_name
+AUDIT
+*/
+select dep_name
+from department
+where length(dep_name) = any (
+	select count(*)
+	from employees
+	group by dep_id);
+#official solution
+select d.dep_name, count(*)
+from employees e, department d
+where e.dep_id = d.dep_id
+group by d.dep_name
+having count(*) = length(d.dep_name);
+
+#42. Write a query in SQL to list the name of the departments where highest number of employees are working.
+select dep_name
+from department
+where dep_id in (
+	select employees.dep_id
+	from employees
+	group by employees.dep_id
+	having count(*) = (
+		select max(alias1)
+		from (
+			select count(*) alias1
+			from employees e
+			group by e.dep_id) alias2));
+
+#43. Write a query in SQL to list the employees who joined in the company on the same date.
+select emp_name, hire_date
+from employees
+where hire_date in (
+	select hire_date
+	from employees
+	group by hire_date
+	having count(hire_date) > 1);
+#user solution
+select a.*
+from (
+	select *
+	from employees) a
+join (
+select *
+from employees) b
+on a.hire_date=b.hire_date
+and a.emp_id<>b.emp_id;
+
+#44. Write a query in SQL to list the name of the departments where more than average number of employees are working.
+select dep_name
+from department
+where dep_id in (
+	select employees.dep_id
+	from employees
+	group by employees.dep_id
+	having count(*) > (
+		select avg(alias1)
+		from (
+			select count(*) alias1
+			from employees e
+			group by e.dep_id) alias2));
+
+#45. Write a query in SQL to list the name of the managers who is having maximum number of employees working under him.
+/*
+employee	manager
+BLAZE	KAYLING
+CLARE	KAYLING
+JONAS	KAYLING
+ADELYN	BLAZE
+WADE	BLAZE
+MADDEN	BLAZE
+TUCKER	BLAZE
+ADNRES	SCARLET
+JULIUS	BLAZE
+MARKER	CLARE
+SCARLET	JONAS
+FRANK	JONAS
+SANDRINE	FRANK
+*/
+select e.emp_name as "employee", m.emp_name as "manager"
+from employees e join employees m
+on e.manager_id = m.emp_id;
+/*
+emp_name	count
+JONAS	2
+BLAZE	5
+CLARE	1
+FRANK	1
+KAYLING	3
+SCARLET	1
+*/
+select m.emp_name, count(*)
+from employees e join employees m
+on e.manager_id = m.emp_id
+group by m.emp_name;
+select emp_name
+from employees
+where emp_name in (
+	select m.emp_name
+	from employees e join employees m
+	on e.manager_id = m.emp_id
+	group by m.emp_name
+	having count(*) = (
+		select max(alias1)
+		from (
+			select count(*) alias1
+			from employees e2 join employees m2
+			on e2.manager_id = m2.emp_id
+			group by m2.emp_name) alias2));
+
+#46. Write a query in SQL to list those managers who are getting salary to less than the salary of his employees.
+/*
+employee	employee salary	manager	manager salary
+MARKER	1400.00	CLARE	2550.00
+SCARLET	3100.00	JONAS	2957.00
+FRANK	3100.00	JONAS	2957.00
+SANDRINE	900.00	FRANK	3100.00
+*/
+select e.emp_name as "employee", e.salary as "employee salary", m.emp_name as "manager", m.salary as "manager salary"
+from employees e join employees m
+on e.manager_id = m.emp_id;
+select e.emp_name as "employee", e.salary as "employee salary", m.emp_name as "manager", m.salary as "manager salary"
+from employees e join employees m
+on e.manager_id = m.emp_id
+where m.salary < e.salary;
+
+#47. Write a query in SQL to list the details of all the employees who are sub-ordinates to BLAZE.
+select e.emp_name as "employee", m.emp_name as "manager"
+from employees e join employees m
+on e.manager_id = m.emp_id
+where m.emp_name = 'BLAZE';
+
+#48. Write a query in SQL to list the employees who are working as managers, using co-related subquery.
+select *
+from employees
+where emp_id in (
+	select manager_id
+	from employees);
+
+#49. Write a query in SQL to list the name of the employees for their manager JONAS and also the name of the manager of JONAS.
+/*
+employee	manager
+JONAS	KAYLING
+SCARLET	JONAS
+FRANK	JONAS
+*/
+select e.emp_name as "employee", m.emp_name as "manager"
+from employees e join employees m
+on e.manager_id = m.emp_id
+where m.emp_name = 'JONAS'
+or e.emp_name = 'JONAS';
+/*
+employee	manager	JONAS manager
+SCARLET	JONAS	KAYLING
+FRANK	JONAS	KAYLING
+*/
+select e.emp_name as "employee", m.emp_name as "manager", (
+	select m2.emp_name
+	from employees e2 join employees m2
+	on e2.manager_id = m2.emp_id
+	where e2.emp_name = 'JONAS') as "JONAS manager"
+from employees e join employees m
+on e.manager_id = m.emp_id
+where m.emp_name = 'JONAS';
+
+#50. Write a query in SQL to find all the employees who earn the minimum salary for a designation and arrange the list in ascending order on salary.  #RM:  designation is job_name.
+select *
+from employees
+where salary in (
+	select min(salary)
+	from employees
+	group by job_name)
+order by salary asc;

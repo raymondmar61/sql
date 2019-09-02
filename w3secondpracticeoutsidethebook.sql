@@ -246,6 +246,96 @@ where salary in (
 	select salary from (
 		select salary, rank() over (order by salary asc) rank from employees) neednamehere
 		where rank <= 5);
+#40. Write a query in SQL to list the name, salary, commission and netpay for those employees whose netpay is more than any other employee.  #RM:  dumb question; however, learned another SQL technique.
+#official solution.
+/*
+ emp_name | salary  | commission | netpay
+----------+---------+------------+---------
+ KAYLING  | 6000.00 |            | 8500.00
+ BLAZE    | 2750.00 |            | 8500.00
+ CLARE    | 2550.00 |            | 8500.00
+ JONAS    | 2957.00 |            | 8500.00
+ SCARLET  | 3100.00 |            | 8500.00
+ FRANK    | 3100.00 |            | 8500.00
+ SANDRINE |  900.00 |            | 8500.00
+ ADELYN   | 1700.00 |     400.00 | 8500.00
+ WADE     | 1350.00 |     600.00 | 8500.00
+ MADDEN   | 1350.00 |    1500.00 | 8500.00
+ TUCKER   | 1600.00 |       0.00 | 8500.00
+ ADNRES   | 1200.00 |            | 8500.00
+ JULIUS   | 1050.00 |            | 8500.00
+ MARKER   | 1400.00 |            | 8500.00
+(14 rows)
+*/
+select e.emp_name, e.salary, e.commission, (
+	select sum(salary+commission)
+	from employees) as "netpay"
+from employees e
+where (
+	select sum(salary+commission)
+	from employees) > any (
+		select salary
+		from employees
+		where emp_id=e.emp_id);
+#user solution
+select emp_name, salary, commission, (
+	select sum(salary+commission)
+	from employees)
+from employees;
+
+#41. Write a query in SQL to list the name of the department where number of employees is equal to the number of characters in the department name.
+/*
+dep_id	count
+1001	3
+3001	6
+2001	5
+*/
+select dep_id, count(*)
+from employees
+group by dep_id;
+/*
+dep_name
+AUDIT
+*/
+select dep_name
+from department
+where length(dep_name) = any (
+	select count(*)
+	from employees
+	group by dep_id);
+#official solution
+select d.dep_name, count(*)
+from employees e, department d
+where e.dep_id = d.dep_id
+group by d.dep_name
+having count(*) = length (d.dep_name);
+
+#49. Write a query in SQL to list the name of the employees for their manager JONAS and also the name of the manager of JONAS.
+/*
+employee	manager
+JONAS	KAYLING
+SCARLET	JONAS
+FRANK	JONAS
+*/
+select e.emp_name as "employee", m.emp_name as "manager"
+from employees e join employees m
+on e.manager_id = m.emp_id
+where m.emp_name = 'JONAS'
+or e.emp_name = 'JONAS';
+/*
+employee	manager	JONAS manager
+SCARLET	JONAS	KAYLING
+FRANK	JONAS	KAYLING
+*/
+select e.emp_name as "employee", m.emp_name as "manager", (
+	select m2.emp_name
+	from employees e2 join employees m2
+	on e2.manager_id = m2.emp_id
+	where e2.emp_name = 'JONAS') as "JONAS manager"
+from employees e join employees m
+on e.manager_id = m.emp_id
+where m.emp_name = 'JONAS';
+
 
 
 
@@ -931,3 +1021,93 @@ where salary in (
 	select salary from (
 		select salary, rank() over (order by salary asc) rank from employees) neednamehere
 		where rank <= 5);
+
+#40. Write a query in SQL to list the name, salary, commission and netpay for those employees whose netpay is more than any other employee.  #RM:  dumb question; however, learned another SQL technique.
+#official solution.
+/*
+ emp_name | salary  | commission | netpay
+----------+---------+------------+---------
+ KAYLING  | 6000.00 |            | 8500.00
+ BLAZE    | 2750.00 |            | 8500.00
+ CLARE    | 2550.00 |            | 8500.00
+ JONAS    | 2957.00 |            | 8500.00
+ SCARLET  | 3100.00 |            | 8500.00
+ FRANK    | 3100.00 |            | 8500.00
+ SANDRINE |  900.00 |            | 8500.00
+ ADELYN   | 1700.00 |     400.00 | 8500.00
+ WADE     | 1350.00 |     600.00 | 8500.00
+ MADDEN   | 1350.00 |    1500.00 | 8500.00
+ TUCKER   | 1600.00 |       0.00 | 8500.00
+ ADNRES   | 1200.00 |            | 8500.00
+ JULIUS   | 1050.00 |            | 8500.00
+ MARKER   | 1400.00 |            | 8500.00
+(14 rows)
+*/
+select e.emp_name, e.salary, e.commission, (
+	select sum(salary+commission)
+	from employees) as "netpay"
+from employees e
+where (
+	select sum(salary+commission)
+	from employees) > any (
+		select salary
+		from employees
+		where emp_id=e.emp_id);
+#user solution
+select emp_name, salary, commission, (
+	select sum(salary+commission)
+	from employees)
+from employees;
+
+#41. Write a query in SQL to list the name of the department where number of employees is equal to the number of characters in the department name.
+/*
+dep_id	count
+1001	3
+3001	6
+2001	5
+*/
+select dep_id, count(*)
+from employees
+group by dep_id;
+/*
+dep_name
+AUDIT
+*/
+select dep_name
+from department
+where length(dep_name) = any (
+	select count(*)
+	from employees
+	group by dep_id);
+#official solution
+select d.dep_name, count(*)
+from employees e, department d
+where e.dep_id = d.dep_id
+group by d.dep_name
+having count(*) = length(d.dep_name);
+
+#49. Write a query in SQL to list the name of the employees for their manager JONAS and also the name of the manager of JONAS.
+/*
+employee	manager
+JONAS	KAYLING
+SCARLET	JONAS
+FRANK	JONAS
+*/
+select e.emp_name as "employee", m.emp_name as "manager"
+from employees e join employees m
+on e.manager_id = m.emp_id
+where m.emp_name = 'JONAS'
+or e.emp_name = 'JONAS';
+/*
+employee	manager	JONAS manager
+SCARLET	JONAS	KAYLING
+FRANK	JONAS	KAYLING
+*/
+select e.emp_name as "employee", m.emp_name as "manager", (
+	select m2.emp_name
+	from employees e2 join employees m2
+	on e2.manager_id = m2.emp_id
+	where e2.emp_name = 'JONAS') as "JONAS manager"
+from employees e join employees m
+on e.manager_id = m.emp_id
+where m.emp_name = 'JONAS';
