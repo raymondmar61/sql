@@ -1556,3 +1556,167 @@ where salary in (
 	from employees
 	group by job_name)
 order by salary asc;
+#also
+select e1.*
+from employees e1
+where e1.salary in (
+	select min(e2.salary)
+	from employees e2
+	where e1.job_name = e2.job_name)
+order by e1.salary asc;
+
+#51. Write a query in SQL to find all the employees who earn the highest salary for a designation and arrange the list in descending order on salary.  #RM:  designation is job_name.
+select *
+from employees
+where salary in (
+	select max(salary)
+	from employees
+	group by job_name)
+order by salary desc;
+#also
+select e1.*
+from employees e1
+where e1.salary in (
+	select max(e2.salary)
+	from employees e2
+	where e1.job_name = e2.job_name)
+order by e1.salary desc;
+
+#52. Write a query in SQL to find the most recently hired [employees] in each department order by hire_date.
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id
+68736	ADNRES	CLERK	67858	1997-05-23	1200.00		2001
+69324	MARKER	CLERK	67832	1992-01-23	1400.00		1001
+69000	JULIUS	CLERK	66928	1991-12-03	1050.00		3001
+69062	FRANK	ANALYST	65646	1991-12-03	3100.00		2001
+*/
+select *
+from employees
+where hire_date in (
+	select max(hire_date)
+	from employees
+	group by dep_id)
+order by hire_date desc;  #incorrect.  Frank in dep_id 2001 is incorrect.  Adnres in dep_id 2001 is correct.
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id
+68736	ADNRES	CLERK	67858	1997-05-23	1200.00		2001
+69324	MARKER	CLERK	67832	1992-01-23	1400.00		1001
+69000	JULIUS	CLERK	66928	1991-12-03	1050.00		3001
+*/
+select *
+from employees e1
+where e1.hire_date in (
+	select max(e2.hire_date)
+	from employees e2
+	where e1.dep_id=e2.dep_id)
+order by e1.hire_date desc;  #correct.
+
+#53. Write a query in SQL to list the name,salary, and department id for each employee who earns a salary greater than the average salary for their department and list the result in ascending order on department id.
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id
+68319	KAYLING	PRESIDENT		1991-11-18	6000.00		1001
+65646	JONAS	MANAGER	68319	1991-04-02	2957.00		2001
+67858	SCARLET	ANALYST	65646	1997-04-19	3100.00		2001
+69062	FRANK	ANALYST	65646	1991-12-03	3100.00		2001
+66928	BLAZE	MANAGER	68319	1991-05-01	2750.00		3001
+64989	ADELYN	SALESMAN	66928	1991-02-20	1700.00	400.00	3001
+*/
+select e1.*
+from employees e1
+where e1.salary > (
+	select avg(e2.salary)
+	from employees e2
+	where e1.dep_id=e2.dep_id)
+order by e1.dep_id;
+
+#54. Write a query in SQL to find the name and designation of the employees who earns a commission and salary is the maximum.  #RM:  maximum salary for employees earning a commission.  It's not commission + salary is maximum.
+select *
+from employees
+where emp_id in (
+	select emp_id
+	from employees
+	where salary = (
+		select max(salary)
+		from employees
+		where commission is not null));
+
+#55. Write a query in SQL to list the name, designation, and salary of the employees who does not work in the department 1001 but works in same designation and salary as the employees in department 3001.  #RM:  designation is job_name.
+select *
+from employees
+where dep_id <> 1001
+and job_name in (
+	select job_name
+	from employees
+	where dep_id = 3001)
+and salary in (
+	select salary
+	from employees
+	where dep_id = 3001);
+
+#56. Write a query in SQL to list the department id, name, designation, salary, and net salary (salary+commission) of the SALESMAN who are earning maximum net salary.
+select *
+from employees
+where job_name = 'SALESMAN'
+and emp_id in (
+	select emp_id
+	from employees
+	where salary+commission = (
+		select max(salary+commission)
+		from employees));
+
+#57. Write a query in SQL to list the department id, name, designation, salary, and net salary of the employees only who gets a commission and earn the second highest earnings.
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id
+64989	ADELYN	SALESMAN	66928	1991-02-20	1700.00	400.00	3001
+65271	WADE	SALESMAN	66928	1991-02-22	1350.00	600.00	3001
+66564	MADDEN	SALESMAN	66928	1991-09-28	1350.00	1500.00	3001
+68454	TUCKER	SALESMAN	66928	1991-09-08	1600.00	0.00	3001
+*/
+select *
+from employees
+where salary+commission in (
+	select salary+commission from (
+		select salary+commission, rank () over (order by salary+commission desc) from employees where commission is not null) neednamehere
+		where rank=2);  #incorrect
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id
+64989	ADELYN	SALESMAN	66928	1991-02-20	1700.00	400.00	3001
+*/
+select *
+from employees
+where emp_id in (
+	select emp_id from (
+		select emp_id, salary+commission, rank () over (order by salary+commission desc) from employees where commission is not null) neednamehere
+		where rank=2);  #correct
+select *
+from employees
+where emp_id in (
+	select emp_id from (
+		select emp_id, salary+commission, rank () over (order by salary+commission desc) from employees where job_name = 'SALESMAN') neednamehere
+		where rank=2);  #also correct
+
+
+#58. Write a query in SQL to list the department ID and their average salaries for those department where the average salary is less than the averages for all departments.
+select dep_id, avg(salary)
+from employees
+group by dep_id
+having avg(salary) < (
+	select avg(salary)
+	from employees);
+
+#59. Write a query in SQL to display the unique department of the employees.  #RM:  looked at solution.  List the departments all employees are working at.
+select dep_name, dep_location
+from department
+where dep_id in (
+	select distinct (dep_id)
+	from employees);
+
+
+
+
+
+
+
+
+
+/* Completed Exercises, go back to outside the book and copy and paste the results */
