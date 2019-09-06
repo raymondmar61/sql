@@ -1271,3 +1271,46 @@ where emp_id in (
 	select emp_id from (
 		select emp_id, salary+commission, rank () over (order by salary+commission desc) from employees where job_name = 'SALESMAN') neednamehere
 		where rank=2);  #also correct
+
+#68. Write a query in SQL to list the employees whose salary is same as any one of the employee.
+/* returns all rows */
+select *
+from employees
+where salary = any (
+	select s2.salary
+	from employees s2);
+/* returns no rows */
+select samesalary.*
+from employees all, employees samesalary
+where all.salary = samesalary.salary;
+/* returns no rows */
+select *
+from employees all join employees samesalary
+on all.salary = samesalary.salary;
+/* returns all employees no duplicates */
+select distinct e1.emp_id, e1.salary
+from employees e1, employees e2
+where e1.salary = e2.salary;
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id
+65271	WADE	SALESMAN	66928	1991-02-22	1350.00	600.00	3001
+66564	MADDEN	SALESMAN	66928	1991-09-28	1350.00	1500.00	3001
+67858	SCARLET	ANALYST	65646	1997-04-19	3100.00		2001
+69062	FRANK	ANALYST	65646	1991-12-03	3100.00		2001
+*/
+/*official solution */
+select *
+from employees
+where salary in	(
+	select salary
+	from employees e
+	where employees.emp_id <> e.emp_id);
+/* analysis paralysis.  Easy question */
+select *
+from employees
+where salary in (
+	select salary
+	from employees
+	group by salary
+	having count(salary) > 1);
+

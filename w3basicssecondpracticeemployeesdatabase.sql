@@ -1711,12 +1711,169 @@ where dep_id in (
 	select distinct (dep_id)
 	from employees);
 
+#60. Write a query in SQL to list the details of the employees working at PERTH.
+select *
+from employees
+where dep_id = (
+	select dep_id
+	from department
+	where dep_location = 'PERTH');
+
+#61. Write a query in SQL to list the employees of grade 2 and 3 who belongs to the city PERTH.
+select *
+from employees
+where dep_id = (
+	select dep_id
+	from department
+	where dep_location = 'PERTH')
+and salary >= (
+	select min_sal
+	from salary_grade
+	where grade = 2)
+and salary <= (
+	select max_sal
+	from salary_grade
+	where grade = 3);
+
+#62. Write a query in SQL to list the employees whose designation is same as either the designation of [ADELYN] or the salary is more than salary of WADE.
+select *
+from employees
+where job_name = (
+	select job_name
+	from employees
+	where emp_name = 'ADELYN')
+or salary > (
+	select salary
+	from employees
+	where emp_name = 'WADE');
+
+#63. Write a query in SQL to list the employees of department 1001 whose salary is more than the salary of ADELYN.
+select *
+from employees
+where dep_id = 1001
+and salary > (
+	select salary
+	from employees
+	where emp_name = 'ADELYN'); 
+
+#64. Write a query in SQL to list the managers who are senior to KAYLING and who are junior to SANDRINE.
+select distinct m.*
+from employees e, employees m
+where e.manager_id = m.emp_id
+and m.hire_date < (
+	select hire_date
+	from employees
+	where emp_name = 'KAYLING')
+and m.hire_date > (
+	select hire_date
+	from employees
+	where emp_name = 'SANDRINE');
+
+#65. Write a query in SQL to list the ID, name,location,salary, and department of the all the employees belonging to the department where KAYLING works.
+/*
+emp_id	emp_name	dep_location	salary	dep_name
+68319	KAYLING	SYDNEY	6000.00	FINANCE
+67832	CLARE	SYDNEY	2550.00	FINANCE
+69324	MARKER	SYDNEY	1400.00	FINANCE
+*/
+select emp_id, emp_name, dep_location, salary, dep_name
+from employees, department
+where employees.dep_id = department.dep_id
+and employees.dep_id = (
+	select dep_id
+	from employees
+	where emp_name = 'KAYLING');
+
+#66. Write a query in SQL to list the employees whose salary grade are greater than the grade of MARKER.
+select e.*, s.grade
+from employees e join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+and s.grade > (
+	select s.grade
+	from employees e join salary_grade s
+	on e.salary between s.min_sal and s.max_sal
+	where e.emp_name = 'MARKER');
+
+#67. Write a query in SQL to list the employees of the grade same as the grade of TUCKER or experience is more than SANDRINE and who are belonging to SYDNEY or PERTH.
+select e.*
+from employees e join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+join department d
+on e.dep_id = d.dep_id
+where (s.grade = (
+	select s.grade
+	from employees e join salary_grade s
+	on e.salary between s.min_sal and s.max_sal
+	where e.emp_name = 'TUCKER')
+or age(current_date,e.hire_date) > (
+	select age(current_date,hire_date)
+	from employees
+	where emp_name = 'SANDRINE'))
+and e.dep_id in (
+	select dep_id
+	from department
+	where dep_location in ('SYDNEY','PERTH'));
+
+#68. Write a query in SQL to list the employees whose salary is same as any one of the employee.
+/* returns all rows */
+select *
+from employees
+where salary = any (
+	select s2.salary
+	from employees s2);
+/* returns no rows */
+select samesalary.*
+from employees all, employees samesalary
+where all.salary = samesalary.salary;
+/* returns no rows */
+select *
+from employees all join employees samesalary
+on all.salary = samesalary.salary;
+/* returns all employees no duplicates */
+select distinct e1.emp_id, e1.salary
+from employees e1, employees e2
+where e1.salary = e2.salary;
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id
+65271	WADE	SALESMAN	66928	1991-02-22	1350.00	600.00	3001
+66564	MADDEN	SALESMAN	66928	1991-09-28	1350.00	1500.00	3001
+67858	SCARLET	ANALYST	65646	1997-04-19	3100.00		2001
+69062	FRANK	ANALYST	65646	1991-12-03	3100.00		2001
+*/
+/*official solution */
+select *
+from employees
+where salary in	(
+	select salary
+	from employees e
+	where employees.emp_id <> e.emp_id);
+/* analysis paralysis.  Easy question */
+select *
+from employees
+where salary in (
+	select salary
+	from employees
+	group by salary
+	having count(salary) > 1);
+
+#69. Write a query in SQL to list the total remuneration (salary+commission) of all [SALESMAN in] MARKETING department.
+select emp_id, salary, commission, salary+commission as "total remuneration"
+from employees
+where dep_id = (
+	select dep_id
+	from department
+	where dep_name = 'MARKETING')
+and job_name = 'SALESMAN';
+
+#70. Write a query in SQL to list the details of most recently hired employees of department 3001.
+select *
+from employees
+where dep_id = 3001
+and hire_date = (
+	select max(hire_date)
+	from employees
+	where dep_id = 3001);
 
 
 
-
-
-
-
-
-/* Completed Exercises, go back to outside the book and copy and paste the results */
+/* Go back to outside the book and copy and paste the results after completing exercises.  */
