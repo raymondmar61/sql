@@ -1874,6 +1874,113 @@ and hire_date = (
 	from employees
 	where dep_id = 3001);
 
+#71. Write a query in SQL to list the highest paid employees of PERTH who joined before the most recently hired employee of grade 2.
+select *
+from employees
+where salary = (
+	select max(salary)
+	from employees
+	where dep_id = (
+		select dep_id
+		from department
+		where dep_location = 'PERTH'))
+and hire_date < (
+	select max(e.hire_date)
+	from employees e, salary_grade s
+	where e.salary between s.min_sal and s.max_sal
+	and s.grade = 2);
+/* more accurate? */
+select *
+from employees
+where emp_id = (
+	select emp_id
+	from employees
+	where dep_id = (
+		select dep_id
+		from department
+		where dep_location = 'PERTH')
+	and salary = (
+		select max(salary)
+		from employees
+		where dep_id = (
+			select dep_id
+			from department
+			where dep_location = 'PERTH')))
+and hire_date < (
+	select max(e.hire_date)
+	from employees e, salary_grade s
+	where e.salary between s.min_sal and s.max_sal
+	and s.grade = 2);
 
+#72. Write a query in SQL to list the highest paid employees working under KAYLING.
+select *
+from employees
+where salary = (
+	select max(e2.salary)
+	from employees e2, employees m2
+	where e2.manager_id = m2.emp_id
+	and m2.emp_name = 'KAYLING');
 
-/* Go back to outside the book and copy and paste the results after completing exercises.  */
+#73. Write a query in SQL to list the name, salary, and commission for those employees whose net pay is greater than or equal to the salary of any other employee in the company.  #RM:  I didn't understand the dumb question.
+select *
+from employees
+where (salary+commission) > any (
+	select (salary+commission)
+	from employees);  #incorrect
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id
+68319	KAYLING	PRESIDENT		1991-11-18	6000.00		1001
+66928	BLAZE	MANAGER	68319	1991-05-01	2750.00		3001
+67832	CLARE	MANAGER	68319	1991-06-09	2550.00		1001
+65646	JONAS	MANAGER	68319	1991-04-02	2957.00		2001
+64989	ADELYN	SALESMAN	66928	1991-02-20	1700.00	400.00	3001
+65271	WADE	SALESMAN	66928	1991-02-22	1350.00	600.00	3001
+66564	MADDEN	SALESMAN	66928	1991-09-28	1350.00	1500.00	3001
+68454	TUCKER	SALESMAN	66928	1991-09-08	1600.00	0.00	3001
+68736	ADNRES	CLERK	67858	1997-05-23	1200.00		2001
+69000	JULIUS	CLERK	66928	1991-12-03	1050.00		3001
+69324	MARKER	CLERK	67832	1992-01-23	1400.00		1001
+67858	SCARLET	ANALYST	65646	1997-04-19	3100.00		2001
+69062	FRANK	ANALYST	65646	1991-12-03	3100.00		2001
+63679	SANDRINE	CLERK	69062	1990-12-18	900.00		2001
+*/
+#official solution
+select *
+from employees
+where (
+	select max(salary+commission)
+	from employees) >= any (
+		select salary
+		from employees);
+
+#74. Write a query in SQL to find out the employees whose salaries are greater than the salaries of their managers.
+select e.emp_name as "employee", e.salary as "employee salary", m.emp_name as "manager", m.salary as "manager salary"
+from employees e, employees m
+where e.manager_id = m.emp_id
+and e.salary > m.salary;
+
+#75. Write a query in SQL to find the maximum average salary drawn for each job name except for PRESIDENT.  #RM:  want highest average salary for each job name, not average highest salaries for each job name.
+/*
+max
+3100.0000000000000000
+*/
+select max(alias1)
+from (
+	select avg(salary) alias1
+	from employees
+	where job_name <> 'PRESIDENT'
+	group by job_name) alias2;
+
+#76. Write a query in SQL to find the number of employees are performing the duty of a manager.  #RM:  count employees who are a manager in manager_id
+select count(*)
+from employees
+where emp_id in (
+	select distinct manager_id
+	from employees);
+
+#77. Write a query in SQL to list the department where there are no employees.
+select dep_name, dep_location
+from department
+where dep_id not in (
+	select distinct dep_id
+	from employees);

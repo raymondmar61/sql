@@ -383,7 +383,17 @@ where e1.salary > (
 	where e1.dep_id=e2.dep_id)
 order by e1.dep_id;
 
-
+#75. Write a query in SQL to find the maximum average salary drawn for each job name except for PRESIDENT.  #RM:  want highest average salary for each job name, not average highest salaries for each job name.
+/*
+max
+3100.0000000000000000
+*/
+select max(alias1)
+from (
+	select avg(salary) alias1
+	from employees
+	where job_name <> 'PRESIDENT'
+	group by job_name) alias2;
 
 
 
@@ -1314,3 +1324,56 @@ where salary in (
 	group by salary
 	having count(salary) > 1);
 
+#71. Write a query in SQL to list the highest paid employees of PERTH who joined before the most recently hired employee of grade 2.
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id
+66928	BLAZE	MANAGER	68319	1991-05-01	2750.00		3001
+*/
+select *
+from employees
+where salary = (
+	select max(salary)
+	from employees
+	where dep_id = (
+		select dep_id
+		from department
+		where dep_location = 'PERTH'))
+and hire_date < (
+	select max(e.hire_date)
+	from employees e, salary_grade s
+	where e.salary between s.min_sal and s.max_sal
+	and s.grade = 2);
+/* more accurate? */
+select *
+from employees
+where emp_id = (
+	select emp_id
+	from employees
+	where dep_id = (
+		select dep_id
+		from department
+		where dep_location = 'PERTH')
+	and salary = (
+		select max(salary)
+		from employees
+		where dep_id = (
+			select dep_id
+			from department
+			where dep_location = 'PERTH')))
+and hire_date < (
+	select max(e.hire_date)
+	from employees e, salary_grade s
+	where e.salary between s.min_sal and s.max_sal
+	and s.grade = 2);
+
+#75. Write a query in SQL to find the maximum average salary drawn for each job name except for PRESIDENT.  #RM:  want highest average salary for each job name, not average highest salaries for each job name.
+/*
+max
+3100.0000000000000000
+*/
+select max(alias1)
+from (
+	select avg(salary) alias1
+	from employees
+	where job_name <> 'PRESIDENT'
+	group by job_name) alias2;
