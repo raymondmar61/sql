@@ -96,7 +96,7 @@ create view viewname as
 	where region = 'Europe';
 #Create a new table with auto number or auto increment or autonumber or autoincrement.
 create table tablename (
-	id integer auto_increment primary key
+	id integer auto_increment primary key,
 	name varchar(10));
 insert into tablename(name)
 values('Andrew');
@@ -272,3 +272,103 @@ where datecolumn = (
 #Return specified date format date_format() function example
 select date_format(datecolumn, '%Y%m%d') as "YYYYMMDD"
 from tablename;
+
+#Functions
+#How to use string functions, logical functions and mathematical functions.
+#https://sqlzoo.net/wiki/Functions_Reference
+/*Standard SQL Functions: % MODULO, + (string), + INTERVAL, +(dates), ABS, AVG, CASE, CAST, CEIL, COALESCE, CONCAT, COS, COUNT, CURRENT_DATE, CURRENT_TIMESTAMP, DATEPART, DAY, DIV, EXTRACT, FLOOR, HOUR, IFNULL, INSTR, LEFT, LEN, LENGTH, MAX, MIN, MINUTE, MOD, MONTH, NULLIF, NVL, PATINDEX, POSITION, QUARTER, RANK, REPLACE, RIGHT, ROUND, SECOND, SIN, Strings, SUBSTR, SUBSTRING, SUBSTRING(ansi), SUM, TAN, TO_CHAR(dates), TRIM, YEAR */
+#Concatenate strings
+select concat(columnname1, ' is in ', columnname2)
+from tablename;  #RM:  some SQL only two strings are concatenate
+#Extracting substrings
+select columnname1, substring(columnname1 from 1 for 2) as "first two characters"
+from tablename;
+#Lower case.  Upper case is similar.
+select lower(columnname) as "all lower case"
+from tablename
+where upper(columnname) = 'ALL UPPER CASE';
+#Finding a substring in a string
+select columnname, position(' ' in columnname), substring(columnname from 1 for position(' ' in columnname)) as "characters from start to first space"
+from tablename;
+#Formatting numbers to two decimal spaces
+select columnname, round(columnname/1000000,2) as "two decimal places", round(columnname,-6) as "round million with six zeroes 106400000 is 106000000"
+from tablename;
+#Replace a null with a specific value
+select coalesce(columnname, "string to replace the null under columnname for each row")
+from tablename;
+#Conditional values
+select columnname1, case when columnname2>8.5 then 'Excellent' when columnname2>10 then 'Good' when columnname2>20 then 'Fair' else 'Average' end, columnname3
+from tablename;
+#Get a date and time now at the moment
+select current_timestamp, current_date, current_time
+from tablename;
+#Format dates
+select date_format(columnname, '%d/%m/%Y')  as "14/05/1987"
+from tablename;
+
+#Users
+#How to create users, GRANT and DENY access, get at other peoples tables. How to find processes and kill them.
+#https://sqlzoo.net/wiki/Users_Reference
+#RM:  scanned.  Copy and paste solutions.
+#Create a new user.  Give a new user permission.
+create database scott;
+grant select, insert,update,delete,create,drop,alter
+	on scott.* to scott@localhost
+	identified by 'tiger';
+flush privileges;
+#Read tables from another schema/database
+#A particular server may support a number of different sets of tables. In Oracle these are schemas in MySQL they are databases. In both cases each user normally has their own set of tables, other users tables may be accessed using a dot notation.
+select *
+from gisq.one;
+#Change the default schema/database
+#In many engines several independant databases may exist. Often each user has his or her own database. This allows different users to use the same names for tables.
+use scott;
+#Find another process and kill it.  Change the default schema/database.
+#Sometimes users set off queries that may take a very long time to complete. We may want to find such long running processes and stop them. Some kind of administrative account is usually required.
+show processlist;
+kill 16318
+#Set a timeout
+#Users may accidentally (or deliberately) start queries which would take a very long time to complete. We can set a 'timeout'; this means that the system gives up after a certain amount of time.
+#RM:  no example
+#Change my own password
+#Users should be able to change their own passwords. The administrator should be able to change other people's passwords.
+set password for scott@localhost=password('tiger');
+#Who am I?  What is my user id?
+#Find the user name or user id. The SQL standard permits the function USER.
+select user()
+
+#Meta Data Reference
+#How to find out what tables and columns exist. How to count and limit the rows return
+#https://sqlzoo.net/wiki/Meta_Data_Reference
+#What are my tables?  Get a list of all tables.  Table names.
+show tables;  #RM:  some SQL need the paranthesis? show tables();
+#What are the columns [in the] table?  List column names column
+show columns
+from tablename;
+#Get first rows.  Get top rows.  Get n rows.
+select *
+from tablename
+limit 10;
+#Get selected rows selected.  Get range rows.  Get between rows between.
+select *
+from tablename
+limit 11, 10; #get the 11th row to 20th.
+#What version [version SQL version] am I using?
+select version();
+#What is the syntax to view structure of table?  Structure table structure.  View table view.
+show columns
+from tablename;
+#How can you determine the primary key using SQL?  Find primary key.  What is primary key?
+describe tablename;
+#Return a sequential record count for all records returned
+#website says copy the table to another table with auto-increment auto increment autoincrement as the first column.
+#Create auto-increment table
+create table tablename (
+	counter integer not null auto_increment primary key,
+	columnname1 varchar(50),
+	columnname2 decimal(10,0)
+	columnname3 integer);
+insert into tablename
+select columnname1, columnname2, columnname3
+from tablenamesource;
+
