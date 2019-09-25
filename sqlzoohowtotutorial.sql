@@ -372,3 +372,312 @@ insert into tablename
 select columnname1, columnname2, columnname3
 from tablenamesource;
 
+#SQL Hacks
+#Some SQL Hacks, taken from "SQL Hacks" published by O'Reilly
+#https://sqlzoo.net/wiki/Hacks_Reference
+#Hack 10 Subquery and join
+select payment
+from salary
+where rank = (
+	select rank
+	from ranks
+	where title = (
+		select title
+		from jobs
+		where employee = 'Andrew Cumming'));
+#The subquery is more efficient if it was a join because there are no aggregate functions.
+select payment
+from salary, ranks, jobs
+where salary.rank = ranks.rank
+and ranks.title = jobs.title
+and jobs.employee = 'Andrew Cumming';
+#Hack 11 Converting aggregate subqueries into joins
+select customer, whn, totalitems
+from orders a
+where a.whn = (
+	select max(totalitems)
+	from orders b
+	where a.customer = b.customer);
+#The subquery is more efficient using having
+select a.customer, a.whn, a.totalitems
+from orders a join orders b
+on a.customer = b.customer
+group by a.customer, a.whn, a.totalitems
+having a.whn = max(b.whn);
+#Hack 14 Combinations
+#A JOIN with no join conditions results in every row in one table being connected to every row in another table, forming all possible row combinations.
+select home.teamname home, away.teamname away, tscores.homescore, tscores.awayscore
+from teams home cross join teams away left join tscores
+on (home.teamname = tscores.hometeam and tscores.awayteam = away.teamname)
+where home.teamname != away.teamname;
+#Hack 16 String over columns
+#Using or increases the chances for careless mitakes instead of concat.  Concat makes the query more efficient.
+select name
+from bedrooms
+where floorcolor = 'YELLOW'
+or ceilingcolor = 'YELLOW'
+or wallcolor = 'YELLOW';
+select name
+from bedrooms
+where concat(':',floorcolor':',ceilingcolor,':',wallcolor,':')
+like '%:yellow:%';
+#Hack 24 Multiply across a result set
+/*
+EXP(SUM(LN((r..
+118.0998
+*/
+select exp(sum(ln((rate/100)+1)))*100
+from interest;
+#Hack 25 Running total
+/*
+dte	description	a	balance
+2006-11-01	Wages	50	50
+2006-11-02	Company Store	-10	40
+2006-11-03	Company Store	-10	30
+2006-11-04	Company Store	-10	20
+2006-11-05	Company Store	-10	10
+2006-11-06	Company Store	-10	0
+*/
+#To calculate a running total a table needs to be joined to itself, each version can be called table x and table y.
+select w as dte, d as description, a, balance
+from (
+	select x.whn as w, x.description as d, x.amount as a, sum(y.amount) as balance
+	from transact x join transact y
+	on x.whn>=y.whn
+	group by x.whn, x.description, x.amount) t;
+#Hack 25.5 Splitting and combining columns
+#The SUBSTRING used in the example is used to get rid of the negative sign infront of the number so that there are only positive numbers in the table.
+/*
+dte	description	cshIN	cshOUT
+2006-11-01	Wages	50	
+2006-11-02	Company Store		10
+2006-11-03	Company Store		10
+2006-11-04	Company Store		10
+2006-11-05	Company Store		10
+2006-11-06	Company Store		10
+*/
+select w as dte, d as description, case when (a>=0) then a else null end as cshin, case when (a<0) then substr(a,2,10) else null end as cshout
+from (
+	select x.whn as w, x.description as d, x.amount as a
+	from transact x join transact y
+	on x.whn>=y.whn
+	group by x.whn, x.description, x.amount) t;
+#Hack 26 Include the rows your JOIN forgot
+/*
+name	COUNT(custid)
+Arnold Anxious	0
+Betty	2
+Janette	1
+Robert	0
+*/
+select name, count(custid)
+from customer join invoice
+on id = custid
+group by name;
+#In order to obtain the rows where the count from the query is 0 a LEFT JOIN or a UNION can be used.
+select name, count(custid)
+from customer left join invoice
+on id = custid
+group by name;
+#Hack 30 Calculate the maximum/minimum of two fields
+/*
+id	x	y	(x+y+ABS(x-y)..
+A	1	2	2.0000
+B	4	3	4.0000
+C	5	5	5.0000
+*/
+select id, x, y, (x+y+abs(x-y))/2 
+from t; maximum value over x and y column
+/*
+id	x	y	(x+y-ABS(x-y)..
+A	1	2	1.0000
+B	4	3	3.0000
+C	5	5	5.0000
+*/
+select id, x, y, (x+y+abs(x-y))/2 
+from t; #minimum value over x and y column
+#Hack 33 Get values and subtotals in one shot
+#In this example a UNION is used to make the query show the subtotal results along with the price results and to ensure the subtotals come after the price a COALESCE function is also used.
+/*
+item	serialnumber	price
+Awl	1	10
+Awl	3	10
+Awl		20
+Bowl	2	10
+Bowl	5	10
+Bowl	6	10
+Bowl		30
+Cowl	4	10
+Cowl		10
+*/
+select item, serialnumber, price 
+from(
+	select item, serialnumber, price 
+	from serial
+	union
+	select item, null, sum(price)
+	from serial
+	group by item) t
+order by item, coalesce(serialnumber,1e9);
+#Hack 50 Combine tables containing different data
+#how to take tables with different data and put them into a single table that is more understandable allowing all the information from two or more tables to be seen.
+#You will have to make the two tables agree before you can do the UNION though, this is done by making the final table contain all information from all tables with NULL entries in the rows that don't have the data required.
+/*
+id	name	email	salary	gpa	species
+F173	Stern, Stan	stan@bos.edu	99000		Staff
+F101	Aloof, Alison	ali@bos.edu	30000		Staff
+S1007	Perfect,Peter	1007@bos.edu		590	Student
+S1008	Dunce,Donald	1008@bos.edu		220	Student
+*/
+select concat('f',staffid) id, name name, email email, salary salary, null gpa, 'staff' species
+from staff
+union
+select concat('s',id) id, concat(lname,',',fname) name, concat(id,'@bos.edu') email, null salary, gpa gpa, 'student' species
+from student;
+#Hack 51/52 Display rows as columns.  Transverse.  Flip results.  Pivot table.
+/*
+student	course	grade
+Gao Cong	Java	80
+Gao Cong	Database	77
+Gao Cong	Algebra	50
+Dongyan Zhou	Java	62
+Dongyan Zhou	Database	95
+Dongyan Zhou	Algebra	62
+/*
+/*
+name	java	DB	Algebra
+Gao Cong	80	77	50
+Dongyan Zhou	62	95	62
+*/
+select name, java.grade as java, db.grade as db, alg.grade as algebra
+from exam left outer join coursegrade java
+on (name=java.student and java.course='java')
+left outer join coursegrade db
+on (name=db.student and db.course='database')
+left outer join coursegrade alg on
+(name=alg.student and alg.course='algebra');
+#Hack 55 Import Someone Else's Data
+/*
+Table 1
+id	parkingSpace
+E01	F8
+E02	G22
+E03	F7
+Table 2
+id	name	phone
+E01	Harpo	2753
+E02	Zeppo	2754
+E03	Groucho	2755
+Table 3
+id	name	phone	parkingSpace
+E01	Harpo	2753	F8
+E02	Zeppo	2754	G22
+E03	Groucho	2755	F7
+*/
+create view mimic as
+	select employeeparking.id, coalesce(name, employeeparking.id) as name, coalesce(phone, 'not available') as phone, parkingspace
+	from employeeparking left outer join employeecopy
+	on (employeeparking.id = employeecopy.id);
+select *
+from mimic;  #see Table 3 for answer
+#Hack 62 Issue Queries Without Using a Table
+#Only certain functions can be used without a table and these functions are called static functions.  Static functions can allow a user to obtain the current username, current date, current timestamp and also the version of the database being used.
+/*
+CURRENT_USER	CURRENT_DATE
+scott@localhost	2019-09-25
+*/
+select current_user, current_date;
+#Hack 63 Generate rows without tables.  In other words, run a SQL query to returns results without accessing or linking a table in database.
+/*
+centigrade	fahrenheit
+0	32.0000
+10	50.0000
+20	68.0000
+30	86.0000
+40	104.0000
+*/
+select x centigrade, x*9/5+32 fahrenheit
+from  (
+	select 0 x
+	union
+	select 10
+	union
+	select 20
+	union
+	select 30
+	union
+	select 40) t;
+#Hack 70 Combine your queries
+#Here you are shown how to combine multiple queries.  Both related and unrelated queries can be merged, if the queries are often used together then combining them together can greatly improve performance.  Use UNION and match columns with column name null.
+#Table 1 and 2 show the two separate tables and Table 3 shows the result you would obtain from combining queries.
+/*
+Table 1
+content	Page name
+hello	index.html
+Hia	index.html
+page2	p2.html
+Index	contents.html
+Table 2
+Message
+The site will be down on Tuesday
+Table 3
+pagename	content	NULL	page
+index.html	hello		page
+index.html	Hia		page
+The site will be down on Tuesday	motd
+*/
+select pagename, content
+from page
+where pagename = 'index.html';
+select message from motd;
+select pagename, content, null, 'page'
+from page
+where pagename = 'index.html'
+union 
+select null, null, message, 'motd'
+from motd;
+#Hack 72 Extract a subset of the results.  Extract part.  Extract in part.  Extract top.  Extract bottom.
+select username, score
+from highscore
+order by score desc limit 10;
+#Hack 78 Break it down by Range
+/*
+the_range	avgSpend
+15-24	140.0000
+25-34	105.0000
+35-44	125.0000
+*/
+select concat(low-5,'-' ,low+4) as the_range, avgspend
+from (
+	select round(age,-1) as low, avg(spend) as avgspend
+	from population
+	group by round(age,-1)) t;
+#Hack 88 Test two values from a subquery
+/*
+Table 1
+Customer	Item	Price
+Brian	Table	100
+Robert	Chair	20
+Robert	Carpet	200
+Janette	Statue	300
+Table 2
+Customer	Item	Price
+Brian	Table	100
+Robert	Carpet	200
+Janette	Statue	300
+*/
+select x.customer, x.item, x.price
+from custitem x join ( 
+	select customer, max(price) as price
+	from custitem
+	group by customer) y
+on (x.customer = y.customer and x.price = y.price);  #answer is Table 2
+#Hack 98 Find and stop long running queries
+#Here you are shown how to find long running queries and to kill them stopping them from using up database resources and therefore allowing the database to respond quicker.
+/*
+Id	User	Host	db	Command	Time	State	Info	Progress
+2308933	scott	localhost	scott	Query	0	init	SHOW PROCESSLIST	0
+*/
+show processlist;
+#Hack 100 Run SQL from a Web Page
+
