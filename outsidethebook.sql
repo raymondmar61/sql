@@ -2671,3 +2671,34 @@ where (salary+commission) >= any (
   select salary
   from employees);
 
+#https://sqlzoo.net/wiki/SELECT_names
+#RM:  concat concatenate in where clause concatenate where
+#12. Find the country where the capital is the country plus "City".
+select name, concat(name,' City')
+from world
+where capital = concat(name,' City');
+#13. Find the capital and the name where the capital includes the name of the country.
+select capital, name
+from world
+where capital like('%'||name||'%');
+#14. Find the capital and the name where the capital is an extension of name of the country.  You should include Mexico City as it is longer than Mexico. You should not include Luxembourg as the capital is the same as the country.
+select capital, name
+from world
+where capital like(name||'%')
+and capital != name;
+#15. For Monaco-Ville the name is Monaco and the extension is -Ville.  Show the name and the extension where the capital is an extension of name of the country.  You can use the SQL function REPLACE.
+select name, substr(capital,length(name)+1,100)
+from world
+where capital like(name||'%')
+and capital != name;
+
+#https://sqlzoo.net/wiki/SELECT_from_WORLD_Tutorial
+#10. Show the name and per-capita GDP for those countries with a GDP of at least one trillion (1000000000000; that is 12 zeros). Round this value to the nearest 1000.  Show per-capita GDP for the trillion dollar countries to the nearest $1000.  #RM:  round up, round thousands, round positive.
+select name, round(gdp/population,-3)
+from world
+where gdp > 1000000000000;
+#12.  The capital of Sweden is Stockholm. Both words start with the letter 'S'.  Show the name and the capital where the first letters of each match. Don't include countries where the name and the capital are the same word.  #RM:  left(), LEFT(), left function
+select name, capital
+from world
+where name <> capital
+and left(name,1) = left(capital,1);
