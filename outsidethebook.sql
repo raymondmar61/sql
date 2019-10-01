@@ -2702,3 +2702,142 @@ select name, capital
 from world
 where name <> capital
 and left(name,1) = left(capital,1);
+
+#https://sqlzoo.net/wiki/SELECT_within_SELECT_Tutorial
+#RM:  subquery, subqueries
+/*
+We can use the word ALL to allow >= or > or < or <= to act over a list. For example, you can find the largest country in the world, by population with this query:
+select name
+from world
+where population >= all (
+  select population
+  from world
+  where population > 0);
+You need the condition population > 0 in the sub-query as some countries have null for population.
+*/
+#6. Which countries have a GDP greater than every country in Europe? [Give the name only.] (Some countries may have NULL gdp values).
+select name
+from world
+where gdp > all (
+  select gdp
+  from world
+  where continent = 'Europe'
+  and gdp is not null);
+/*
+We can refer to values in the outer select within the inner select. We name the tables [with different alias to] tell the difference between the inner and outer versions.  It's known as a correlated or synchronized sub-query.
+
+A correlated subquery works like a nested loop: the subquery only has access to rows related to a single record at a time in the outer query. The technique relies on table aliases to identify two different uses of the same table, one in the outer query and the other in the subquery.
+
+One way to interpret the line in the where clause that references the two table is ". . . where the correlated values are the same".  The SQL below asks "select the country details from world where the population is greater than or equal to the population of all countries where the continent is the same."
+select continent, name, population
+from world x
+where population >= all (
+  select population
+  from world y
+  where y.continent = x.continent
+  and population > 0);
+RM:  subquery finds the where answers for the primary query; e.g. find the highest area for the primary query.  Find the first countries alphabetically from each continent.  Link the tables using alias for which subquery has the where primaryqueryalias.columnreference = subqueryalias.columnreference.
+*/
+#7. Find the largest country (by area) in each continent, show the continent, the name and the area:
+/*
+continent name  area
+Africa  Algeria 2381741
+Oceania Australia 7692024
+South America Brazil  8515767
+North America Canada  9984670
+Asia  China 9596961
+Caribbean Cuba  109884
+Europe  Kazakhstan  2724900
+Eurasia Russia  17125242
+*/
+select continent, name, area
+from world w1
+where area = (
+  select max(area)
+  from world w2
+  where w1.continent = w2.continent
+  group by continent);
+#8. List each continent and the name of the country that comes first alphabetically.
+/*
+continent name
+Africa  Algeria
+Asia  Afghanistan
+Caribbean Antigua and Barbuda
+Eurasia Armenia
+Europe  Albania
+North America Belize
+Oceania Australia
+South America Argentina
+*/
+select min(name)
+from world;  #find the first country alphabetically
+select continent, name
+from world w1
+where name in (
+  select min(name)
+  from world w2
+  where w1.continent = w2.continent
+  group by continent);
+#9. Find the continents where all countries have a population <= 25000000. Then find the names of the countries associated with these continents. Show name, continent and population.
+/*
+name  continent population
+Antigua and Barbuda Caribbean 86295
+Australia Oceania 23545500
+Bahamas Caribbean 351461
+Barbados  Caribbean 285000
+Cuba  Caribbean 11167325
+Dominica  Caribbean 71293
+Dominican Republic  Caribbean 9445281
+Fiji  Oceania 858038
+Grenada Caribbean 103328
+Haiti Caribbean 10413211
+Jamaica Caribbean 2717991
+Kiribati  Oceania 106461
+Marshall Islands  Oceania 56086
+Micronesia, Federated States of Oceania 101351
+Nauru Oceania 9945
+New Zealand Oceania 4538520
+Palau Oceania 20901
+Papua New Guinea  Oceania 7398500
+Saint Lucia Caribbean 180000
+Samoa Oceania 187820
+Solomon Islands Oceania 581344
+Tonga Oceania 103036
+Trinidad and Tobago Caribbean 1328019
+Tuvalu  Oceania 11323
+Vanuatu Oceania 264652
+*/
+select name, continent, population
+from world
+where population <= 25000000
+and continent not in ('Europe','North America','South America','Asia','Africa','Eurasia');  #RM:  I don't understand the question.  Results returned are correct.
+#Source: https://stackoverflow.com/questions/28929307/sql-combined-select-statement
+select name, continent, population 
+from world w
+where not exists (
+  select *
+  from world nx
+  where nx.continent = w.continent
+  and nx.population > 25000000);
+select name, continent, population
+from world x
+where 25000000 >= all (
+  select population
+  from world y
+  where x.continent = y.continent
+  and population > 0);
+#10.  Some countries have populations more than three times that of any of their neighbours (in the same continent). Give the countries and continents.
+#Source: https://stackoverflow.com/questions/28763696/sql-query-for-finding-countries-in-the-world-with-3-times-bigger-population-than
+/*
+name  continent
+Australia Oceania
+Brazil  South America
+Russia  Eurasia
+*/
+select w.name, w.continent 
+from world w
+where w.population > (
+  select 3 * max(w2.population) 
+  from world w2
+  where w2.continent = w.continent
+  and w2.name <> w.name);

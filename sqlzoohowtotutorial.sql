@@ -847,3 +847,289 @@ and name like '%i%'
 and name like '%o%'
 and name like '%u%'
 and name not like '% %';
+
+#https://sqlzoo.net/wiki/SELECT_from_Nobel_Tutorial
+/*
+nobel
+yr	subject	winner
+1960	Chemistry	Willard F. Libby
+1960	Literature	Saint-John Perse
+1960	Medicine	Sir Frank Macfarlane Burnet
+1960	Medicine	Peter Madawar
+*/
+#1. Change the query shown so that it displays Nobel prizes for 1950.
+select yr, subject, winner
+from nobel
+where yr = 1950;
+#2. Show who won the 1962 prize for Literature.
+select winner
+from nobel
+where yr = 1962
+and subject = 'Literature';
+#3. Show the year and subject that won 'Albert Einstein' his prize.
+select yr, subject
+from nobel
+where winner = 'Albert Einstein';
+#4. Give the name of the 'Peace' winners since the year 2000, including 2000.
+select winner
+from nobel
+where subject = 'Peace'
+and yr >= 2000;
+#5. Show all details (yr, subject, winner) of the Literature prize winners for 1980 to 1989 inclusive.
+select *
+from nobel
+where subject = 'Literature'
+and yr between 1980 and 1989;
+#6. Show all details of the presidential winners: Theodore Roosevelt, Woodrow Wilson, Jimmy Carter, Barack Obama
+select *
+from nobel
+where winner in ('Theodore Roosevelt','Woodrow Wilson','Jimmy Carter','Barack Obama');
+#7. Show the winners with first name John.
+select winner
+from nobel
+where winner like 'John%';
+#8. Show the year, subject, and name of Physics winners for 1980 together with the Chemistry winners for 1984.
+select yr, subject, winner
+from nobel
+where (subject = 'Physics' and yr = 1980)
+and (subject = 'Chemistry' and yr = 1984);
+select yr, subject, winner
+from nobel
+where (subject = 'Physics' and yr = 1980)
+union
+select yr, subject, winner
+from nobel
+where (subject = 'Chemistry' and yr = 1984);
+#9. Show the year, subject, and name of winners for 1980 excluding Chemistry and Medicine.
+select yr, subject, winner
+from nobel
+where yr = 1980
+and subject not in ('Chemistry','Medicine');
+#10. Show year, subject, and name of people who won a 'Medicine' prize in an early year (before 1910, not including 1910) together with winners of a 'Literature' prize in a later year (after 2004, including 2004).
+select yr, subject, winner
+from nobel
+where (subject = 'Medicine' and yr < 1910)
+and (subject = 'Literature' and yr >= 2004);
+select yr, subject, winner
+from nobel
+where (subject = 'Medicine' and yr < 1910)
+union
+select yr, subject, winner
+from nobel
+where (subject = 'Literature' and yr >= 2004);
+#11. Find all details of the prize won by PETER GRÜNBERG.  #RM:  source to add the two dots above the letter u https://en.wikipedia.org/wiki/%C3%9C#Keyboarding
+select *
+from nobel
+where winner = 'Peter Grünberg';
+#12. Find all details of the prize won by EUGENE O'NEILL.
+select *
+from nobel
+where winner = 'Eugene O''Neill';
+#13. Knights in order.  List the winners, year and subject where the winner starts with Sir. Show the the most recent first, then by name order.
+select winner, yr, subject
+from nobel
+where winner like 'Sir%'
+order by yr desc, winner;
+#14. The expression subject IN ('Chemistry','Physics') can be used as a value - it will be 0 or 1.  Show the 1984 winners and subject ordered by subject and winner name; but list Chemistry and Physics last.
+select winner, subject
+from nobel
+where yr = 1984
+order by case
+	when subject in ('Chemistry','Physics') then 1 else 0 end asc,
+subject, winner;
+
+#https://sqlzoo.net/wiki/SELECT_within_SELECT_Tutorial
+#RM:  subquery, subqueries
+/*
+name	continent	area	population	gdp
+Afghanistan	Asia	652230	25500100	20343000000
+Albania	Europe	28748	2831741	12960000000
+Algeria	Africa	2381741	37100000	188681000000
+Andorra	Europe	468	78115	3712000000
+Angola	Africa	1246700	20609294	100990000000
+...
+*/
+select name
+from world
+where population > (
+	select population
+	from world
+	where name = 'Russia');
+#2. Show the countries in Europe with a per capita GDP greater than 'United Kingdom'.
+select name
+from world
+where continent = 'Europe'
+and gdp/population > (
+	select gdp/population
+	from world
+	where name = 'United Kingdom');
+#3. List the name and continent of countries in the continents containing either Argentina or Australia. Order by name of the country.
+select name, continent
+from world
+where continent in (
+	select continent
+	from world
+	where name in ('Argentina','Australia'))
+order by name;
+#4. Which country has a population that is more than Canada but less than Poland? Show the name and the population.
+select name, population
+from world
+where population > (
+	select population
+	from world
+	where name = 'Canada')
+and population < (
+	select population
+	from world
+	where name = 'Poland');
+#5. Germany (population 80 million) has the largest population of the countries in Europe. Austria (population 8.5 million) has 11% of the population of Germany.  Show the name and the population of each country in Europe. Show the population as a percentage of the population of Germany.  Decimal places Percent symbol %.
+/*
+name	Percentage Po..
+Albania	3%
+Andorra	0%
+Austria	11%
+Belarus	12%
+Belgium	14%
+Bosnia and Herzegovina	5%
+Bulgaria	9%
+*/
+select name, round(population/(select population from world where name = 'Germany')*100) || '%' as "Percentage Poplation Germany"
+from world
+where continent = 'Europe';
+/*
+We can use the word ALL to allow >= or > or < or <= to act over a list. For example, you can find the largest country in the world, by population with this query:
+select name
+from world
+where population >= all (
+	select population
+	from world
+	where population > 0);
+You need the condition population > 0 in the sub-query as some countries have null for population.
+*/
+#6. Which countries have a GDP greater than every country in Europe? [Give the name only.] (Some countries may have NULL gdp values).
+select name
+from world
+where gdp > all (
+	select gdp
+	from world
+	where continent = 'Europe'
+	and gdp is not null);
+/*
+We can refer to values in the outer select within the inner select. We name the tables [with different alias to] tell the difference between the inner and outer versions.  It's known as a correlated or synchronized sub-query.
+
+A correlated subquery works like a nested loop: the subquery only has access to rows related to a single record at a time in the outer query. The technique relies on table aliases to identify two different uses of the same table, one in the outer query and the other in the subquery.
+
+One way to interpret the line in the where clause that references the two table is ". . . where the correlated values are the same".  The SQL below asks "select the country . . . where the population is greater than or equal to the population of all countries where the continent is the same."
+select continent, name, population
+from world x
+where population >= all (
+	select population
+	from world y
+	where y.continent = x.continent
+	and population > 0);
+
+RM:  subquery finds the where answers for the primary query; e.g. find the highest area for the primary query.  Find the first countries alphabetically from each continent.  Link the tables using alias for which subquery has the where primaryqueryalias.columnreference = subqueryalias.columnreference.
+*/
+#7. Find the largest country (by area) in each continent, show the continent, the name and the area:
+/*
+continent	name	area
+Africa	Algeria	2381741
+Oceania	Australia	7692024
+South America	Brazil	8515767
+North America	Canada	9984670
+Asia	China	9596961
+Caribbean	Cuba	109884
+Europe	Kazakhstan	2724900
+Eurasia	Russia	17125242
+*/
+select continent, name, area
+from world w1
+where area = (
+	select max(area)
+	from world w2
+	where w1.continent = w2.continent
+	group by continent);
+#8. List each continent and the name of the country that comes first alphabetically.
+select min(name)
+from world;  #RM:  find the first country alphabetically
+/*
+continent	name
+Africa	Algeria
+Asia	Afghanistan
+Caribbean	Antigua and Barbuda
+Eurasia	Armenia
+Europe	Albania
+North America	Belize
+Oceania	Australia
+South America	Argentina
+*/
+select continent, name
+from world w1
+where name in (
+	select min(name)
+	from world w2
+	where w1.continent = w2.continent
+	group by continent);
+#9. Find the continents where all countries have a population <= 25000000. Then find the names of the countries associated with these continents. Show name, continent and population.
+/*
+name	continent	population
+Antigua and Barbuda	Caribbean	86295
+Australia	Oceania	23545500
+Bahamas	Caribbean	351461
+Barbados	Caribbean	285000
+Cuba	Caribbean	11167325
+Dominica	Caribbean	71293
+Dominican Republic	Caribbean	9445281
+Fiji	Oceania	858038
+Grenada	Caribbean	103328
+Haiti	Caribbean	10413211
+Jamaica	Caribbean	2717991
+Kiribati	Oceania	106461
+Marshall Islands	Oceania	56086
+Micronesia, Federated States of	Oceania	101351
+Nauru	Oceania	9945
+New Zealand	Oceania	4538520
+Palau	Oceania	20901
+Papua New Guinea	Oceania	7398500
+Saint Lucia	Caribbean	180000
+Samoa	Oceania	187820
+Solomon Islands	Oceania	581344
+Tonga	Oceania	103036
+Trinidad and Tobago	Caribbean	1328019
+Tuvalu	Oceania	11323
+Vanuatu	Oceania	264652
+*/
+select name, continent, population
+from world
+where population <= 25000000
+and continent not in ('Europe','North America','South America','Asia','Africa','Eurasia');  #RM:  I don't understand the question.  Results returned are correct.
+#Source: https://stackoverflow.com/questions/28929307/sql-combined-select-statement
+select name, continent, population 
+from world w
+where not exists (
+	select *
+	from world nx
+	where nx.continent = w.continent
+	and nx.population > 25000000);
+select name, continent, population
+from world x
+where 25000000 >= all (
+	select population
+	from world y
+	where x.continent = y.continent
+	and population > 0);
+#10.  Some countries have populations more than three times that of any of their neighbours (in the same continent). Give the countries and continents.
+#Source: https://stackoverflow.com/questions/28763696/sql-query-for-finding-countries-in-the-world-with-3-times-bigger-population-than
+/*
+name	continent
+Australia	Oceania
+Brazil	South America
+Russia	Eurasia
+*/
+select w.name, w.continent 
+from world w
+where w.population > (
+	select 3 * max(w2.population) 
+	from world w2
+	where w2.continent = w.continent
+	and w2.name <> w.name);
