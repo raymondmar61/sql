@@ -1133,3 +1133,286 @@ where w.population > (
 	from world w2
 	where w2.continent = w.continent
 	and w2.name <> w.name);
+
+#https://sqlzoo.net/wiki/SUM_and_COUNT
+#This tutorial is about aggregate functions such as COUNT, SUM and AVG. An aggregate function takes many values and delivers just one value. For example the function SUM would aggregate the values 2, 4 and 5 to deliver the single value 11.
+/*
+name	continent	area	population	gdp
+Afghanistan	Asia	652230	25500100	20343000000
+Albania	Europe	28748	2831741	12960000000
+Algeria	Africa	2381741	37100000	188681000000
+Andorra	Europe	468	78115	3712000000
+Angola	Africa	1246700	20609294	100990000000
+*/
+#1.  Show the total population of the world.
+select sum(population)
+from world;
+#2.  List all the continents - just once each.
+select distinct continent
+from world;
+#3.  Give the total GDP of Africa.
+select sum(gdp)
+from world
+where continent = 'Africa';
+#4.  How many countries have an area of at least 1000000.
+select count(name)
+from world
+where area >= 1000000;
+#5.  What is the total population of ('Estonia', 'Latvia', 'Lithuania').
+select sum(population)
+from world
+where name in ('Estonia', 'Latvia', 'Lithuania');
+#6.  For each continent show the continent and number of countries.
+select continent, count(name)
+from world
+group by continent;
+#7.  For each continent show the continent and number of countries with populations of at least 10 million.
+select continent, count(name)
+from world
+where population > 10000000
+group by continent;
+#8.  List the continents that have a total population of at least 100 million.
+select continent
+from world
+group by continent
+having sum(population)>=100000000;
+
+#https://sqlzoo.net/wiki/The_JOIN_operation
+/*
+The tables contain all matches and goals from UEFA EURO 2012 Football Championship in Poland and Ukraine.
+game
+id	mdate	stadium	team1	team2
+1001	8 June 2012	National Stadium, Warsaw	POL	GRE
+1002	8 June 2012	Stadion Miejski (Wroclaw)	RUS	CZE
+1003	12 June 2012	Stadion Miejski (Wroclaw)	GRE	CZE
+1004	12 June 2012	National Stadium, Warsaw	POL	RUS
+...
+
+goal
+matchid	teamid	player	gtime
+1001	POL	Robert Lewandowski	17
+1001	GRE	Dimitris Salpingidis	51
+1002	RUS	Alan Dzagoev	15
+1002	RUS	Roman Pavlyuchenko	82
+...
+
+eteam
+id	teamname	coach
+POL	Poland	Franciszek Smuda
+RUS	Russia	Dick Advocaat
+CZE	Czech Republic	Michal Bilek
+GRE	Greece	Fernando Santos
+...
+*/
+#1.  Show the matchid and player name for all goals scored by Germany. To identify German players, check for: teamid = 'GER'
+select matchid, player
+from goal
+where teamid = 'GER';
+#2.  The column matchid in the goal table corresponds to the id column in the game table. We can look up information about game 1012 by finding that row in the game table.  Show id, stadium, team1, team2 for just game 1012.
+select id, stadium, team1, team2
+from game
+where id = 1012;
+/*
+select *
+from game join goal
+on id=matchid;
+The from clause says to merge data from the goal table [and] from the game table. The on says how to figure out which rows in game go with which rows in goal [which is] the matchid from goal must match the id from game. (If we wanted to be more clear/specific we could say on (game.id=goal.matchid)).
+*/
+#3.  Show the player, teamid, stadium and mdate for every German goal.
+select player, teamid, stadium, mdate
+from goal join game
+on goal.matchid = game.id
+where teamid = 'GER';
+#4.  Show the team1, team2 and player for every goal scored by a player called Mario player LIKE 'Mario%'.
+select team1, team2, player
+from game join goal
+on goal.matchid = game.id
+where player like 'Mario%';
+#5.  Show player, teamid, coach, gtime for all goals scored in the first 10 minutes gtime<=10.
+select player, teamid, coach, gtime
+from goal join eteam
+on goal.teamid = eteam.id
+where goal.gtime < 10;
+#6.  List the the dates of the matches and the name of the team in which 'Fernando Santos' was the team1 coach.
+select mdate, teamname
+from game join eteam
+where game.team1 = eteam.id
+and coach = 'Fernando Santos';
+#7.  List the player for every goal scored in a game where the stadium was 'National Stadium, Warsaw'.
+select player
+from goal join game
+on goal.matchid = game.id
+where stadium = 'National Stadium, Warsaw';
+#8.  Show the name of all players who scored a goal against Germany.
+select distinct player
+from goal join game
+on goal.matchid = game.id
+where (team1 = 'GER' or team2 = 'GER')
+and teamid != 'GER';
+#9.  Show teamname and the total number of goals scored.
+select teamname, count(teamid)
+from goal join eteam
+on goal.teamid = eteam.id
+group by teamname;
+#10.  Show the stadium and the number of goals scored in each stadium.
+select stadium, count(matchid)
+from goal join game
+on goal.matchid = game.id
+group by stadium;
+#11.  For every match involving 'POL', show the matchid, date and the number of goals scored.
+select id, mdate, count(matchid)
+from goal join game
+on goal.matchid = game.id
+where (team1 = 'POL' or team2 = 'POL')
+group by id, mdate;
+#12.  For every match where 'GER' scored, show matchid, match date and the number of goals scored by 'GER'.
+select id, mdate, count(matchid)
+from goal join game
+on goal.matchid = game.id
+where (team1 = 'GER' or team2 = 'GER')
+and goal.teamid = 'GER'
+group by id, mdate;
+#13.  List every match with the goals scored by each team as shown. This will use "case when" which has not been explained in any previous exercises.
+/*
+mdate team1 score1  team2 score2
+1 July 2012 ESP 4 ITA 0
+10 June 2012  ESP 1 ITA 1
+10 June 2012  IRL 1 CRO 3
+...
+Notice in the query given every goal is listed. If it was a team1 goal then a 1 appears in score1, otherwise there is a 0. You could SUM this column to get a count of the goals scored by team1. Sort your result by mdate, matchid, team1 and team2.
+*/
+#RM:  if-then, if then, if statement, if then statement.  Sum case, group by case
+#Source:  https://stackoverflow.com/questions/25837329/solution-to-13-of-sql-join-in-sqlzoo
+select mdate, team1, sum(case when teamid = team1 then 1 else 0 end) as score1, 
+team2, sum(case when teamid = team2 then 1 else 0 end) as score2
+from game left join goal
+on game.id = goal.matchid
+group by mdate, team1, team2
+order by mdate, matchid, team1, team2;
+
+#https://sqlzoo.net/wiki/More_JOIN_operations
+/*
+movie database columns: id	title	yr	director	budget	gross 
+actor database columns: id	name 
+casting database columns: movieid	actorid	ord
+movieid	actorid	ord
+10001	4	1
+10001	5	2
+10001	6	3
+10001	7	4
+10001	8	5
+10001	9	6
+*/
+#1.  List the films where the yr is 1962 [Show id, title]
+select id, title
+from movie
+where yr = 1962;
+#2.  Give year of 'Citizen Kane'.
+select yr
+from movie
+where title = 'Citizen Kane';
+#3.  List all of the Star Trek movies, include the id, title and yr (all of these movies include the words Star Trek in the title). Order results by year.
+select id, title, yr
+from movie
+where title like '%Star Trek%'
+order by yr;
+#4.  What id number does the actor 'Glenn Close' have?
+select id
+from actor
+where name = 'Glenn Close';
+#5.  What is the id of the film 'Casablanca'.
+select id
+from movie
+where title = 'Casablanca';
+#6.  Obtain the cast list for 'Casablanca'.
+select name
+from actor join casting
+on actor.id = casting.actorid
+where casting.movieid = (
+	select id
+	from movie
+	where title = 'Casablanca');
+#7.  Obtain the cast list for the film 'Alien'.
+select name
+from actor join casting
+on actor.id = casting.actorid
+where casting.movieid = (
+	select id
+	from movie
+	where title = 'Alien');
+#8.  List the films in which 'Harrison Ford' has appeared.
+select title
+from movie join casting
+on movie.id = casting.movieid
+where actorid = (
+	select id
+	from actor
+	where name = 'Harrison Ford');
+#9.  List the films where 'Harrison Ford' has appeared - but not in the starring role. [Note: the ord field of casting gives the position of the actor. If ord=1 then this actor is in the starring role].
+select title
+from movie join casting
+on movie.id = casting.movieid
+where actorid = (
+	select id
+	from actor
+	where name = 'Harrison Ford')
+and casting.ord != 1;
+#10.  List the films together with the leading star for all 1962 films.  [Note: the ord field of casting gives the position of the actor. If ord=1 then this actor is in the starring role].
+select movie.title, actor.name
+from movie join casting
+on movie.id = casting.movieid
+join actor
+on actor.id = casting.actorid
+where movie.yr = 1962
+and casting.ord = 1;
+#11.  Which were the busiest years for 'Rock Hudson', show the year and the number of movies he made each year for any year in which he made more than 2 movies.
+select yr, count(id)
+from movie join casting
+on movie.id = casting.movieid
+where actorid = (
+	select id
+	from actor
+	where name = 'Rock Hudson')
+group by yr
+having count(id) > 2;
+#12.  List the film title and the leading actor for all of the films 'Julie Andrews' played in.
+select title, name
+from movie join casting
+on movie.id = casting.movieid
+join actor
+on actor.id = casting.actorid
+where movie.id in (
+	select movieid
+	from casting
+	where actorid = (
+		select id
+		from actor
+		where name = 'Julie Andrews'))
+and casting.ord = 1;
+#13. Obtain a list, in alphabetical order, of actors who've had at least 30 starring roles.  #RM:  I added count(movieid) column for reference.
+select name, count(movieid)
+from actor join casting
+on actor.id = casting.actorid
+where casting.ord = 1
+group by name
+having count(movieid) >= 30
+order by name;
+#14.  List the films released in the year 1978 ordered by the number of actors in the cast, then by title.
+select title, count(actorid)
+from movie join casting
+on movie.id = casting.movieid
+where movie.yr = 1978
+group by title
+order by count(actorid) desc, title;
+#15.  List all the people who have worked with 'Art Garfunkel'.
+select actor.name
+from actor join casting
+on actor.id = casting.actorid
+where casting.movieid in (
+	select movieid
+	from casting
+	where actorid = (
+		select id
+		from actor
+		where name = 'Art Garfunkel'))
+and actor.name not in ('Art Garfunkel');
