@@ -2860,3 +2860,50 @@ from game left join goal
 on game.id = goal.matchid
 group by mdate, team1, team2
 order by mdate, matchid, team1, team2;
+
+
+#https://sqlzoo.net/wiki/Using_Null
+/*
+COALESCE takes any number of arguments and returns the first value that is not null.
+COALESCE(x,y,z) returns x if x is not NULL
+COALESCE(x,y,z) returns y if x is NULL and y is not NULL
+COALESCE(x,y,z) returns z if x and y are NULL but z is not NULL
+COALESCE(x,y,z) returns NULL if x and y and z are all NULL
+*/
+#5.  Use COALESCE to print the mobile number. Use the number '07986 444 2266' if there is no number given. Show teacher name and mobile number or '07986 444 2266'
+/*
+name  mobile  coalesce(mobi..
+Shrivell  07986 555 1234  07986 555 1234
+Throd 07122 555 1920  07122 555 1920
+Splint    07986 444 2266
+Spiregrain    07986 444 2266
+Cutflower 07996 555 6574  07996 555 6574
+Deadyawn    07986 444 2266
+*/
+select name, mobile, coalesce(mobile,'07986 444 2266')
+from teacher;
+#9.  Use CASE to show the name of each teacher followed by 'Sci' if the teacher is in dept 1 or 2 and 'Art' otherwise.
+/*
+name  teacher
+Shrivell  Sci
+Throd Sci
+Splint  Sci
+Spiregrain  Art
+Cutflower Sci
+Deadyawn  Art
+*/
+select name, case when dept = 1 then 'Sci' when dept = 2 then 'Sci' else 'Art' end as "teacher"
+from teacher;
+#10.  Use CASE to show the name of each teacher followed by 'Sci' if the teacher is in dept 1 or 2, show 'Art' if the teacher's dept is 3 and 'None' otherwise.
+/*
+name  teacher
+Shrivell  Sci
+Throd Sci
+Splint  Sci
+Spiregrain  None
+Cutflower Sci
+Deadyawn  None
+*/
+select name, case when dept = 1 or dept = 2 then 'Sci' when dept =3 then 'Art' else 'None' end as "teacher"
+from teacher;
+

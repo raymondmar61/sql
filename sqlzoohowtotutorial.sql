@@ -1416,3 +1416,276 @@ where casting.movieid in (
 		from actor
 		where name = 'Art Garfunkel'))
 and actor.name not in ('Art Garfunkel');
+
+#https://sqlzoo.net/wiki/Using_Null
+/*
+teacher
+id	dept	name	phone	mobile
+101	1	Shrivell	2753	07986 555 1234
+102	1	Throd	2754	07122 555 1920
+103	1	Splint	2293	
+104		Spiregrain	3287	
+105	2	Cutflower	3212	07996 555 6574
+106		Deadyawn	3345	
+...
+dept
+id	name
+1	Computing
+2	Design
+3	Engineering
+...
+The school includes many departments. Most teachers work exclusively for a single department. Some teachers have no department.
+*/
+#1.  List the teachers who have NULL for their department.
+select name
+from teacher
+where dept is null;
+#2.  Note the INNER JOIN misses the teachers with no department and the departments with no teacher.  #RM:  Write a SQL query all teachers with a department.
+select teacher.name, dept.name
+from teacher inner join dept
+on teacher.dept = dept.id;
+#3.  Use a different JOIN so that all teachers are listed.
+select teacher.name, dept.name
+from teacher left join dept
+on teacher.dept = dept.id;
+#4.  Use a different JOIN so that all departments are listed.
+select teacher.name, dept.name
+from teacher right join dept
+on teacher.dept = dept.id;
+/*
+COALESCE takes any number of arguments and returns the first value that is not null.
+COALESCE(x,y,z) returns x if x is not NULL
+COALESCE(x,y,z) returns y if x is NULL and y is not NULL
+COALESCE(x,y,z) returns z if x and y are NULL but z is not NULL
+COALESCE(x,y,z) returns NULL if x and y and z are all NULL
+*/
+#5.  Use COALESCE to print the mobile number. Use the number '07986 444 2266' if there is no number given. Show teacher name and mobile number or '07986 444 2266'
+/*
+name	mobile	coalesce(mobi..
+Shrivell	07986 555 1234	07986 555 1234
+Throd	07122 555 1920	07122 555 1920
+Splint		07986 444 2266
+Spiregrain		07986 444 2266
+Cutflower	07996 555 6574	07996 555 6574
+Deadyawn		07986 444 2266
+*/
+select name, mobile, coalesce(mobile,'07986 444 2266')
+from teacher;
+#6.  Use the COALESCE function and a LEFT JOIN to print the teacher name and department name. Use the string 'None' where there is no department.
+/*
+name	coalesce(dept..
+Shrivell	Computing
+Throd	Computing
+Splint	Computing
+Spiregrain	None
+Cutflower	Design
+Deadyawn	None
+*/
+select teacher.name, coalesce(dept.name,'None')
+from teacher left join dept
+on teacher.dept = dept.id;
+#7.  Use COUNT to show the number of teachers and the number of mobile phones.
+select name, count(name)
+from teacher
+group by name;
+#8.  Use COUNT and GROUP BY dept.name to show each department and the number of staff. Use a RIGHT JOIN to ensure that the Engineering department is listed.
+/*
+name	count(teacher..
+Computing	3
+Design	1
+Engineering	0
+*/
+select dept.name, count(teacher.name)
+from teacher right join dept
+on teacher.dept = dept.id
+group by dept.name;
+#9.  Use CASE to show the name of each teacher followed by 'Sci' if the teacher is in dept 1 or 2 and 'Art' otherwise.
+/*
+name	teacher
+Shrivell	Sci
+Throd	Sci
+Splint	Sci
+Spiregrain	Art
+Cutflower	Sci
+Deadyawn	Art
+*/
+select name, case when dept = 1 then 'Sci' when dept = 2 then 'Sci' else 'Art' end as "teacher"
+from teacher;
+#10.  Use CASE to show the name of each teacher followed by 'Sci' if the teacher is in dept 1 or 2, show 'Art' if the teacher's dept is 3 and 'None' otherwise.
+/*
+name	teacher
+Shrivell	Sci
+Throd	Sci
+Splint	Sci
+Spiregrain	None
+Cutflower	Sci
+Deadyawn	None
+*/
+select name, case when dept = 1 or dept = 2 then 'Sci' when dept = 3 then 'Art' else 'None' end as "teacher"
+from teacher;
+
+#https://sqlzoo.net/wiki/NSS_Tutorial
+#Numeric Examples
+#RM:  Poor table information.  I play the Jeopardy card.  I see the answer first.  Then I write the SQL code.
+#1.  The example shows the number who responded for: question 1, at 'Edinburgh Napier University', and studying '(8) Computer Science'.  Show the the percentage who STRONGLY AGREE.
+select response
+from nss
+where question = 'Q01'
+and institution ='Edinburgh Napier University'
+and subject = '(8) Computer Science';
+#solution
+select A_STRONGLY_AGREE
+from nss
+where question = 'Q01'
+and institution ='Edinburgh Napier University'
+and subject = '(8) Computer Science';
+#2.  Show the institution and subject where the score is at least 100 for question 15.
+select institution, subject
+from nss
+where question ='Q15'
+and score >= 100;
+#3.  Show the institution and score where the score for '(8) Computer Science' is less than 50 for question 'Q15.
+select institution, score
+from nss
+where subject = '(8) Computer Science'
+and score < 50
+and question ='Q15';
+#4.  Show the subject and total number of students who responded to question 22 for each of the subjects '(8) Computer Science' and '(H) Creative Arts and Design'.  #RM:  sum the students who responded for the subjects '(8) Computer Science' and '(H) Creative Arts and Design'
+select subject, sum(response)
+from nss
+where question ='Q22'
+and subject in ('(8) Computer Science','(H) Creative Arts and Design')
+group by subject;
+#Solutions source:  https://github.com/arthur-vieira/sqlzoo/blob/master/9-numeric-examples.sql
+#5.  Show the subject and total number of students who A_STRONGLY_AGREE to question 22 for each of the subjects '(8) Computer Science' and '(H) Creative Arts and Design'.  #RM:  it appears take the total responses multiply by the percentage of A_STRONGLY_AGREE to get A_STRONGLY_AGREE.
+select subject, sum(response*(A_STRONGLY_AGREE/100))
+from nss
+where question ='Q22'
+and subject in ('(8) Computer Science','(H) Creative Arts and Design')
+group by subject;
+#6.  Show the percentage of students who A_STRONGLY_AGREE to question 22 for the subject '(8) Computer Science' show the same figure for the subject '(H) Creative Arts and Design'.  Use the ROUND function to show the percentage without decimal places.
+/*
+subject	round(sum(res..
+(8) Computer Science	34
+(H) Creative Arts and Design	36
+*/
+select subject, round(sum(response*(A_STRONGLY_AGREE/100))/ sum(response)*100,0)
+from nss
+where question ='Q22'
+and subject in ('(8) Computer Science','(H) Creative Arts and Design')
+group by subject;
+#7.  Show the average scores for question 'Q22' for each institution that include 'Manchester' in the name.  The column score is a percentage - you must use the method outlined above to multiply the percentage by the response and divide by the total response. Give your answer rounded to the nearest whole number.  #RM:  average?!?
+select institution, round(sum(response*score/100) / sum(response) * 100,0)
+from nss
+where question ='Q22'
+and institution like '%Manchester%'
+group by institution;
+#8.  Show the institution, the total sample size and the number of computing students for institutions in Manchester for 'Q01'.
+/*
+institution	SUM(sample)	comp
+Manchester Metropolitan University	6994	310
+The Manchester College	537	46
+University of Manchester	8065	180
+*/
+select institution, sum(sample), /* comp goes here */
+where question ='Q01'
+and institution like '%Manchester%'
+group by institution;
+
+#https://sqlzoo.net/wiki/Self_join
+/*
+stops(id, name)
+route(num, company, pos, stop)
+
+stops
+Field	Type	Notes
+id	INTEGER	Arbitrary value
+name	CHAR(30)	The name of an area served by at least one bus
+id	name
+1	Aberlady
+2	Abington
+3	Amisfield Park
+4	Ancrum
+5	Armadale
+6	ASDA
+7	ASDA/Brunstane
+
+route
+Field	Type	Notes
+num	CHAR(5)	The number of the bus - as it appears on the front of the vehicle. Oddly these numbers often include letters
+company	CHAR(3)	Several bus companies operate in Edinburgh. The main one is Lothian Region Transport - LRT
+pos	INTEGER	This indicates the order of the stop within the route. Some routes may revisit a stop. Most buses go in both directions.
+stop	INTEGER	This references the stops table
+num	company	pos	stop
+124	SMT	9	1
+100	MAC	6	2
+106	SMT	8	3
+29	LOW	8	4
+16	SMT	8	5
+142	SMJ	1	6
+63	LRT	1	6
+#RM:  stops.id and route.stop are the relationship.
+*/
+#1. How many stops are in the database.
+select count(*)
+from stops;
+#2.  Find the id value for the stop 'Craiglockhart'
+select id
+from stops
+where name = 'Craiglockhart';
+#3.  Give the id and the name for the stops on the '4' 'LRT' service.
+select stops.id, stops.name
+from stops inner join route
+on stops.id = route.stop
+where route.num = 4
+and company = 'LRT';
+#4.  The query shown gives the number of routes that visit either London Road (149) or Craiglockhart (53). Run the query and notice the two services that link these stops have a count of 2. Add a HAVING clause to restrict the output to these two routes.
+select company, num, count(*)
+from route
+where stop = 149 or stop = 53
+group by company, num
+#solution
+select company, num, count(*)
+from route
+where stop = 149 or stop = 53
+group by company, num
+having count(*) = 2;
+#5.  Execute the self join shown and observe that b.stop gives all the places you can get to from Craiglockhart, without changing routes. Change the query so that it shows the services from Craiglockhart to London Road.
+select a.company, a.num, a.stop, b.stop
+from route a join route b
+on (a.company = b.company and a.num = b.num)
+where a.stop = 53;
+#solution
+select a.company, a.num, a.stop, b.stop
+from route a join route b
+on (a.company = b.company and a.num = b.num)
+where a.stop = 53
+and b.stop = (
+	select id
+	from stops
+	where name = 'London Road');
+#6.  The query shown is similar to the previous one, however by joining two copies of the stops table we can refer to stops by name rather than by number. Change the query so that the services between 'Craiglockhart' and 'London Road' are shown. If you are tired of these places try 'Fairmilehead' against 'Tollcross'.
+select a.company, a.num, stopa.name, stopb.name
+from route a join route b
+on (a.company = b.company and a.num = b.num)
+join stops stopa
+on (a.stop = stopa.id)
+join stops stopb
+on (b.stop = stopb.id)
+where stopa.name = 'craiglockhart';
+#solution
+select a.company, a.num, stopa.name, stopb.name
+from route a join route b
+on (a.company = b.company and a.num = b.num)
+join stops stopa
+on (a.stop = stopa.id)
+join stops stopb
+on (b.stop = stopb.id)
+where stopa.name = 'craiglockhart'
+and stopb.name = 'London Road';
+#7.  Give a list of all the services which connect stops 115 and 137 ('Haymarket' and 'Leith').  #RM:  need distinct
+select distinct a.company, a.num
+from route a join route b
+on (a.company = b.company and a.num = b.num)
+where a.stop = 115 
+and b.stop = 137;
