@@ -2907,3 +2907,86 @@ Deadyawn  None
 select name, case when dept = 1 or dept = 2 then 'Sci' when dept =3 then 'Art' else 'None' end as "teacher"
 from teacher;
 
+#https://sqlzoo.net/wiki/Self_join
+#8.  Give a list of the services which connect the stops 'Craiglockhart' and 'Tollcross'.
+#incorrect
+select a.company, a.num
+from route a join route b
+on (a.company = b.company and a.num = b.num)
+where a.stop in (
+  select id
+  from stops
+  where name in ('craiglockhart','tollcross'));
+#correct
+/*
+company num stop  stop
+LRT 10  53  230
+LRT 27  53  230
+LRT 45  53  230
+LRT 47  53  230
+*/
+select a.company, a.num, a.stop, b.stop
+from route a join route b
+on (a.company = b.company and a.num = b.num)
+where a.stop in (
+  select id
+  from stops
+  where name in ('craiglockhart'))
+and b.stop in (
+  select id
+  from stops
+  where name in ('tollcross'));
+#9.  Give a distinct list of the stops which may be reached from 'Craiglockhart' by taking one bus, including 'Craiglockhart' itself, offered by the LRT company. Include the company and bus no. of the relevant services.
+/*
+name  company num
+Balerno LRT 47
+Balerno Church  LRT 47
+Bingham LRT 4
+Brunstane LRT 45
+Canonmills  LRT 27
+Canonmills  LRT 47
+Cockburn Crescent LRT 47
+Colinton  LRT 10
+Colinton  LRT 45
+Colinton  LRT 47
+Craiglockhart LRT 10
+Craiglockhart LRT 27
+Craiglockhart LRT 4
+Craiglockhart LRT 45
+Craiglockhart LRT 47
+...
+*/
+select stops.name, route.company, route.num
+from stops join route
+on stops.id = route.stop
+where route.company in ('lrt')
+and route.num in (
+  select a.num
+  from route a join route b
+  on (a.company = b.company and a.num = b.num)
+  where a.stop in (
+    select id
+    from stops
+    where name in ('craiglockhart')));
+#10.  Find the routes involving two buses that can go from Craiglockhart to Lochend.  Show the bus no. and company for the first bus, the name of the stop for the transfer, and the bus no. and company for the second bus.  Hint:  Self-join twice to find buses that visit Craiglockhart and Lochend, then join those on matching stops.
+#solution source https://stackoverflow.com/questions/54409519/how-can-i-join-two-tables-both-derived-from-self-join-to-create-a-third-table
+select distinct x.num, x.company, x.name, y.num, y.company
+from (
+  select a.num as num, a.company as company, stopb.name as name
+  from route a join route b
+  on a.company = b.company and a.num = b.num
+  join stops stopa
+  on (a.stop = stopa.id)
+  join stops stopb
+  on (b.stop = stopb.id)
+  where stopa.name = 'craiglockhart') x join (
+    select a.num as num, a.company as company, stopb.name as name
+    from route a join route b
+    on a.company = b.company and a.num = b.num
+    join stops stopa
+    on (a.stop = stopa.id)
+    join stops stopb
+    on (b.stop = stopb.id)
+    where stopa.name = 'lochend') y
+on x.name = y.name
+order by x.num;
