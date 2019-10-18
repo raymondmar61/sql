@@ -105,3 +105,325 @@ and population > 40000000
 Brazil
 Colombia
 */
+
+#https://sqlzoo.net/wiki/Nobel_Quiz
+#1. Pick the code which shows the name of winner's names beginning with C and ending in n
+select winner
+from nobel
+where winner like 'c%'
+and winner like '%n';
+
+#2. Select the code that shows how many Chemistry awards were given between 1950 and 1960
+select count(subject)
+from nobel
+where subject = 'chemistry'
+and yr between 1950 and 1960;
+
+#3. Pick the code that shows the amount of years where no Medicine awards were given
+select count(distinct yr)
+from nobel
+where yr not in (
+	select distinct yr
+	from nobel
+	where subject = 'medicine');
+
+#4. Select the result that would be obtained from the following code
+select subject, winner
+from nobel
+where winner like 'sir%' and yr like '196%';
+/*
+Medicine	Sir John Eccles
+Medicine	Sir Frank Macfarlane Burnet
+*/
+
+#5. Select the code which would show the year when neither a Physics or Chemistry award was given
+select yr 
+from nobel
+where yr not in (
+	select yr 
+	from nobel
+	where subject in ('chemistry','physics'));
+
+#6. Select the code which shows the years when a Medicine award was given but no Peace or Literature award was  #RM:  should be "or" instead of "and" at "and yr not in (""
+select distinct yr
+from nobel
+where subject = 'medicine' 
+and yr not in (
+	select yr
+	from nobel 
+	where subject = 'literature')
+and yr not in (
+	select yr
+	from nobel
+	where subject = 'peace');
+
+#7. Pick the result that would be obtained from the following code:
+select subject, count(subject) 
+from nobel 
+where yr = '1960' 
+group by subject;
+/*
+Chemistry	1
+Literature	1
+Medicine	2
+Peace	1
+Physics	1
+*/
+
+#https://sqlzoo.net/wiki/Nested_SELECT_Quiz
+#1. Select the code that shows the name, region and population of the smallest country in each region
+select region, name, population
+from bbc x
+where population <= all (
+	select population
+	from bbc y
+	where y.region = x.region
+	and population > 0);
+
+#2. Select the code that shows the countries belonging to regions with all populations over 50000
+select name, region, population
+from bbc x where 50000 < all (
+	select population
+	from bbc y
+	where x.region = y.region and y.population > 0);
+#RM:  isn't the correct answer below?
+select name, region, population
+from bbc x where 50000 > all (
+	select population
+	from bbc y
+	where x.region = y.region and y.population > 0);
+
+#3. Select the code that shows the countries with a less than a third of the population of the countries around it
+select name, region
+from bbc x
+where population < all (
+	select population/3
+	from bbc y
+	where y.region = x.region
+	and y.name != x.name);
+
+#4. Select the result that would be obtained from the following code:  #RM:  Turkey is in the same region as United Kingdom?
+select name from bbc
+where population > (
+	select population
+	from bbc
+	where name = 'united kingdom')
+and region in (
+	select region
+	from bbc
+	where name = 'united kingdom');
+/*
+Table-D
+France
+Germany
+Russia
+Turkey
+*/
+
+#5. Select the code that would show the countries with a greater GDP than any country in Africa (some countries may have NULL gdp values).
+select name
+from bbc
+where gdp > (
+	select max(gdp)
+	from bbc
+	where region = 'africa');
+
+#6. Select the code that shows the countries with population smaller than Russia but bigger than Denmark
+select name
+from bbc
+where population < (
+	select population
+	from bbc
+	where name = 'russia')
+and population > (
+	select population
+	from bbc
+	where name = 'denmark');
+
+#7. >Select the result that would be obtained from the following code:  #RM:  China is not in South Asia region.
+select name
+from bbc
+where population > all (
+	select max(population)
+	from bbc
+	where region = 'europe')
+and region = 'south asia';
+/*
+Table-B
+Bangladesh
+India
+Pakistan
+*/
+
+#https://sqlzoo.net/wiki/SUM_and_COUNT_Quiz
+#1. Select the statement that shows the sum of population of all countries in 'Europe'
+select sum(population)
+from bbc
+where region = 'europe';
+
+#2. Select the statement that shows the number of countries with population smaller than 150000
+select count(name)
+from bbc
+where population < 150000;
+
+#3. Select the list of core SQL aggregate functions
+/* AVG(), COUNT(), MAX(), MIN(), SUM() */
+
+#4. Select the result that would be obtained from the following code:
+select region, sum(area)
+from bbc 
+where sum(area) > 15000000 
+group by region
+/* No result due to invalid use of the WHERE function */
+
+
+#5. Select the statement that shows the average population of 'Poland', 'Germany' and 'Denmark'
+select avg(population)
+from bbc
+where name in ('poland', 'germany', 'denmark');
+
+#6. Select the statement that shows the medium population density of each region
+select region, sum(population)/sum(area) as density
+from bbc
+group by region;
+
+#7. Select the statement that shows the name and population density of the country with the largest population
+select name, population/area as density
+from bbc
+where population = (
+	select max(population)
+	from bbc);
+
+#8. Pick the result that would be obtained from the following code:
+select region, sum(area)
+from bbc
+group by region
+having sum(area)<= 20000000;
+/*
+Table-D
+Americas	732240
+Middle East	13403102
+South America	17740392
+South Asia	9437710
+*/
+
+#https://sqlzoo.net/wiki/JOIN_Quiz
+#1. You want to find the stadium where player 'Dimitris Salpingidis' scored. Select the JOIN condition to use:
+/*
+game join goal
+on (id = matchid)
+*/
+
+#2. You JOIN the tables goal and eteam in an SQL statement. Indicate the list of column names that may be used in the SELECT line:
+/* matchid, teamid, player, gtime, id, teamname, coach */
+
+#3. Select the code which shows players, their team and the amount of goals they scored against Greece(GRE).
+select player, teamid, count(*)
+from game join goal
+on matchid = id
+where (team1 = "gre" or team2 = "gre")
+and teamid != 'gre'
+group by player, teamid;
+
+#4. Select the result that would be obtained from this code:
+select distinct teamid, mdate
+from goal join game
+on (matchid = id)
+where mdate = '9 june 2012';
+/*
+DEN	9 June 2012
+GER	9 June 2012
+*/
+
+#5. Select the code which would show the player and their team for those who have scored against Poland(POL) in National Stadium, Warsaw.
+select distinct player, teamid 
+from game join goal
+on matchid = id 
+where stadium = 'national stadium, warsaw'
+and (team1 = 'pol' or team2 = 'pol')
+and teamid != 'pol';
+
+#6. Select the code which shows the player, their team and the time they scored, for players who have played in Stadion Miejski (Wroclaw) but not against Italy(ITA).
+select distinct player, teamid, gtime
+from game join goal
+on matchid = id
+where stadium = 'stadion miejski (wroclaw)'
+and (( teamid = team2 and team1 != 'ita') 
+or (teamid = team1 and team2 != 'ita'));
+
+#7. Select the result that would be obtained from this code:
+select teamname, count(*)
+from eteam join goal on teamid = id
+group by teamname
+having count(*) < 3
+/*
+Netherlands	2
+Poland	2
+Republic of Ireland	1
+Ukraine	2
+*/
+
+#https://sqlzoo.net/wiki/JOIN_Quiz_2
+#1. Select the statement which lists the unfortunate directors of the movies which have caused financial loses (gross < budget).  #RM:  actor is the table?
+select name
+from actor inner join movie 
+on actor.id = director
+where gross < budget;
+
+#2. Select the correct example of JOINing three tables
+select *
+from actor join casting
+on actor.id = actorid
+join movie on movie.id = movieid;
+
+#3. Select the statement that shows the list of actors called 'John' by order of number of movies in which they acted
+select name, count(movieid)
+from casting join actor
+on actorid = actor.id
+where name like 'john %'
+group by name
+order by 2 desc;
+
+#4. Select the result that would be obtained from the following code:
+select title 
+from movie join casting 
+on (movieid = movie.id)
+join actor
+on (actorid = actor.id)
+where name = 'paul hogan' and ord = 1;
+/*
+Table-B
+"Crocodile" Dundee
+Crocodile Dundee in Los Angeles
+Flipper
+Lightning Jack
+*/
+
+#5. Select the statement that lists all the actors that starred in movies directed by Ridley Scott who has id 351
+select name
+from movie join casting
+on movie.id = movieid
+join actor
+on actor.id = actorid
+where ord = 1
+and director = 351;
+
+#6. There are two sensible ways to connect movie and actor. They are:
+/*
+link the director column in movies with the primary key in actor
+connect the primary keys of movie and actor via the casting table
+*/
+
+#7. Select the result that would be obtained from the following code:
+select title, yr 
+from movie, casting, actor 
+where name='robert de niro'
+and movieid = movie.id
+and actorid = actor.id
+and ord = 3;
+/*
+Table-B
+A Bronx Tale	1993
+Bang the Drum Slowly	1973
+Limitless	2011
+*/
