@@ -2990,3 +2990,46 @@ from (
     where stopa.name = 'lochend') y
 on x.name = y.name
 order by x.num;
+
+#https://sqlzoo.net/wiki/Self_join_Quiz
+/*
+SELF JOIN quiz  Two tables STOPS and ROUTE
+STOPS
+id
+name
+ROUTE
+num
+company
+pos
+stop
+*/
+#1. Select the code that would show it is possible to get from Craiglockhart to Haymarket
+select distinct a.name, b.name
+from stops a join route z
+on a.id=z.stop
+join route y
+on y.num = z.num
+join stops b
+on y.stop=b.id
+where a.name='craiglockhart' and b.name ='haymarket';
+
+#2. Select the code that shows the stops that are on route.num '2A' which can be reached with one bus from Haymarket?
+select s2.id, s2.name, r2.company, r2.num
+from stops s1, stops s2, route r1, route r2
+where s1.name='haymarket'
+and s1.id = r1.stop
+and r1.company = r2.company
+and r1.num = r2.num
+and r2.stop = s2.id
+and r2.num = '2a';
+
+#3. Select the code that shows the services available from Tollcross?
+select a.company, a.num, stopa.name, stopb.name
+from route a join route b
+on (a.company = b.company and a.num = b.num)
+join stops stopa
+on (a.stop = stopa.id)
+join stops stopb
+on (b.stop = stopb.id)
+where stopa.name='tollcross';
+

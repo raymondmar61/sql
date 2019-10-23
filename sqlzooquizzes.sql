@@ -427,3 +427,104 @@ A Bronx Tale	1993
 Bang the Drum Slowly	1973
 Limitless	2011
 */
+
+#https://sqlzoo.net/wiki/Using_Null_Quiz
+#1. Select the code which uses an outer join correctly.
+select teacher.name, dept.name
+from teacher left outer join dept
+on (teacher.dept = dept.id);
+
+#2. Select the correct statement that shows the name of department which employs Cutflower -
+select dept.name
+from teacher join dept
+on (dept.id = teacher.dept)
+where teacher.name = 'cutflower';
+
+#3. Select out of following the code which uses a JOIN to show a list of all the departments and number of employed teachers
+select dept.name, count(teacher.name)
+from teacher right join dept
+on dept.id = teacher.dept
+group by dept.name;
+
+#4. Using SELECT name, dept, COALESCE(dept, 0) AS result FROM teacher on teacher table will:
+/*
+COALESCE takes any number of arguments and returns the first value that is not null.
+COALESCE(x,y,z) returns x if x is not NULL
+COALESCE(x,y,z) returns y if x is NULL and y is not NULL
+COALESCE(x,y,z) returns z if x and y are NULL but z is not NULL
+COALESCE(x,y,z) returns NULL if x and y and z are all NULL
+*/
+#display 0 in result column for all teachers without department
+
+#5. Query: SELECT name, CASE WHEN phone = 2752 THEN 'two' WHEN phone = 2753 THEN 'three' WHEN phone = 2754 THEN 'four' END AS digit FROM teacher shows following 'digit':
+/*
+teacher
+id	dept	name	phone
+101	1	Shrivell	2753
+102	1	Throd	2754
+103	1	Splint	
+104		Spiregrain	
+105	2	Cutflower	3212
+106		Deadyawn
+*/
+#'four' for Throd
+
+#6. Select the result that would be obtained from the following code: SELECT name, CASE WHEN dept IN (1) THEN 'Computing' ELSE 'Other' END FROM teacher
+/*
+dept
+id	name
+1	Computing
+2	Design
+3	Engineering
+*/
+/*
+Table-A
+Shrivell	Computing
+Throd	Computing
+Splint	Computing
+Spiregrain	Other
+Cutflower	Other
+Deadyawn	Other
+*/
+
+#https://sqlzoo.net/wiki/Self_join_Quiz
+/*
+SELF JOIN quiz  Two tables STOPS and ROUTE
+STOPS
+id
+name
+ROUTE
+num
+company
+pos
+stop
+*/
+#1. Select the code that would show it is possible to get from Craiglockhart to Haymarket
+select distinct a.name, b.name
+from stops a join route z
+on a.id=z.stop
+join route y
+on y.num = z.num
+join stops b
+on y.stop=b.id
+where a.name='craiglockhart' and b.name ='haymarket';
+
+#2. Select the code that shows the stops that are on route.num '2A' which can be reached with one bus from Haymarket?
+select s2.id, s2.name, r2.company, r2.num
+from stops s1, stops s2, route r1, route r2
+where s1.name='haymarket'
+and s1.id = r1.stop
+and r1.company = r2.company
+and r1.num = r2.num
+and r2.stop = s2.id
+and r2.num = '2a';
+
+#3. Select the code that shows the services available from Tollcross?
+select a.company, a.num, stopa.name, stopb.name
+from route a join route b
+on (a.company = b.company and a.num = b.num)
+join stops stopa
+on (a.stop = stopa.id)
+join stops stopb
+on (b.stop = stopb.id)
+where stopa.name='tollcross';
