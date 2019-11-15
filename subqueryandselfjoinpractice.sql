@@ -1,6 +1,3 @@
-#Watch Oracle SQL videos last #64 Using Subqueries, #65 Single Row Subqueries, #66 Multiple Row Subqueries, #67 Multiple Column Subqueries
-#RM:  Self Join first.  Subquery second.
-
 #Self Join
 #YouTube Videos:  Database Design 50 - Self Join [720p], Self-joins YouTube Channel Andy Wicks [720p], 14 of 15 SQL Basics with Oracle - Self-joins and multiple joins between the same 2 tables [360p], Microsoft Access 2016 Queries_ Self Join Query [720p], Oracle SQL videos 58 Self Join
 /*
@@ -85,12 +82,13 @@ employeeid firstname, lastname, manager_id employeeid_1 firstname_1, lastname_1
 */
 
 #Subquery
-#YouTube Videos:  Oracle SQL Subqueries [720p], SQL_ Update using correlated subquery [720p], Single Row Subqueries (Introduction to Oracle SQL) [720p], Multi Row Subqueries (Introduction to Oracle SQL) [720p], SQL JOINS vs Subqueries [720p], SQL with Microsoft Access 2016 Lesson 7 - Subqueries [720p], SQL Subqueries Introduction [720p], SQL Correlated Subqueries [720p], Subqueries in SQL [720p]
+#YouTube Videos:  Oracle SQL Subqueries [720p], SQL_ Update using correlated subquery [720p], Single Row Subqueries (Introduction to Oracle SQL) [720p], Multi Row Subqueries (Introduction to Oracle SQL) [720p], SQL JOINS vs Subqueries [720p], SQL with Microsoft Access 2016 Lesson 7 - Subqueries [720p], SQL Subqueries Introduction [720p], SQL Correlated Subqueries [720p], Subqueries in SQL [720p], Nested Queries _ SQL _ Tutorial 18 [720p]
 /*
 Four types of subqueries.  Three of unproblematic.  Correlated and uncorrelated.  Correlated means the inner and outer tables join.  Uncorrelated means the inner and outer tables don't join.  Single row and multi row. Uncorrelated single row returns a single row once and give it to the outer query no performance problem such as average, min, or max and compare against the outer query.  Correlated single row need to execute once for every row in the outer query; e.g. 5,000 rows in outer query conduct an additional 5,000 queries in the subquery.  Uncorrelated multi row execute subquery once returning the data set to the external query such as an exists operator or a comparison operator.  Correlated multi row subquery runs once for each row in the outer query; e.g. 5,000 rows in the outer query and internal query returns 2,000 rows returning 10,000,000 rows to memory.
 Subqueries are queries within other queries.  Two main types of subqueries single row and multi row.  Single row subquery returns one row; e.g. AVG returns a single row  Multi row subquery reteurns multiple rows; e.g.  all salaries > 100000 returns multiple rows.  Comparison operators are invalid for multiple values.  Multi row subqueries can use operators which can handle multiple values such as in, > any, < all.  in is the most common.
 Subquery.  The answers from the subquery is used to get the answers from the outer query or primary query.  Multiple subqueries are valid.
 Subqueries can be used to test for set membership in conjunction with the in operator and not in operator.
+A nested query is a query with multiple select statements.
 */
 /*
 productid	productdesc	productname	quantityonhand	productlength	productwidth	suggestedprice
@@ -210,7 +208,95 @@ where id not in (
 	select studentid
 	from enrolled
 	where coursename = 'CS 105');
+#Get names of employees sold over 30,000 to a single client
+select firstname, lastname
+from employees
+where employeeid in (
+	select employeeid
+	from workswith
+	where totalsales > 30000);
+#Find clients handled by the branch Michael Scott manages.  You know Scott's employeeid and managerid.
+select clientname
+from client
+where branchid = (
+	select branchid
+	from branch
+	where managerid = 102);
 
-#RM:  110719 Watch Introduction to Nested Select Statements [720p] and Nested Queries _ SQL _ Tutorial 18 [720p].  Then the Oracle SQL videos line 216.
-
-#Watch Oracle SQL videos last #64 Using Subqueries, #65 Single Row Subqueries, #66 Multiple Row Subqueries, #67 Multiple Column Subqueries
+#Oracle SQL videos last #64 Using Subqueries, #65 Single Row Subqueries, #66 Multiple Row Subqueries, #67 Multiple Column Subqueries
+#Subquery with another query or the inner query is executed first and the result of the inner subquery is used as the input for the outer query or the main query.  Two or more subqueries are valid.
+#Subqueries can be used with SELECT, WHERE, HAVING, and FROM clauses.
+#There are three types of subqueries:  single row, multiple row, and multiple column.
+#Single row subqueries return one row from the inner query.  Use with single row comparison operators =, >, <, >=, <=, <>.  A single row subquery returns multiple rows generates error message.  A single row subquery returns null main query returns null.
+#Multiple row subqueries return more than one row from the inner query.  Use with multiple row comparison operators in, any, all.  In operator is equal to any element in the list.  Any operator at least one of the elements should match; can be used with comparison operators =, >, <, >=, <=, <>.  < any means less than the maximum.  = any means equal to one of the elements or is the same as in operator.  > any means more than the minimum.  All operator all of the elements should match; can be used with comparison operators =, >, <, >=, <=, <>.   < all means less than the minimum.  = all means nothing if there are more than one records is useless; i.e. many rows returned from the inner query and the outer query doesn't equal all of the inner query.  > all means more than the maximum.  Multiple row subqueries can be used within FROM, WHERE, and HAVING clauses.  Not in SELECT clause.
+#Multiple column subqueries return more than one column in one row.  Can be used with FROM, WHERE, and HAVING clauses.  Useful in writing more than one inner query in one inner query.  Can be used with IN operator.
+#Find employees who earn more than Michael.  We know Michael's employeeid is 201.
+select salary
+from employees
+where employeeid = 201;  #return 13000
+select *
+from employees
+where salary > 13000;
+#What if Michael's salary goes up to 15000?  Create a dynamic SQL query using subqueries.
+select *
+from employees
+where salary > (
+	select salary
+	from employees
+	where employeeid = 201);
+#Find employees who work in same department as Michael's employeeid 201 and earns less than Michael's salary.  Single row multiple subquery multiple subqueries.
+select *
+from employees
+where departmentid = (
+	select departmentid
+	from employees
+	where employeeid = 201)
+and salary < (
+	select salary
+	from employees
+	where employeeid = 201);
+#Find employeee worked in the company first.  Use Group BY group function minimum.  Single row subquery.
+select min(hiredate)
+from employees;  #return 01-01-13
+select *
+from employees
+where hiredate = (
+	select min(hiredate)
+	from employees);
+select firstname, lastname, departmentid, salary
+from employees
+where salary in (14000, 15000, 10000);
+#find employees who earn lowest salaries in their departments.  Single row subquery.
+select firstname, lastname, departmentid, salary
+from employees
+where salary in (
+	select min(salary)
+	from employees
+	group by departmentid);
+#Find employees who earn more than sales managers. sama or sales manager is jobid.  Multiple row subquery.
+select salary
+from employees
+where jobid = 'sama';  #return one column, five rows, five salaries of sales managers
+select firstname, lastname, departmentid, salary
+from employees
+where salary > any (
+	select salary
+	from employees
+	where jobid = 'sama');
+#Find employees who earn more than all sales managers. sama is jobid.  Multiple row subquery.
+select salary
+from employees
+where jobid = 'sama';  #return one column, five rows, five salaries of sales managers
+select firstname, lastname, departmentid, salary
+from employees
+where salary > all (
+	select salary
+	from employees
+	where jobid = 'sama');
+#Find employees who earn the minimum salary in his or her department.  Multiple column subquery.
+select firstname, lastname, departmentid, salary
+from employees
+where departmentid, salary in (
+	select departmentid, min(salary)
+	from employees
+	group by departmentid);
