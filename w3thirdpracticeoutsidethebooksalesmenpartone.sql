@@ -1,6 +1,8 @@
 #https://www.w3resource.com/sql/tutorials.php
 #https://www.w3resource.com/sql-exercises/index.php
 #https://www.w3resource.com/sql-exercises/sql-retrieve-from-table.php
+#https://www.w3resource.com/sql-exercises/sql-boolean-operators.php
+#https://www.w3resource.com/sql-exercises/sql-wildcard-special-operators.php
 /*
 Sample table: salesman
  salesman_id |    name    |   city   | commission 
@@ -93,6 +95,20 @@ Sample table: emp_details
    733843 Mario           Saule                   63
    631548 Alan            Snappy                  27
    839139 Maria           Foster                  57
+Sample table: testtable
+col1
+--------------------------
+A001/DJ-402\44_/100/2015
+A001_\DJ-402\44_/100/2015
+A001_DJ-402-2014-2015
+A002_DJ-401-2014-2015
+A001/DJ_401
+A001/DJ_402\44
+A001/DJ_402\44\2015
+A001/DJ-402%45\2015/200
+A001/DJ_402\45\2015%100
+A001/DJ_402%45\2015/300
+A001/DJ-402\44
 */
 
 #https://www.w3resource.com/sql-exercises/sql-retrieve-from-table.php
@@ -173,7 +189,7 @@ from nobel_win
 where subject = 'Physics'
 and year >= 1950;
 
-#16. Write a SQL query to Show all the details (year, subject, winner, country ) of the Chemistry prize winners between the year 1965 to 1975 inclusive.
+#16. Write a SQL query to Show all the details (year, subject, winner, country ) of the Chemistry prize winners between the year 1965 to 1975 inclusive.  #RM:  between statement is inclusive between statement.
 select *
 from nobel_win
 where subject = 'Chemistry'
@@ -277,3 +293,212 @@ where emp_lname = 'Snares';
 select *
 from emp_details
 where emp_dept = 57;
+
+#https://www.w3resource.com/sql-exercises/sql-boolean-operators.php
+#1. Write a query to display all customers with a grade above 100.
+select *
+from customer
+where grade > 100;
+
+#2. Write a query statement to display all customers in New York who have a grade value above 100.
+select *
+from customer
+where city = 'New York'
+and grade > 100;
+
+#3. Write a SQL statement to display all customers, who are either belongs to the city New York or had a grade above 100.
+select *
+from customer
+where city = 'New York'
+or grade > 100;
+
+#4. Write a SQL statement to display all the customers, who are either belongs to the city New York or not had a grade above 100.
+select *
+from customer
+where city = 'New York'
+or grade <= 100;
+
+#5.Write a SQL query to display those customers who are neither belongs to the city New York nor grade value is more than 100.
+select *
+from customer
+where city <> 'New York'
+or grade <= 100;  #RM:  incorrect.  It's a neither nor.  It appears first SQL is incorrect.
+select *
+from customer
+where not (city = 'New York' or grade > 100);  #RM:  correct.  It's neither nor.
+
+#6. Write a SQL statement to display either those orders which are not issued on date 2012-09-10 and issued by the salesman whose ID is 505 and below or those orders which purchase amount is 1000.00 and below.
+select *
+from orders
+where (ord_date <> '2012-09-10' and salesman_id <= 505)
+or purch_amt < 1000;
+#official solution
+select * 
+from  orders 
+where not ((ord_date ='2012-09-10' and salesman_id > 505)
+or purch_amt > 1000.00);
+
+#7. Write a SQL statement to display salesman_id, name, city and commission who gets the commission within the range more than 0.10% and less than 0.12%.
+select *
+from salesman
+where commission > 0.10 and commission < 0.12;
+
+#8. Write a SQL query to display all orders where purchase amount less than 200 or exclude those orders which order date is on or greater than 10th Feb,2012 and customer id is below 3009.
+select *
+from orders
+where (purch_amt < 200 or ord_date < '2012-02-10')
+and customer_id < 3009;
+
+#9. Write a SQL statement to exclude the rows which satisfy 1) order dates are 2012-08-17 and purchase amount is below 1000 2) customer id is greater than 3005 and purchase amount is below 1000.
+select *
+from orders
+where (ord_date <> '2012-08-17' and purch_amt >= 1000)
+and (customer_id <= 3005 and purch_amt >= 1000);
+
+
+#10. Write a SQL query to display order number, purchase amount, achieved, the unachieved percentage for those order which exceeds the 50% of the target value of 6000.#RM:  looked at solution.  #RM:  dumb question
+select ord_no, purch_amt, (purch_amt/6000) as "achieved %", ((6000-purch_amt)/6000) as "unachieved % which is 1.0-achieved"
+from orders
+where (purch_amt/6000) > .50;
+
+#11. Write a query in SQL to find the data of employees whose last name is Dosni or Mardy.
+select *
+from emp_details
+where emp_lname in ('Dosni','Mardy');
+
+#12. Write a query in SQL to display all the data of employees that work in department 47 or department 63.
+select *
+from emp_details
+where emp_dept in (47, 63);
+
+#https://www.w3resource.com/sql-exercises/sql-wildcard-special-operators.php
+#1. Write a SQL statement to find those salesmen with all information who come from the city either Paris or Rome.
+select *
+from salesman
+where city = 'Paris'
+or city = 'Rome';
+
+#2. Write a query to filter those salesmen with all information who comes from any of the cities Paris and Rome.
+select *
+from salesman
+where city in ('Paris','Rome');
+
+#3. Write a query to produce a list of salesman_id, name, city and commission of each salesman who live in cities other than Paris and Rome.
+select *
+from salesman
+where city not in ('Paris','Rome');
+
+#4. Write a query to sort out those customers with all information whose ID value is within any of 3007, 3008 and 3009.
+select *
+from customer
+where customer_id in (3007,3008,3009);
+
+#5. Write a SQL statement to find those salesmen with all information who gets the commission within a range of 0.12 and 0.14.
+select *
+from salesman
+where commission between 0.12 and 0.14;
+
+#6. Write a query to filter all those orders with all information which purchase amount value is within the range 500 and 4000 except those orders of purchase amount value 948.50 and 1983.43.
+select *
+from orders
+where purch_amt between 500 and 4000
+and purch_amt not in (948.50, 1983.43);
+
+#7. Write a SQL statement to find those salesmen with all other information and name started with any letter within 'A' and 'K'.  #RM:  find name starting with the letters between A and K.
+select *
+from salesman
+where name between like 'A%' and like 'K%';  #does it work?  No.  It appears like is invalid.
+#official solution
+select *
+from salesman
+where name between 'A' and 'K';
+#oracle solution? from user
+select *
+from salesman
+where name like '[a-k]%';
+
+#8. Write a SQL statement to find those salesmen with all other information and name started with other than any latter within 'A' and 'L'. 
+select *
+from salesman
+where name not between 'A%' and 'L%';  #It Like is invalid.  Exclude in between statement.
+
+#9. Write a SQL statement to find that customer with all information whose name begin with the letter 'B'.
+select *
+from customer
+where cust_name like 'B%';
+
+#10. Write a SQL statement to find all those customers with all information whose names are ending with the letter 'n'.
+select *
+from customer
+where cust_name like '%n';
+
+#11. Write a SQL statement to find those salesmen with all information whose name containing the 1st character is 'N' and the 4th character is 'l' and rests may be any character.
+select *
+from salesman
+where name like 'N__l%';
+
+#12. Write a SQL statement to find those rows from the table testtable which contain the escape character underscore ( _ ) in its column 'col1'.  #RM:  underscore _ is a wildcard character.
+select *
+from testtable
+where col1 like '%/_%' escape '/';
+#RM:  Oracle SQl escape character http://www.dba-oracle.com/t_special_characters_like_sql_query.htm
+/*
+set escape '\'
+select stuff
+from mytable
+where mycool like '%\_to\_%';
+#also
+select stuff
+from mytable
+where mycool like '%\_to\_%' escape '\';
+*/
+
+#13. Write a SQL statement to find those rows from the table testtable which does not contain the character underscore ( _ ) in its column 'col1'.
+select *
+from testtable
+where col1 not like '%/_%' escape '/';
+
+#14. Write a SQL statement to find those rows from the table testtable which contain the escape character ( / ) in its column 'col1'.
+select *
+from testtable
+where col1 like '%//%' escape '/';
+
+#15. Write a SQL statement to find those rows from the table testtable which does not contain the escape character ( / ) in its column 'col1'.
+select *
+from testtable
+where col1 not like '%//%' escape '/';
+
+#16. Write a SQL statement to find those rows from the table testtable which contain the string ( _/ ) in its column 'col1'.
+select *
+from testtable
+where col1 like '%/_//%' escape '/'; #RM:  need two escape /.  One for the _.  Second for the /.
+
+#17. Write a SQL statement to find those rows from the table testtable which does not contain the string ( _/ ) in its column 'col1'.
+select *
+from testtable
+where col1 not like '%/_//%' escape '/'; #RM:  need two escape /.  One for the _.  Second for the /.
+
+#18. Write a SQL statement to find those rows from the table testtable which contain the character ( % ) in its column 'col1'.
+select *
+from testtable
+where col1 like '%/%%' escape '/';
+
+#19. Write a SQL statement to find those rows from the table testtable which does not contain the character ( % ) in its column 'col1'.
+select *
+from testtable
+where col1 not like '%/%%' escape '/';
+
+#20. Write a SQL statement to find that customer with all information who does not get any grade except NULL.
+select *
+from customer
+where grade is null;
+
+#21. Write a SQL statement to find that customer with all information who gets a grade except NULL value.
+select *
+from customer
+where grade is not null;
+
+#22. Write a query in SQL to display all the data of employees whose last name begins with an 'D'.
+select *
+from emp_details
+where emp_lname like 'D%';
