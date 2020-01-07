@@ -162,17 +162,6 @@ COM_ID COM_NAME
     110 Mouse                            250         12
 */
 
-#emp_department
-/*
-DPT_CODE DPT_NAME        DPT_ALLOTMENT
--------- --------------- -------------
-      57 IT                      65000
-      63 Finance                 15000
-      47 HR                     240000
-      27 RD                      55000
-      89 QC                      75000
-*/
-
 #emp_details
 /*
  EMP_IDNO EMP_FNAME       EMP_LNAME         EMP_DEPT
@@ -422,6 +411,7 @@ DPT_CODE DPT_NAME        DPT_ALLOTMENT
 |        3100 | Pieter Breughelstraat 837                | 3029SK      | Utrecht             | Utrecht           | NL         |
 |        3200 | Mariano Escobedo 9991                    | 11932       | Mexico City         | Distrito Federal, | MX         |
 +-------------+------------------------------------------+-------------+---------------------+-------------------+------------+
+
 #jobs
 +------------+---------------------------------+------------+------------+
 | JOB_ID     | JOB_TITLE                       | MIN_SALARY | MAX_SALARY |
@@ -446,4 +436,49 @@ DPT_CODE DPT_NAME        DPT_ALLOTMENT
 | HR_REP     | Human Resources Representative  |       4000 |       9000 |
 | PR_REP     | Public Relations Representative |       4500 |      10500 |
 +------------+---------------------------------+------------+------------+
+*/
+
+#job_grades
+/*
+GRADE_LEVEL  LOWEST_SAL HIGHEST_SAL
+------------ ---------- -----------
+A              1000        2999
+B              3000        5999
+C              6000        9999
+D             10000       14999
+E             15000       24999
+F             25000       40000
+*/
+
+#countries
+/*
++------------+--------------------------+-----------+
+| COUNTRY_ID | COUNTRY_NAME             | REGION_ID |
++------------+--------------------------+-----------+
+| AR         | Argentina                |         2 |
+| AU         | Australia                |         3 |
+| BE         | Belgium                  |         1 |
+| BR         | Brazil                   |         2 |
+| CA         | Canada                   |         2 |
+| CH         | Switzerland              |         1 |
+| CN         | China                    |         3 |
+| DE         | Germany                  |         1 |
+| DK         | Denmark                  |         1 |
+| EG         | Egypt                    |         4 |
+| FR         | France                   |         1 |
+| IL         | Israel                   |         4 |
+| IN         | India                    |         3 |
+| IT         | Italy                    |         1 |
+| JP         | Japan                    |         3 |
+| KW         | Kuwait                   |         4 |
+| ML         | Malaysia                 |         3 |
+| MX         | Mexico                   |         2 |
+| NG         | Nigeria                  |         4 |
+| NL         | Netherlands              |         1 |
+| SG         | Singapore                |         3 |
+| UK         | United Kingdom           |         1 |
+| US         | United States of America |         2 |
+| ZM         | Zambia                   |         4 |
+| ZW         | Zimbabwe                 |         4 |
++------------+--------------------------+-----------+
 */
