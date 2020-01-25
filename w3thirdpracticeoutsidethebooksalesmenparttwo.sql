@@ -740,8 +740,94 @@ where department_id in (
 group by country_name,city;
 
 #22. Write a query in SQL to display the department name, full name (first and last name) of manager, and their city.
+select d.department_name, e.first_name, e.last_name, l.city
+from departments d, employees e, locations l
+where d.manager_id = e.employee_id
+and d.location_id = l.location_id;
+
 #23. Write a query in SQL to display the employee ID, job name, number of days worked in for all those jobs in department 80.
+select job_history.employee_id, jobs.job_title as "Job Name", (job_history.end_date-job_history.start_date) as "Number Days Worked"
+from job_history join jobs
+on job_history.job_id = jobs.job_id
+where job_history.department_id = 80;
+#official solution
+select employee_id, job_title, end_date-start_date days
+from job_history natural join jobs
+where department_id=80;
+
 #24. Write a query in SQL to display the full name (first and last name), and salary of those employees who working in any department located in London.
+select e.first_name, e.last_name, e.salary
+from employees e, departments d, locations l
+where e.department_id = d.department_id
+and d.location_id = l.location_id
+and l.city = 'London';
+#also
+select first_name, last_name, salary
+from employees
+where department_id in (
+	select department_id
+	from departments
+	where location_id = (
+		select location_id
+		from locations
+		where city = 'London'));
+
 #25. Write a query in SQL to display full name(first and last name), job title, starting and ending date of last jobs for those employees with worked without a commission percentage.
+select e.first_name, e.last_name, e.job_id, job_history.start_date, job_history.end_date
+from employees e, job_history
+where e.employee_id = job_history.employee_id
+and e.commission_pct = 0.00;
+#also
+select e.first_name || ' ' || e.last_name as "Full Name", j.job_title, jobhistory.start_date, jobhistory.end_date
+from employees e join job_history jobhistory
+on e.employee_id = jobhistory.employee_id
+join jobs j
+on jobhistory.job_id = j.job_id
+where e.commission_pct = 0;  #RM:  problem is there are two employees with two job_id in job_history table.  We want the latest job or the job with the latest date; e.g. start date 9/21/97 or 10/28/01 we want 10/28/01.
+#correct answer
+select e.first_name || ' ' || e.last_name as "Full Name", j.job_title, jobhistoryspecial.*
+from employees e join (
+	select max(start_date), max(end_date), employee_id
+	from job_history
+	group by employee_id) jobhistoryspecial
+on e.employee_id = jobhistoryspecial.employee_id
+join jobs j
+on j.job_id = e.job_id
+where e.commission_pct = 0;
+/*
+employee_name		job_title			starting_date	ending_date	employee_id
+Neena Kochhar		Administration Vice President	2001-10-28	2005-03-15	101
+Lex De Haan		Administration Vice President	2001-01-13	2006-07-24	102
+Den Raphaely		Purchasing Manager		2006-03-24	2007-12-31	114
+Payam Kaufling		Stock Manager			2007-01-01	2007-12-31	122
+Jennifer Whalen		Administration Assistant	2002-07-01	2006-12-31	200
+Michael Hartstein	Marketing Manager		2004-02-17	2007-12-19	201
+*/
+
 #26. Write a query in SQL to display the department name and number of employees in each of the department.
+select d.department_name, count(e.department_id)
+from departments d, employees e
+where e.department_id = d.department_id
+group by e.department_id;
+#official solution which added department_id column
+select d.department_name, e.*
+from departments d join (
+	select department_id, count(employee_id)
+	from employees
+	group by department_id) e
+using (department_id);
+
 #27. Write a query in SQL to display the full name (firt and last name ) of employee with ID and name of the country presently where (s)he is working.
+select e.first_name, e.last_name, e.employee_id, c.country_name
+from employees e, departments d, locations l, countries c
+where e.department_id = d.department_id
+and d.location_id = l.location_id
+and l.country_id = c.country_id;
+#also
+select e.first_name, e.last_name, e.employee_id, c.country_name
+from employees e inner join departments d
+on e.department_id = d.department_id
+inner join locations l
+on d.location_id = l.location_id
+inner join countries c
+on l.country_id = c.country_id;
