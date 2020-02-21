@@ -335,3 +335,168 @@ where purch_amt < (
 	from orders o, customer c
 	where o.customer_id=c.customer_id
 	and c.city = 'London');
+
+#26. Write a query to display only those customers whose grade are, in fact, higher than every customer in New York.
+select main.*
+from customer main
+where main.grade > all (
+	select subquery.grade
+	from customer subquery
+	where subquery.city = 'New York');
+
+#27. Write a query to find only those customers whose grade are, higher than every customer to the city New York.
+select main.*
+from customer main
+where main.grade > all (
+	select subquery.grade
+	from customer subquery
+	where subquery.city = 'New York');
+
+#28. Write a query to get all the information for those customers whose grade is not as the grade of customer who belongs to the city London.
+select main.*
+from customer main
+where main.grade not in (
+	select subquery.grade
+	from customer subquery
+	where city = 'London');  #RM:  query works as long as there's no null grades.
+#official solution
+select *
+from customer
+where grade <> any (
+	select grade
+	from customer
+	where city = 'London');
+
+#29. Write a query to find all those customers whose grade are not as the grade, belongs to the city Paris.
+select main.*
+from customer main
+where main.grade not in (
+	select subquery.grade
+	from customer subquery
+	where subquery.city = 'Paris');
+
+#30. Write a query to find all those customers who hold a different grade than any customer of the city Dallas.
+select a.*
+from customer a
+where a.grade not in (
+	select b.grade
+	from customer b
+	where b.city = 'Dallas');
+
+#31. Write a SQL query to find the average price of each manufacturer's products along with their name.
+select c.com_name, avg(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name;
+/*
+com_name	avg
+Samsung	5000.0000000000000000
+iBall	650.0000000000000000
+Epsion	1475.0000000000000000
+Frontech	500.0000000000000000
+Zebronics	250.0000000000000000
+Asus	3200.000000000000000
+*/
+
+#32. Write a SQL query to display the average price of the products which is more than or equal to 350 along with their names.
+select c.com_name, avg(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name
+having avg(i.pro_price) >= 350;
+
+#33. Write a SQL query to display the name of each company, price for their most expensive product along with their Name.
+select c.com_name, max(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name;
+/*
+com_name	max
+Samsung	5000.00
+iBall	900.00
+Epsion	2600.00
+Frontech	550.00
+Zebronics	250.00
+Asus	3200.00
+*/
+select company.com_name, item.pro_name, item.pro_price
+from item_mast item, company_mast company
+where item.pro_com = company.com_id
+and item.pro_price = (
+	select max(itemb.pro_price)
+	from item_mast itemb
+	where itemb.pro_com = company.com_id
+	group by itemb.pro_com)
+/*
+com_name	pro_name	pro_price
+Samsung	Monitor	5000.00
+iBall	DVD drive	900.00
+Epsion	Printer	2600.00
+Zebronics	ZIP drive	250.00
+Asus	Mother Board	3200.00
+Frontech	Speaker	550.00
+*/
+select company.com_name, item.pro_name, item.pro_price
+from item_mast item, company_mast company
+where item.pro_com = company.com_id
+and item.pro_price = (
+	select max(itemb.pro_price)
+	from item_mast itemb, company_mast companyb
+	where itemb.pro_com = companyb.com_id
+	group by itemb.pro_com);
+/*
+returns no rows
+*/
+
+#34. Write a query in SQL to find all the details of employees whose last name is Gabriel or Dosio.
+select *
+from emp_details
+where emp_lname in ('Gabriel','Dosio');
+
+#35. Write a query in SQL to display all the details of employees who works in department 89 or 63.
+select emp_details.*
+from emp_details, emp_department
+where emp_details.emp_dept = emp_department.dpt_code
+and emp_department.dpt_code in (89,63);
+
+#36. Write a query in SQL to display the first name and last name of employees working for the department which allotment amount is more than Rs.50000.
+select emp_details.*
+from emp_details, emp_department
+where emp_details.emp_dept = emp_department.dpt_code
+and emp_department.dpt_allotment > 50000;
+
+#37. Write a query in SQL to find the departments which sanction amount is larger than the average sanction amount of all the departments.
+select *
+from emp_department
+where dpt_allotment > (
+	select avg(dpt_allotment)
+	from emp_department);
+
+#38. Write a query in SQL to find the names of departments with more than two employees are working.
+select dpt_name
+from emp_department
+where dpt_code in (
+	select emp_dept
+	from emp_details
+	group by emp_dept
+	having count(emp_dept) > 2);
+
+#39. Write a query in SQL to find the first name and last name of employees working for departments which sanction amount is second lowest.
+/*
+emp_idno	emp_fname	emp_lname	emp_dept
+631548	Alan	Snappy	27
+539569	George	Mardy	27
+*/
+select *
+from emp_details
+where emp_dept in (
+	select dpt_code from (
+		select dpt_code, rank() over (order by dpt_allotment asc) rank from emp_department) neednamehere
+		where rank = 2);
+#user solution
+select *
+from emp_details
+where emp_dept = (
+	select dpt_code
+	from emp_department
+	order by dpt_allotment limit 1 offset 1);
