@@ -86,7 +86,7 @@ ord_no	purch_amt	ord_date	customer_id	salesman_id
 70001	150.50	2012-10-05	3005	5002
 70012	250.45	2012-06-27	3008	5002
 */
-#RM:  order 70009 $270.65 in results is incorrect
+#RM:  ord_no 70009 $270.65 in results is incorrect
 #official solution
 #RM:  subquery and join
 select *
@@ -96,3 +96,62 @@ where purch_amt < any (
 	from orders o, customer c
 	where o.customer_id=c.customer_id
 	and c.city = 'London');
+
+#28. Write a query to get all the information for those customers whose grade is not as the grade of customer who belongs to the city London.
+select main.*
+from customer main
+where main.grade not in (
+	select subquery.grade
+	from customer subquery
+	where city = 'London');  #RM:  query works as long as there's no null grades.
+#official solution
+select *
+from customer
+where grade <> any (
+	select grade
+	from customer
+	where city = 'London');
+
+#33. Write a SQL query to display the name of each company, price for their most expensive product along with their Name.
+select c.com_name, max(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name;
+/*
+com_name	max
+Samsung	5000.00
+iBall	900.00
+Epsion	2600.00
+Frontech	550.00
+Zebronics	250.00
+Asus	3200.00
+*/
+select company.com_name, item.pro_name, item.pro_price
+from item_mast item, company_mast company
+where item.pro_com = company.com_id
+and item.pro_price = (
+	select max(itemb.pro_price)
+	from item_mast itemb
+	where itemb.pro_com = company.com_id
+	group by itemb.pro_com)
+/*
+com_name	pro_name	pro_price
+Samsung	Monitor	5000.00
+iBall	DVD drive	900.00
+Epsion	Printer	2600.00
+Zebronics	ZIP drive	250.00
+Asus	Mother Board	3200.00
+Frontech	Speaker	550.00
+*/
+select company.com_name, item.pro_name, item.pro_price
+from item_mast item, company_mast company
+where item.pro_com = company.com_id
+and item.pro_price = (
+	select max(itemb.pro_price)
+	from item_mast itemb, company_mast companyb
+	where itemb.pro_com = companyb.com_id
+	group by itemb.pro_com);
+/*
+returns no rows
+*/
+
