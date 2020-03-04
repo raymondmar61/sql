@@ -155,3 +155,165 @@ and item.pro_price = (
 returns no rows
 */
 
+#https://www.w3resource.com/sql-exercises/joins-hr/index.php
+#bonus
+#self join all employees and his or her manager or no manager
+select e.employee_id, e.first_name, e.last_name, manager.employee_id as "manager's employee id", manager.first_name as "manager first name", manager.last_name as "manager last name"
+from employees e left outer join employees manager
+on e.manager_id = manager.employee_id;
+/*
+employee_id	first_name	last_name	manager's employee id	manager first name	manager last name
+100	Steven	King			
+101	Neena	Kochhar	100	Steven	King
+102	Lex	De Haan	100	Steven	King
+103	Alexander	Hunold	102	Lex	De Haan
+104	Bruce	Ernst	103	Alexander	Hunold
+105	David	Austin	103	Alexander	Hunold
+106	Valli	Pataballa	103	Alexander	Hunold
+107	Diana	Lorentz	103	Alexander	Hunold
+108	Nancy	Greenberg	101	Neena	Kochhar
+109	Daniel	Faviet	108	Nancy	Greenberg
+110	John	Chen	108	Nancy	Greenberg
+111	Ismael	Sciarra	108	Nancy	Greenberg
+112	Jose Manuel	Urman	108	Nancy	Greenberg
+113	Luis	Popp	108	Nancy	Greenberg
+114	Den	Raphaely	100	Steven	King
+115	Alexander	Khoo	114	Den	Raphaely
+116	Shelli	Baida	114	Den	Raphaely
+117	Sigal	Tobias	114	Den	Raphaely
+118	Guy	Himuro	114	Den	Raphaely
+119	Karen	Colmenares	114	Den	Raphaely
+120	Matthew	Weiss	100	Steven	King
+121	Adam	Fripp	100	Steven	King
+122	Payam	Kaufling	100	Steven	King
+123	Shanta	Vollman	100	Steven	King
+124	Kevin	Mourgos	100	Steven	King
+125	Julia	Nayer	120	Matthew	Weiss
+126	Irene	Mikkilineni	120	Matthew	Weiss
+127	James	Landry	120	Matthew	Weiss
+128	Steven	Markle	120	Matthew	Weiss
+129	Laura	Bissot	121	Adam	Fripp
+130	Mozhe	Atkinson	121	Adam	Fripp
+*/
+
+#7. Write a query in SQL to display the first and last name and salary for those employees who earn less than the employee earn whose number is 182.
+select first_name, last_name, salary
+from employees
+where salary < (
+	select salary
+	from employees
+	where employee_id = 182);
+#also using joins
+select e.first_name, e.last_name, e.salary
+from employees e join employees salary182
+on e.salary < salary182.salary
+and salary182.employee_id = 182;
+/*
+first_name	last_name	salary
+James		Landry		2400.00
+Steven		Markle		2200.00
+TJ		Olson		2100.00
+Ki		Gee		2400.00
+Hazel		Philtanker	2200.00
+*/
+
+#12. Write a query in SQL to display the first name, last name, and department number for those employees who works in the same department as the employee who holds the last name as Taylor.
+select first_name, last_name, department_id
+from employees
+where department_id in (
+	select department_id
+	from employees
+	where last_name = 'Taylor');
+#also using joins
+select e.first_name, e.last_name, e.department_id
+from employees e join employees taylor
+on e.department_id = taylor.department_id
+and taylor.last_name = 'Taylor';
+/*
+first_name	last_name	department_id
+Matthew	Weiss	50
+Adam	Fripp	50
+Payam	Kaufling	50
+Shanta	Vollman	50
+Kevin	Mourgos	50
+Julia	Nayer	50
+Irene	Mikkilineni	50
+James	Landry	50
+Steven	Markle	50
+Laura	Bissot	50
+Mozhe	Atkinson	50
+James	Marlow	50
+TJ	Olson	50
+Jason	Mallin	50
+Michael	Rogers	50
+Ki	Gee	50
+Hazel	Philtanker	50
+Renske	Ladwig	50
+Stephen	Stiles	50
+John	Seo	50
+Joshua	Patel	50
+Trenna	Rajs	50
+Curtis	Davies	50
+Randall	Matos	50
+Peter	Vargas	50
+John	Russell	80
+Karen	Partners	80
+Alberto	Errazuriz	80
+Gerald	Cambrault	80
+Eleni	Zlotkey	80
+Peter	Tucker	80
+David	Bernstein	80
+...
+*/
+
+#25. Write a query in SQL to display full name(first and last name), job title, starting and ending date of last jobs for those employees with worked without a commission percentage.
+#partially correct because wanted the last job
+select e.first_name, e.last_name, j.job_title, job_history.start_date, job_history.end_date
+from employees e join job_history
+on e.employee_id = job_history.employee_id
+join jobs j
+on job_history.job_id = j.job_id
+where e.commission_pct = 0;
+/*
+first_name	last_name	job_title	start_date	end_date
+Jennifer	Whalen	Administration Assistant	1995-09-17	2001-06-17
+Neena	Kochhar	Accounting Manager	2001-10-28	2005-03-15
+Jennifer	Whalen	Public Accountant	2002-07-01	2006-12-31
+Neena	Kochhar	Public Accountant	1997-09-21	2001-10-27
+Payam	Kaufling	Stock Clerk	2007-01-01	2007-12-31
+Den	Raphaely	Stock Clerk	2006-03-24	2007-12-31
+Lex	De Haan	Programmer	2001-01-13	2006-07-24
+Michael	Hartstein	Marketing Representative	2004-02-17	2007-12-19
+*/
+#official solution
+select concat(e.first_name, ' ', e.last_name) as employee_name, j.job_title, h.*
+from employees e join (
+	select max(start_date), max(end_date), employee_id
+	from job_history
+	group by employee_id) h
+	on e.employee_id=h.employee_id
+join jobs j
+on j.job_id=e.job_id
+where e.commission_pct = 0;
+/*
+employee_name		job_title			starting_date	ending_date	employee_id
+Neena Kochhar		Administration Vice President	2001-10-28	2005-03-15	101
+Lex De Haan		Administration Vice President	2001-01-13	2006-07-24	102
+Den Raphaely		Purchasing Manager		2006-03-24	2007-12-31	114
+Payam Kaufling		Stock Manager			2007-01-01	2007-12-31	122
+Jennifer Whalen		Administration Assistant	2002-07-01	2006-12-31	200
+Michael Hartstein	Marketing Manager		2004-02-17	2007-12-19	201
+*/
+#user solution
+select e.first_name, e.last_name, j.job_title. h.start_date, h.end_date
+from jobs j join job_history h
+on h.job_id = j.job_id
+join employees e
+on e.employee_id = h.employee_id
+where e.commission_pct = 0
+and h.start_date = (
+	select max(start_date)
+	from job_history h1
+	where h.employee_id = h1.employee_id);
+/* can't confirm user solution works */
+

@@ -1,6 +1,7 @@
 #https://www.w3resource.com/sql/tutorials.php
 #https://www.w3resource.com/sql-exercises/index.php
 #https://www.w3resource.com/sql-exercises/sorting-and-filtering-hr/index.php
+#https://www.w3resource.com/sql-exercises/joins-hr/index.php
 
 #https://www.w3resource.com/sql-exercises/sorting-and-filtering-hr/index.php
 #1. Write a query in SQL to display the full name (first and last name), and salary for those employees who earn below 6000.
@@ -258,3 +259,345 @@ where min_salary > 9000;
 select *
 from employees
 where hire_date > '1987-09-07';
+
+#https://www.w3resource.com/sql-exercises/joins-hr/index.php
+#1. Write a query in SQL to display the first name, last name, department number, and department name for each employee.
+select e.first_name, e.last_name, e.department_id, d.department_name
+from employees e join departments d
+on e.department_id = d.department_id;
+#also
+select e.first_name, e.last_name, e.department_id, d.department_name
+from employees e, departments d
+where e.department_id = d.department_id;
+
+#2. Write a query in SQL to display the first and last name, department, city, and state province for each employee.
+select e.first_name, e.last_name, d.department_name, l.city, l.state_province
+from employees e join departments d
+on e.department_id = d.department_id
+join locations l
+on d.location_id = l.location_id;
+
+#3. Write a query in SQL to display the first name, last name, salary, and job grade for all employees.
+select e.first_name, e.last_name, e.salary, j.grade_level
+from employees e join job_grade j
+on e.salary between j.lowest_sal and j.highest_sal;
+
+#4. Write a query in SQL to display the first name, last name, department number and department name, for all employees for departments 80 or 40.
+select e.first_name, e.last_name, e.department_id, d.department_name
+from employees e join departments d
+on e.department_id = d.department_id
+where e.department_id in (80,40)
+order by e.last_name;
+
+#5. Write a query in SQL to display those employees who contain a letter z to their first name and also display their last name, department, city, and state province.
+select e.first_name, e.last_name, d.department_name, l.city, l.state_province
+from employees e join departments d
+on e.department_id = d.department_id
+join locations l
+on d.location_id = l.location_id
+where e.first_name like '%z%';
+
+#6. Write a query in SQL to display all departments including those where does not have any employee.  #RM:  Example of right outer join.  Display employees and their departments and departments without employees
+select e.first_name, e.last_name, d.department_id, d.department_name
+from employees e right outer join departments d
+on e.department_id = d.department_id;
+
+#7. Write a query in SQL to display the first and last name and salary for those employees who earn less than the employee earn whose number is 182.
+select first_name, last_name, salary
+from employees
+where salary < (
+	select salary
+	from employees
+	where employee_id = 182);
+#also using joins
+select e.first_name, e.last_name, e.salary
+from employees e join employees salary182
+on e.salary < salary182.salary
+and salary182.employee_id = 182;
+
+#8. Write a query in SQL to display the first name of all employees including the first name of their manager.
+select e.first_name as "employee", m.first_name as "manager"
+from employees e join employees m
+on e.manager_id = m.employee_id;
+
+#9. Write a query in SQL to display the department name, city, and state province for each department.
+select d.department_name, l.city, l.state_province
+from departments d join locations l
+on d.location_id = l.location_id;
+
+#10. Write a query in SQL to display the first name, last name, department number and name, for all employees who have or have not any department.  #RM:  practice left outer join
+select e.first_name, e.last_name, e.department_id, d.department_name
+from employees e left outer join departments d
+on e.department_id = d.department_id;
+
+#11. Write a query in SQL to display the first name of all employees and the first name of their manager including those who does not working under any manager.
+select e.first_name as "employee", m.first_name as "manager"
+from employees e left outer join employees m
+on e.manager_id = m.employee_id;
+
+#12. Write a query in SQL to display the first name, last name, and department number for those employees who works in the same department as the employee who holds the last name as Taylor.
+select first_name, last_name, department_id
+from employees
+where department_id in (
+	select department_id
+	from employees
+	where last_name = 'Taylor');
+#also using joins
+select e.first_name, e.last_name, e.department_id
+from employees e join employees taylor
+on e.department_id = taylor.department_id
+and taylor.last_name = 'Taylor';
+
+#13. Write a query in SQL to display the job title, department name, full name (first and last name ) of employee, and starting date for all the jobs which started on or after 1st January, 1993 and ending with on or before 31 August, 1997.
+select jobs.job_title, d.department_name, e.first_name, e.last_name, e.hire_date
+from employees e join departments d
+on e.department_id = d.department_id
+join jobs
+on jobs.job_id = e.job_id
+join job_history
+on job_history.employee_id = e.employee_id
+where job_history.start_date >= '1993-01-01'
+and job_history.start_date <= '1997-08-31';
+/*
+job_title		department_name		employee_name	start_date
+Administration Assistant  Executive	 Jennifer Whalen	1995-09-17
+*/
+
+#14. Write a query in SQL to display job title, full name (first and last name ) of employee, and the difference between maximum salary for the job and salary of the employee.
+select jobs.job_title, e.first_name, e.last_name, jobs.max_salary-e.salary as "difference max salary and employee salary"
+from employees e join jobs
+on e.job_id = jobs.job_id;
+
+#15. Write a query in SQL to display the name of the department, average salary and number of employees working in that department who got commission.
+select d.department_name, round(avg(e.salary),2), count(e.department_id)
+from employees e join departments d
+on e.department_id = d.department_id
+group by d.department_name;
+/*
+department_name	round	count
+Shipping	3475.56	45
+Sales	8955.88	34
+IT	5760.00	5
+Administration	4400.00	1
+Finance	8600.00	6
+Purchasing	4150.00	6
+Marketing	9500.00	2
+Public Relations	10000.00	1
+Accounting	10150.00	2
+Executive	19333.33	3
+Human Resources	6500.00	1
+*/
+
+#16. Write a query in SQL to display the full name (first and last name ) of employees, job title and the salary differences to their own job for those employees who is working in the department ID 80.  #RM:  salary difference is the max salary and the employee's salary.
+select e.first_name, e.last_name, jobs.job_title, jobs.max_salary-e.salary as "difference max salary and employee salary"
+from employees e join jobs
+on e.job_id = jobs.job_id
+where e.department_id = 80;
+
+#17. Write a query in SQL to display the name of the country, city, and the departments which are running there.
+select c.country_name, l.city, d.department_name
+from departments d join locations l
+on d.location_id = l.location_id
+join countries c
+on l.country_id = c.country_id;
+#official solution
+select country_name,city, department_name 
+from countries 
+join locations using (country_id) 
+join departments using (location_id);
+
+#18. Write a query in SQL to display department name and the full name (first and last name) of the manager.
+select d.department_name, e.first_name, e.last_name
+from departments d join employees e
+on d.manager_id = e.manager_id;
+
+#19. Write a query in SQL to display job title and average salary of employees.
+select jobs.job_title, avg(e.salary)
+from jobs join employees e
+on jobs.job_id = e.job_id
+group by jobs.job_title;
+
+#20. Write a query in SQL to display the details of jobs which was done by any of the employees who is presently earning a salary on and above 12000.
+select job_history.*
+from job_history join employees e
+on job_history.employee_id = e.employee_id
+where e.salary >= 12000;
+
+#21. Write a query in SQL to display the country name, city, and number of those departments where at leaste 2 employees are working.  #RM:  I don't understand question.  I think questions asks find country and city and the number of departments in the country and city where the departments havae two or more workers.
+select c.country_name, l.city, count(e.employee_id)
+from employees e join departments d
+on e.department_id = d.department_id
+join locations l
+on d.location_id = l.location_id
+join countries c
+on l.country_id = c.country_id
+group by c.country_name, l.city
+having count(e.employee_id) >= 2;
+/*
+country_name	city	count
+Canada	Toronto	2
+United States of America	Seattle	18
+United States of America	South San Francisco	45
+United States of America	Southlake	5
+*/
+#official solution
+select country_name, city, count(department_id)
+from countries 
+join locations using (country_id) 
+join departments using (location_id) 
+where department_id in (
+	select department_id 
+	from employees 
+	group by department_id 
+	having count(department_id)>=2)
+group by country_name,city;
+/*
+country_name			city			count
+United States of America 	South San Francisco	1
+Canada				Toronto			1
+United States of America	Seattle			4
+United States of America	Southlake		1
+*/
+
+#22. Write a query in SQL to display the department name, full name (first and last name) of manager, and their city.
+#used official solution.
+select d.department_name, e.first_name, e.last_name, l.city
+from employees e join departments d
+on e.employee_id = d.manager_id
+join locations l
+on d.location_id = l.location_id;
+#RM:  department's table includes manager's id.
+/*
+department_name	first_name	last_name	city
+Executive	Steven	King	Seattle
+IT	Alexander	Hunold	Southlake
+Finance	Nancy	Greenberg	Seattle
+Purchasing	Den	Raphaely	Seattle
+Shipping	Adam	Fripp	South San Francisco
+Sales	John	Russell	OX9 9ZB
+Administration	Jennifer	Whalen	Seattle
+Marketing	Michael	Hartstein	Toronto
+Human Resources	Susan	Mavris	London
+Public Relations	Hermann	Baer	Munich
+Accounting	Shelley	Higgins	Seattle
+*/
+
+#bonus
+select e.employee_id, e.first_name, e.last_name, manager.employee_id "manager's employee id", manager.first_name as "manager first name", manager.last_name as "manager last name"
+from employees e left outer join employees manager
+on e.manager_id = manager.employee_id;
+/*
+employee_id	first_name	last_name	manager's employee id	manager first name	manager last name
+100	Steven	King			
+101	Neena	Kochhar	100	Steven	King
+102	Lex	De Haan	100	Steven	King
+103	Alexander	Hunold	102	Lex	De Haan
+104	Bruce	Ernst	103	Alexander	Hunold
+105	David	Austin	103	Alexander	Hunold
+106	Valli	Pataballa	103	Alexander	Hunold
+107	Diana	Lorentz	103	Alexander	Hunold
+108	Nancy	Greenberg	101	Neena	Kochhar
+109	Daniel	Faviet	108	Nancy	Greenberg
+110	John	Chen	108	Nancy	Greenberg
+111	Ismael	Sciarra	108	Nancy	Greenberg
+112	Jose Manuel	Urman	108	Nancy	Greenberg
+113	Luis	Popp	108	Nancy	Greenberg
+114	Den	Raphaely	100	Steven	King
+115	Alexander	Khoo	114	Den	Raphaely
+116	Shelli	Baida	114	Den	Raphaely
+117	Sigal	Tobias	114	Den	Raphaely
+118	Guy	Himuro	114	Den	Raphaely
+119	Karen	Colmenares	114	Den	Raphaely
+120	Matthew	Weiss	100	Steven	King
+121	Adam	Fripp	100	Steven	King
+122	Payam	Kaufling	100	Steven	King
+123	Shanta	Vollman	100	Steven	King
+124	Kevin	Mourgos	100	Steven	King
+125	Julia	Nayer	120	Matthew	Weiss
+126	Irene	Mikkilineni	120	Matthew	Weiss
+127	James	Landry	120	Matthew	Weiss
+128	Steven	Markle	120	Matthew	Weiss
+129	Laura	Bissot	121	Adam	Fripp
+130	Mozhe	Atkinson	121	Adam	Fripp
+*/
+
+#23. Write a query in SQL to display the employee ID, job name, number of days worked in for all those jobs in department 80.
+select job_history.employee_id, j.job_title, job_history.end_date-job_history.start_date
+from job_history join jobs j
+on job_history.job_id = j.job_id
+where job_history.department_id = 80;
+
+#24. Write a query in SQL to display the full name (first and last name), and salary of those employees who working in any department located in London.
+select e.first_name, e.last_name, e.salary
+from employees e join departments d
+on e.department_id = d.department_id
+join locations l
+on d.location_id = l.location_id
+where l.city = 'London';
+
+#25. Write a query in SQL to display full name(first and last name), job title, starting and ending date of last jobs for those employees with worked without a commission percentage.
+#partially correct because wanted the last job
+select e.first_name, e.last_name, j.job_title, job_history.start_date, job_history.end_date
+from employees e join job_history
+on e.employee_id = job_history.employee_id
+join jobs j
+on job_history.job_id = j.job_id
+where e.commission_pct = 0;
+/*
+first_name	last_name	job_title	start_date	end_date
+Jennifer	Whalen	Administration Assistant	1995-09-17	2001-06-17
+Neena	Kochhar	Accounting Manager	2001-10-28	2005-03-15
+Jennifer	Whalen	Public Accountant	2002-07-01	2006-12-31
+Neena	Kochhar	Public Accountant	1997-09-21	2001-10-27
+Payam	Kaufling	Stock Clerk	2007-01-01	2007-12-31
+Den	Raphaely	Stock Clerk	2006-03-24	2007-12-31
+Lex	De Haan	Programmer	2001-01-13	2006-07-24
+Michael	Hartstein	Marketing Representative	2004-02-17	2007-12-19
+*/
+#official solution
+select concat(e.first_name, ' ', e.last_name) as employee_name, j.job_title, h.*
+from employees e join (
+	select max(start_date), max(end_date), employee_id
+	from job_history
+	group by employee_id) h
+	on e.employee_id=h.employee_id
+join jobs j
+on j.job_id=e.job_id
+where e.commission_pct = 0;
+/*
+employee_name		job_title			starting_date	ending_date	employee_id
+Neena Kochhar		Administration Vice President	2001-10-28	2005-03-15	101
+Lex De Haan		Administration Vice President	2001-01-13	2006-07-24	102
+Den Raphaely		Purchasing Manager		2006-03-24	2007-12-31	114
+Payam Kaufling		Stock Manager			2007-01-01	2007-12-31	122
+Jennifer Whalen		Administration Assistant	2002-07-01	2006-12-31	200
+Michael Hartstein	Marketing Manager		2004-02-17	2007-12-19	201
+*/
+#user solution
+select e.first_name, e.last_name, j.job_title. h.start_date, h.end_date
+from jobs j join job_history h
+on h.job_id = j.job_id
+join employees e
+on e.employee_id = h.employee_id
+where e.commission_pct = 0
+and h.start_date = (
+	select max(start_date)
+	from job_history h1
+	where h.employee_id = h1.employee_id);
+/* can't confirm user solution works */
+
+#26. Write a query in SQL to display the department name and number of employees in each of the department.
+select d.department_name, d.department_id, count(e.department_id)
+from employees e join departments d
+on e.department_id = d.department_id
+group by d.department_name, d.department_id
+order by d.department_id;
+
+#27. Write a query in SQL to display the full name (firt and last name ) of employee with ID and name of the country presently where (s)he is working.
+select e.first_name, e.last_name, e.employee_id, c.country_name
+from employees e join departments d
+on e.department_id = d.department_id
+join locations l
+on d.location_id = l.location_id
+join countries c
+on l.country_id = c.country_id;
