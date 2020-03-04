@@ -214,3 +214,45 @@ Sample table : jobs
 | HR_REP     | Human Resources Representative  |       4000 |       9000 |
 | PR_REP     | Public Relations Representative |       4500 |      10500 |
 +------------+---------------------------------+------------+------------+
+
+Sample table: job_grades
+GRADE_LEVEL  LOWEST_SAL HIGHEST_SAL
+------------ ---------- -----------
+A              1000        2999
+B              3000        5999
+C              6000        9999
+D             10000       14999
+E             15000       24999
+F             25000       40000
+
+Sample table: countries
++------------+--------------------------+-----------+
+| COUNTRY_ID | COUNTRY_NAME             | REGION_ID |
++------------+--------------------------+-----------+
+| AR         | Argentina                |         2 |
+| AU         | Australia                |         3 |
+| BE         | Belgium                  |         1 |
+| BR         | Brazil                   |         2 |
+| CA         | Canada                   |         2 |
+| CH         | Switzerland              |         1 |
+| CN         | China                    |         3 |
+| DE         | Germany                  |         1 |
+| DK         | Denmark                  |         1 |
+| EG         | Egypt                    |         4 |
+| FR         | France                   |         1 |
+| IL         | Israel                   |         4 |
+| IN         | India                    |         3 |
+| IT         | Italy                    |         1 |
+| JP         | Japan                    |         3 |
+| KW         | Kuwait                   |         4 |
+| ML         | Malaysia                 |         3 |
+| MX         | Mexico                   |         2 |
+| NG         | Nigeria                  |         4 |
+| NL         | Netherlands              |         1 |
+| SG         | Singapore                |         3 |
+| UK         | United Kingdom           |         1 |
+| US         | United States of America |         2 |
+| ZM         | Zambia                   |         4 |
+| ZW         | Zimbabwe                 |         4 |
++------------+--------------------------+-----------+
+
