@@ -317,3 +317,101 @@ and h.start_date = (
 	where h.employee_id = h1.employee_id);
 /* can't confirm user solution works */
 
+#https://www.w3resource.com/sql-exercises/sql-subqueries-exercises.php
+#3. Write a query to display the name ( first name and last name ), salary, department id for those employees who earn such amount of salary which is the smallest salary of any of the departments.  RM:  question doesn't make sense.  Looked at solution.  Find employees who earn any of the minimum salaries in all departments
+select first_name, last_name, salary, department_id
+from employees
+where salary in (
+	select min(salary)
+	from employees
+	group by department_id);
+/*
+first_name	last_name	salary	department_id
+Neena		Kochhar		17000.00	90
+Lex		De Haan		17000.00	90
+Bruce		Ernst		6000.00		60
+Diana		Lorentz		4200.00		60
+Luis		Popp		6900.00		100
+Karen		Colmenares	2500.00		30
+Shanta		Vollman		6500.00		50
+James		Marlow		2500.00		50
+TJ		Olson		2100.00		50
+Joshua		Patel		2500.00		50
+Peter		Vargas		2500.00		50
+Peter		Tucker		10000.00	80
+Oliver		Tuvault		7000.00		80
+Janette		King		10000.00	80
+Sarath		Sewall		7000.00		80
+Harrison	Bloom		10000.00	80
+Sundita		Kumar		6100.00		80
+Kimberely	Grant		7000.00		0
+Martha		Sullivan	2500.00		50
+Nandita		Sarchand	4200.00		50
+Randall		Perkins		2500.00		50
+Jennifer	Whalen		4400.00		10
+Pat		Fay		6000.00		20
+Susan		Mavris		6500.00		40
+Hermann		Baer		10000.00	70
+William		Gietz		8300.00		110
+*/
+
+#21. Write a query to display the employee name( first name and last name ) and department for all employees for any existence of those employees whose salary is more than 3700.
+select first_name, last_name, department_id
+from employees
+where exists (
+	select *
+	from employees
+	where salary > 3700);
+
+#23. Write a query to display the employee id, name ( first name and last name ) and the job id column with a modified title SALESMAN for those employees whose job title is ST_MAN and DEVELOPER for whose job title is IT_PROG.  RM:  display salary after job_id.  if then if then else.
+select employee_id, first_name, last_name, case job_id when 'ST_MAN' then 'SALESMAN' when 'IT_PROG' THEN 'DEVELOPER' else job_id end as "title designation", salary
+from employees;
+
+#24. Write a query to display the employee id, name ( first name and last name ), salary and the SalaryStatus column with a title HIGH and LOW respectively for those employees whose salary is more than and less than the average salary of all employees.
+select employee_id, first_name, last_name, salary, case salary when salary > (
+	select avg(salary)
+	from employees) then 'HIGH'
+when salary < (
+	select avg(salary)
+	from employees) then 'LOW'
+else 'ON_PAR' end as "SalaryStatus"
+from employees;
+
+#25. Write a query to display the employee id, name ( first name and last name ), SalaryDrawn, AvgCompare (salary - the average salary of all employees) and the SalaryStatus column with a title HIGH and LOW respectively for those employees whose salary is more than and less than the average salary of all employees.
+select employee_id, first_name, last_name, salary as SalaryDrawn, salary - (
+	select avg(salary)
+	from employees) as AvgCompare,
+case salary when salary >= (
+	select avg(salary)
+	from employees) then 'HIGH'
+else 'LOW' end as SalaryStatus
+from employees;
+
+#31. Write a query which is looking for the names of all employees whose salary is greater than 50% of their department’s total salary bill.
+select e1.first_name, e1.last_name
+from employees e1
+where e1.salary > (
+	select sum(e2.salary)*.5
+	from employees e2
+	where e1.department_id = e2.department_id);
+
+#34. Write a query to display the employee id, name ( first name and last name ), salary, department name and city for all the employees who gets the salary as the salary earn by the employee which is maximum within the joining person January 1st, 2002 and December 31st, 2003.
+select e.employee_id, e.first_name, e.last_name, e.salary, d.department_name, l.city
+from employees e, departments d, locations l
+where e.department_id = d.department_id
+and d.location_id = l.location_id
+and e.salary > (
+	select max(e2.salary)
+	from employees e2
+	where e2.hiredate between '2002-01-01' and '2003-12-31');
+#also?
+select e.employee_id, e.first_name, e.last_name, e.salary, d.department_name, l.city
+from employees e, departments d, locations l
+where e.department_id = d.department_id
+and d.location_id = l.location_id
+and e.salary > (
+	select e2.salary
+	from employees e2
+	where e2.hiredate between '2002-01-01' and '2003-12-31'
+	order by e2.salary desc limit 1);  #Can't confirm.
+
