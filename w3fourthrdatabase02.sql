@@ -350,3 +350,322 @@ and e.salary > (
 	from employees e2
 	where e2.hiredate between '2002-01-01' and '2003-12-31'
 	order by e2.salary desc limit 1);  #Can't confirm.
+
+#35. Write a query in SQL to display the department code and name for all departments which located in the city London.
+select department_id, department_name
+from departments
+where location_id = (
+	select location_id
+	from locations
+	where city = 'London');
+#also
+select departments.department_id, departments.department_name
+from departments, locations
+where departments.location_id = locations.location_id
+and locations.city = 'London';
+
+#36. Write a query in SQL to display the first and last name, salary, and department ID for all those employees who earn more than the average salary and arrange the list in descending order on salary.
+select *
+from employees
+where salary > (
+	select avg(salary)
+	from employees)
+order by salary desc;
+
+#37. Write a query in SQL to display the first and last name, salary, and department ID for those employees who earn more than the maximum salary of a department which ID is 40.
+select *
+from employees
+where salary > (
+	select max(salary)
+	from employees
+	where department_id = 40);
+#official solution
+select *
+from employees
+where salary > all (
+	select salary
+	from employees
+	where department_id = 40);
+
+#38. Write a query in SQL to display the department name and Id for all departments where they located, that Id is equal to the Id for the location where department number 30 is located.  #RM:  lame question
+select department_name, department_id
+from departments
+where location_id = (
+	select location_id
+	from departments
+	where department_id = 30);
+
+#39. Write a query in SQL to display the first and last name, salary, and department ID for all those employees who work in that department where the employee works who hold the ID 201.
+select *
+from employees
+where department_id = (
+	select department_id
+	from employees
+	where employee_id = 201);
+
+#40. Write a query in SQL to display the first and last name, salary, and department ID for those employees whose salary is equal to the salary of the employee who works in that department which ID is 40.
+select *
+from employees
+where salary = (
+	select salary
+	from employees
+	where department_id = 40);
+
+#41. Write a query in SQL to display the first and last name, and department code for all employees who work in the department Marketing.
+select *
+from employees
+where department_id = (
+	select department_id
+	from departments
+	where department_name = 'Marketing');
+
+#42. Write a query in SQL to display the first and last name, salary, and department ID for those employees who earn more than the minimum salary of a department which ID is 40.
+select *
+from employees
+where salary > (
+	select min(salary)
+	from employees
+	where department_id = 40);
+#also
+select *
+from employees
+where salary > any (
+	select salary
+	from employees
+	where department_id = 40);
+
+#43. Write a query in SQL to display the full name,email, and designation for all those employees who was hired after the employee whose ID is 165.
+select *
+from employees
+where hire_date > (
+	select hire_date
+	from employees
+	where employee_id = 165);
+
+#44. Write a query in SQL to display the first and last name, salary, and department ID for those employees who earn less than the minimum salary of a department which ID is 70.
+select *
+from employees
+where salary < (
+	select min(salary)
+	from employees
+	where department_id = 70);
+#also
+select *
+from employees
+where salary < all (
+	select salary
+	from employees
+	where department_id = 70);
+
+#45. Write a query in SQL to display the first and last name, salary, and department ID for those employees who earn less than the average salary, and also work at the department where the employee Laura is working as a first name holder.
+select *
+from employees
+where salary < (
+	select avg(salary)
+	from employees)
+and department_id = (
+	select department_id
+	from employees
+	where first_name = 'Laura');
+
+#46. Write a query in SQL to display the first and last name, salary and department ID for those employees whose department is located in the city London.
+select *
+from employees
+where department_id in (
+	select department_id
+	from departments
+	where location_id in (
+		select location_id
+		from locations
+		where city = 'London'));
+
+#47. Write a query in SQL to display the city of the employee whose ID 134 and works there.
+select city
+from locations
+where location_id = (
+	select location_id
+	from departments
+	where department_id = (
+		select department_id
+		from employees
+		where employee_id = 134));
+
+#48. Write a query in SQL to display the the details of those departments which max salary is 7000 or above for those employees who already done one or more jobs.  #RM:  solution wants employees doing two or more jobs.  The maximum salary for each department is greater than 7000.
+select *
+from departments
+where department_id in (
+	select department_id
+	from employees
+	where employee_id in (
+		select employee_id
+		from job_history
+		group by employee_id
+		having count(employee_id) > 1)
+	group by department_id
+	having max(salary) > 7000);
+/*
+department_id	department_name	manager_id	location_id
+80		Sales		145		2500
+90		Executive	 100	1700
+*/
+#also
+select *
+from departments
+where department_id in (
+	select department_id
+	from employees
+	where employee_id in (
+		select employee_id
+		from job_history
+		group by employee_id
+		having count(employee_id) > 1)
+	and department_id in (
+		select department_id
+		from employees
+		group by department_id
+		having max(salary) > 7000));
+
+#49. Write a query in SQL to display the detail information of those departments which starting salary is at least 8000.
+select *
+from departments
+where department_id in (
+	select department_id
+	from employees
+	group by department_id
+	having min(salary) > 8000);
+
+#50. Write a query in SQL to display the full name (first and last name) of manager who is supervising 4 or more employees.
+select *
+from employees
+where employee_id in (
+	select manager_id
+	from employees
+	group by manager_id
+	having count(employee_id) >= 4);
+
+#51. Write a query in SQL to display the details of the current job for those employees who worked as a Sales Representative in the past.  #RM:  stupid question.
+select *
+from jobs
+where job_id = 'SA_REP';
+#copied solution
+select * 
+from jobs 
+where job_id in (
+	select job_id 
+	from employees 
+	where employee_id in (
+		select employee_id 
+		from job_history 
+		where job_id = "sa_rep"));
+
+#52. Write a query in SQL to display all the infromation about those employees who earn second lowest salary of all the employees.
+select *
+from employees
+where salary = (
+	select salary
+	from employees
+	order by salary limit 1 offset 1);
+#also
+select * from (
+	select rank() over (order by salary asc) ranknumber from employees) neednamehere
+	where ranknumber = 2;
+/*
+ranknumber
+2
+2
+*/
+select * from (
+	select rank() over (order by salary asc) rank, * from employees) as neednamehere
+	where rank = 2;  #correct
+/*
+rank	employee_id	first_name	last_name	email	phone_number	hire_date	job_id	salary	commission_pct	manager_id	department_id
+2	128	Steven	Markle	SMARKLE	650.124.1434	2008-03-08	ST_CLERK	2200.00	0.00	120	50
+2	136	Hazel	Philtanker	HPHILTAN	650.127.1634	2008-02-06	ST_CLERK	2200.00	0.00	122	50
+*/
+select * from (select rank() over (order by salary asc) as RO, salary, * from employees) as a
+where a.RO = 2; #user solution
+/*
+ro	salary	employee_id	first_name	last_name	email	phone_number	hire_date	job_id	commission_pct	manager_id	department_id
+2	2200.00	128	Steven	Markle	SMARKLE	650.124.1434	2008-03-08	ST_CLERK	0.00	120	50
+2	2200.00	136	Hazel	Philtanker	HPHILTAN	650.127.1634	2008-02-06	ST_CLERK	0.00	122	50
+*/
+
+#53. Write a query in SQL to display the details of departments managed by Susan.
+select *
+from departments
+where manager_id = (
+	select employee_id
+	from employees
+	where first_name = 'Susan');
+
+#54. Write a query in SQL to display the department ID, full name (first and last name), salary for those employees who is highest salary drawar in a department.  #RM:  find the employee who earns the highest salary in his or her department.
+select *
+from employees
+where salary in (
+	select max(salary)
+	from employees
+	group by department_id); #incorrect
+/*
+employee_id	first_name	last_name	email	phone_number	hire_date	job_id	salary	commission_pct	manager_id	department_id
+100	Steven	King	SKING	515.123.4567	2003-06-17	AD_PRES	24000.00	0.00	0	90
+103	Alexander	Hunold	AHUNOLD	590.423.4567	2006-01-03	IT_PROG	9000.00	0.00	102	60
+108	Nancy	Greenberg	NGREENBE	515.124.4569	2002-08-17	FI_MGR	12000.00	0.00	101	100
+109	Daniel	Faviet	DFAVIET	515.124.4169	2002-08-16	FI_ACCOUNT	9000.00	0.00	108	100
+110	John	Chen	JCHEN	515.124.4269	2005-09-28	FI_ACCOUNT	8200.00	0.00	108	100
+114	Den	Raphaely	DRAPHEAL	515.127.4561	2002-12-07	PU_MAN	11000.00	0.00	100	30
+121	Adam	Fripp	AFRIPP	650.123.2234	2005-04-10	ST_MAN	8200.00	0.00	100	50
+123	Shanta	Vollman	SVOLLMAN	650.123.4234	2005-10-10	ST_MAN	6500.00	0.00	100	50
+145	John	Russell	JRUSSEL	011.44.1344.429268	2004-10-01	SA_MAN	14000.00	0.40	100	80
+147	Alberto	Errazuriz	AERRAZUR	011.44.1344.429278	2005-03-10	SA_MAN	12000.00	0.30	100	80
+148	Gerald	Cambrault	GCAMBRAU	011.44.1344.619268	2007-10-15	SA_MAN	11000.00	0.30	100	80
+150	Peter	Tucker	PTUCKER	011.44.1344.129268	2005-01-30	SA_REP	10000.00	0.30	145	80
+152	Peter	Hall	PHALL	011.44.1344.478968	2005-08-20	SA_REP	9000.00	0.25	145	80
+155	Oliver	Tuvault	OTUVAULT	011.44.1344.486508	2007-11-23	SA_REP	7000.00	0.15	145	80
+156	Janette	King	JKING	011.44.1345.429268	2004-01-30	SA_REP	10000.00	0.35	146	80
+158	Allan	McEwen	AMCEWEN	011.44.1345.829268	2004-08-01	SA_REP	9000.00	0.35	146	80
+161	Sarath	Sewall	SSEWALL	011.44.1345.529268	2006-11-03	SA_REP	7000.00	0.25	146	80
+169	Harrison	Bloom	HBLOOM	011.44.1343.829268	2006-03-23	SA_REP	10000.00	0.20	148	80
+174	Ellen	Abel	EABEL	011.44.1644.429267	2004-05-11	SA_REP	11000.00	0.30	149	80
+178	Kimberely	Grant	KGRANT	011.44.1644.429263	2007-05-24	SA_REP	7000.00	0.15	149	0
+200	Jennifer	Whalen	JWHALEN	515.123.4444	2003-09-17	AD_ASST	4400.00	0.00	101	10
+201	Michael	Hartstein	MHARTSTE	515.123.5555	2004-02-17	MK_MAN	13000.00	0.00	100	20
+203	Susan	Mavris	SMAVRIS	515.123.7777	2002-06-07	HR_REP	6500.00	0.00	101	40
+204	Hermann	Baer	HBAER	515.123.8888	2002-06-07	PR_REP	10000.00	0.00	101	70
+205	Shelley	Higgins	SHIGGINS	515.123.8080	2002-06-07	AC_MGR	12000.00	0.00	101	110
+*/
+#official solution
+select department_id, first_name || ' ' || last_name as employee_name, salary 
+from employees a
+where salary = (
+	select max(salary)
+	from employees
+	where department_id = a.department_id);
+/*
+department_id	employee_name	salary
+90	Steven King	24000.00
+60	Alexander Hunold	9000.00
+100	Nancy Greenberg	12000.00
+30	Den Raphaely	11000.00
+50	Adam Fripp	8200.00
+80	John Russell	14000.00
+0	Kimberely Grant	7000.00
+10	Jennifer Whalen	4400.00
+20	Michael Hartstein	13000.00
+40	Susan Mavris	6500.00
+70	Hermann Baer	10000.00
+110	Shelley Higgins	12000.
+*/
+#user solution
+select *
+from employees
+where (department_id, salary) in (
+	select department_id, max(salary)
+	from employees
+	group by department_id);
+
+#55. Write a query in SQL to display all the information of those employees who did not have any job in the past.
+select *
+from employees
+where employee_id not in (
+	select distinct employee_id
+	from job_history);
