@@ -281,3 +281,153 @@ where hire_date between '1991-06-01' and '1991-06-30';
 select *
 from employees
 where (salary*12) >= 24000 and (salary*12) <= 50000;
+
+#45. Write a query in SQL to list the employees who have joined on the following dates 1st May,20th Feb, and 03rd Dec in the year 1991.
+select *
+from employees
+where hire_date in ('1991-05-01','1991-02-20','1991-12-03');
+
+#46. Write a query in SQL to list the employees working under the managers 63679,68319,66564,69000.
+select *
+from employees
+where manager_id in (63679,68319,66564,69000);
+
+#47. Write a query in SQL to list the employees who joined after the month JUNE in the year 1991.  #RM:  find employees hired June-December in the year 1991.
+select *
+from employees
+where to_char(hire_date,'yyyy') = '1991'
+and to_char(hire_date,'mm') > '06';
+
+#48. Write a query in SQL to list the employees who joined in 90's.
+select *
+from employees
+where to_char(hire_date,'yyyy') >= '1990'
+and to_char(hire_date,'yyyy') <= '1999';
+
+#49. Write a query in SQL to list the managers of department 1001 or 2001.  #RM:  want to find job_name MANAGER in dep_id 1001 or 2001
+select *
+from employees
+where emp_id in (
+	select distinct manager_id
+	from employees
+	where dep_id in (1001,2001));
+#answers the question
+select *
+from employees
+where dep_id in (1001,2001)
+and job_name = 'MANAGER';
+
+#50. Write a query in SQL to list the employees, joined in the month FEBRUARY with a salary range between 1001 to 2000.
+select *
+from employees
+where to_char(hire_date,'mm') = '02'
+and salary between 1001 and 2000;
+
+#51. Write a query in SQL to list all the employees who joined before or after 1991.
+select *
+from employees
+where to_char(hire_date,'yyyy') <> '1991';
+
+#52. Write a query in SQL to list the employees along with department name.
+select e.*, d.dep_name
+from employees e, department d
+where e.dep_id = d.dep_id;
+
+#53. Write a query in SQL to list the name, job name, annual salary, department id, department name and grade of the employees who earn [greater than or equal to] 60000 in a year or not working as an ANALYST.
+select e.emp_name, e.job_name, (e.salary*12) as "Annual Salary", e.dep_id, d.dep_name, s.grade
+from employees e, department d, salary_grade s
+where e.dep_id = d.dep_id
+and e.salary between s.min_sal and s.max_sal
+and ((e.salary*12) >= 60000 or e.job_name <> 'ANALYST');
+
+#54. Write a query in SQL to list the name, job name, manager id, salary, manager name, manager's salary for those employees whose salary is greater than the salary of their managers.  #RM:  Using two or more column ID the second column ID and thereafter need a column alias.
+select worker.emp_name, worker.job_name, worker.manager_id, worker.salary, manager.emp_name as "Manager", manager.salary as "Manager Salary", manager.emp_id as "Manager Employee ID"
+from employees worker, employees manager
+where worker.manager_id = manager.emp_id
+and worker.salary > manager.salary;
+/*
+emp_name	job_name	manager_id	salary	Manager	Manager Salary	Manager Employee ID
+SCARLET	ANALYST	65646	3100.00	JONAS	2957.00	65646
+FRANK	ANALYST	65646	3100.00	JONAS	2957.00	65646
+*/
+
+#55. Write a query in SQL to list the employees name, department, salary and commission. For those whose salary is between 2000 and 5000 while location is PERTH.
+select emp_name, dep_name, salary, commission
+from employees e join department d
+on e.dep_id = d.dep_id
+where e.salary between 2000 and 5000
+and d.dep_location = 'PERTH';
+
+#56. Write a query in SQL to list the grade, employee name for the department id 1001 or 3001 but salary grade is not 4 while they joined the company before 1992-12-31.
+select s.grade, e.emp_name
+from salary_grade s, employees e
+where e.salary between s.min_sal and s.max_sal
+and e.dep_id in (1001,3001)
+and s.grade not in (4)
+and e.hire_date <= '1992-12-31';
+
+#57. Write a query in SQL to list the employees whose manager name is JONAS.
+select *
+from employees
+where manager_id in (
+	select emp_id
+	from employees
+	where emp_name = 'JONAS');
+
+#58. Write a query in SQL to list the name and salary of FRANK if his salary is equal to max_sal of his grade.
+select e.emp_name, e.salary
+from salary_grade s, employees e
+where e.salary between s.min_sal and s.max_sal
+and e.emp_name = 'FRANK'
+and e.salary = s.max_sal;
+
+#59. Write a query in SQL to list the employees who are working either MANAGER or ANALYST with a salary range between 2000 to 5000 without any commission.
+select *
+from employees
+where job_name in ('MANAGER','ANALYST')
+and salary between 2000 and 5000
+and commission is null;
+
+#60. Write a query in SQL to list the id, name, salary, and location of the employees working at PERTH,or MELBOURNE with an experience over 10 years.
+select e.emp_id, e.emp_name, e.salary, d.dep_location
+from employees e join department d
+on e.dep_id = d.dep_id
+where d.dep_location in ('PERTH','MELBOURNE')
+and to_number(to_char(current_date,'yyyy'),'0000') - to_number(to_char(hire_date,'yyyy'),'0000') > 10;
+#official solution
+select e.emp_id, e.emp_name, e.dep_id, e.salary, d.dep_location
+from employees e, department d
+where e.dep_id = d.dep_id
+and d.dep_location in ('PERTH','MELBOURNE')
+and extract(month from age(current_date, hire_date)) > 10;
+#user solution
+select emp_id,emp_name, salary, dep_location
+from employees e join department d
+on e.dep_id=d.dep_id
+where dep_location in ('PERTH','MELBOURNE')
+and age(current_date,hire_date) > '10 years';
+
+#61. Write a query in SQL to list the employees along with their location who belongs to SYDNEY, MELBOURNE with a salary range between 2000 and 5000 and joined in 1991.
+select e.*, d.dep_location
+from employees e, department d
+where e.dep_id = d.dep_id
+and d.dep_location in ('SYDNEY','MELBOURNE')
+and e.salary between 2000 and 5000
+and to_char(e.hire_date,'yyyy') = '1991';
+
+#62. Write a query in SQL to list the employees with their location and grade for MARKETING department who comes from MELBOURNE or PERTH within the grade 3 to 5 and experience over 5 years.
+select e.*, d.dep_location, s.grade
+from employees e join department d
+on e.dep_id = d.dep_id
+join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+where d.dep_name = 'MARKETING'
+and d.dep_location in ('MELBOURNE','PERTH')
+and s.grade between 3 and 5
+and extract(year from age(current_date,e.hire_date)) > 5;
+
+#63. Write a query in SQL to list the employees who are senior to their own manager. #RM:  self-join
+select workers.emp_name "worker", workers.hire_date as "worker date", manager.emp_name as "manager", manager.hire_date as "manager date"
+from employees workers, employees manager
+where workers.manager_id = manager.emp_id
+and workers.hire_date > manager.hire_date;

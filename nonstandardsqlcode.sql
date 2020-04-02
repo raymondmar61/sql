@@ -665,3 +665,46 @@ select *
 from employees
 where extract(day from age(current_date, hire_date)) < 19;
 
+#53. Write a query in SQL to list the name, job name, annual salary, department id, department name and grade of the employees who earn [greater than or equal to] 60000 in a year or not working as an ANALYST.
+select e.emp_name, e.job_name, (e.salary*12) as "Annual Salary", e.dep_id, d.dep_name, s.grade
+from employees e, department d, salary_grade s
+where e.dep_id = d.dep_id
+and e.salary between s.min_sal and s.max_sal
+and ((e.salary*12) >= 60000 or e.job_name <> 'ANALYST');
+
+#54. Write a query in SQL to list the name, job name, manager id, salary, manager name, manager's salary for those employees whose salary is greater than the salary of their managers.  #RM:  Using two or more column ID the second column ID and thereafter need a column alias.
+select worker.emp_name, worker.job_name, worker.manager_id, worker.salary, manager.emp_name as "Manager", manager.salary as "Manager Salary", manager.emp_id as "Manager Employee ID"
+from employees worker, employees manager
+where worker.manager_id = manager.emp_id
+and worker.salary > manager.salary;
+/*
+emp_name	job_name	manager_id	salary	Manager	Manager Salary	Manager Employee ID
+SCARLET	ANALYST	65646	3100.00	JONAS	2957.00	65646
+FRANK	ANALYST	65646	3100.00	JONAS	2957.00	65646
+*/
+
+#60. Write a query in SQL to list the id, name, salary, and location of the employees working at PERTH,or MELBOURNE with an experience over 10 years.
+select e.emp_id, e.emp_name, e.salary, d.dep_location
+from employees e join department d
+on e.dep_id = d.dep_id
+where d.dep_location in ('PERTH','MELBOURNE')
+and to_number(to_char(current_date,'yyyy'),'0000') - to_number(to_char(hire_date,'yyyy'),'0000') > 10;
+#official solution
+select e.emp_id, e.emp_name, e.dep_id, e.salary, d.dep_location
+from employees e, department d
+where e.dep_id = d.dep_id
+and d.dep_location in ('PERTH','MELBOURNE')
+and extract(month from age(current_date, hire_date)) > 10;
+#user solution
+select emp_id,emp_name, salary, dep_location
+from employees e join department d
+on e.dep_id=d.dep_id
+where dep_location in ('PERTH','MELBOURNE')
+and age(current_date,hire_date) > '10 years';
+
+#63. Write a query in SQL to list the employees who are senior to their own manager. #RM:  self-join
+select workers.emp_name "worker", workers.hire_date as "worker date", manager.emp_name as "manager", manager.hire_date as "manager date"
+from employees workers, employees manager
+where workers.manager_id = manager.emp_id
+and workers.hire_date > manager.hire_date;
+
