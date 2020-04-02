@@ -18,4 +18,23 @@ Sample table: employees
   69324 | MARKER   | CLERK     |      67832 | 1992-01-23 | 1400.00 |            |   1001
 (14 rows)
 
+Sample table: department
+ dep_id |  dep_name  | dep_location
+--------+------------+--------------
+   1001 | FINANCE    | SYDNEY
+   2001 | AUDIT      | MELBOURNE
+   3001 | MARKETING  | PERTH
+   4001 | PRODUCTION | BRISBANE
+(4 rows)
+
+Sample table: salary_grade
+ grade | min_sal | max_sal
+-------+---------+---------
+     1 |     800 |    1300
+     2 |    1301 |    1500
+     3 |    1501 |    2100
+     4 |    2101 |    3100
+     5 |    3101 |    9999
+(5 rows)
 */
+
