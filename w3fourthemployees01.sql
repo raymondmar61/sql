@@ -150,7 +150,7 @@ select *
 from employees
 where hire_date = '1991-05-01';
 
-#28. Write a query in SQL to list the id, name, salry, and experiences of all the employees working for the manger 68319.
+#28. Write a query in SQL to list the id, name, [salary], and experiences of all the employees working for the manger 68319.
 select *
 from employees
 where manager_id = 68319;
@@ -431,3 +431,176 @@ select workers.emp_name "worker", workers.hire_date as "worker date", manager.em
 from employees workers, employees manager
 where workers.manager_id = manager.emp_id
 and workers.hire_date > manager.hire_date;
+
+#64. Write a query in SQL to list the employee with their grade for the grade 4.
+select *
+from employees e, salary_grade s
+where e.salary between s.min_sal and s.max_sal
+and s.grade = 4;
+
+#65. Write a query in SQL to list the employees in department PRODUCTION or AUDIT who joined after 1991 and they are not MARKER or ADELYN to their name.
+select *
+from employees e, department d
+where e.dep_id = d.dep_id
+and d.dep_name in ('PRODUCTION','AUDIT')
+and e.hire_date >= '1992-01-01'
+and e.emp_name not in ('MARKER','ADELYN');
+
+#66. Write a query in SQL to list the employees in the ascending order of their salaries.
+select *
+from employees
+order by salary asc;
+
+#67. Write a query in SQL to list the details of the employees in ascending order to the department_id and descending order to the jobs.
+select *
+from employees
+order by dep_id asc, job_name desc;
+
+#68. Write a query in SQL to display all the unique job in descending order.
+select distinct job_name
+from employees
+order by job_name desc;
+
+#69. Write a query in SQL to list the id, name, monthly salary, daily salary of all the employees in the ascending order of their annual salary.
+select emp_id, emp_name, salary, salary/30 as "daily salary", salary*12 as "annual salary"
+from employees
+order by salary*12 asc;
+
+#70. Write a query in SQL to list the employees in descending order who are either 'CLERK' or 'ANALYST'.
+select *
+from employees
+where job_name in ('CLERK','ANALYST')
+order by job_name desc;
+
+#71. Write a query in SQL to display the location of CLARE.
+select dep_location
+from department
+where dep_id = (
+	select dep_id
+	from employees
+	where emp_name = 'CLARE');
+
+#72. Write a query in SQL to list the employees in ascending order of seniority who joined on 1-MAY-91,or 3-DEC-91, or 19-JAN-90.
+select *
+from employees
+where hire_date in ('1991-05-01','1991-12-03','1990-01-19')
+order by hire_date asc;
+
+#73. Write a query in SQL to list the employees in ascending order of seniority who joined on 1-MAY-91,or 3-DEC-91, or 19-JAN-90.
+select *
+from employees
+where salary < 1000
+order by salary;
+
+#74. Write a query in SQL to list the details of the employees in ascending order on the salary.
+select *
+from employees
+order by salary asc;
+
+#75. Write a query in SQL to list the employees in ascending order on job name and descending order on employee id.
+select *
+from employees
+order by job_name asc, emp_id desc;
+
+#76. Write a query in SQL to list the unique jobs of department 2001 and 3001 in descending order.
+select distinct job_name
+from employees
+where dep_id in (2001,3001)
+order by dep_id desc;
+
+#77. Write a query in SQL to list all the employees except PRESIDENT and MANAGER in ascending order of salaries.
+select *
+from employees
+where job_name not in ('PRESIDENT','MANAGER')
+order by salary asc;
+
+#78. Write a query in SQL to list the employees in ascending order of the salary whose annual salary is below 25000.
+select *
+from employees
+where salary*12 < 25000
+order by salary asc;
+
+#79. Write a query in SQL to list the employee id, name, annual salary, daily salary of all the employees in the ascending order of annual salary who works as a SALESMAN.  #RM:  sort alias sort by aslias
+select emp_id, emp_name, salary*12 as "annual salary", (salary*12)/365 as "daily salary"
+from employees
+where job_name = 'SANDRINE'
+order by "annual salary" asc;
+
+#80. Write a query in SQL to list the employee id, name, hire_date, current date and experience of the employees in ascending order on their experiences.
+select *, age(current_date,hire_date) as "experience"
+from employees
+order by experience asc;
+
+#81. Write a query in SQL to list the employees in ascending order of designations of those, joined after the second half of 1991.
+select *
+from employees
+where hire_date >='1991-06-01' and hire_date <='1991-12-31'
+order by job_name asc;
+
+#82. Write a query in SQL to list the total information of employees table along with department, and location of all the employees working under FINANCE and AUDIT in the ascending department no.
+select e.*, d.dep_name, d.dep_location
+from employees e, department d
+where e.dep_id = d.dep_id
+and d.dep_name in ('FINANCE','AUDIT')
+order by d.dep_id asc;
+
+#83. Write a query in SQL to display the total information of the employees along with grades in ascending order.
+select *
+from employees e join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+order by s.grade asc;
+#also
+select *
+from employees e, salary_grade s
+where e.salary >= s.min_sal
+and e.salary <= s.max_sal
+order by s.grade asc;
+
+#84. Write a query in SQL to list the name, job name, department, salary, and grade of the employees according to the department in ascending order.
+select e.emp_name, e.job_name, d.dep_name, e.salary, s.grade
+from employees e join department d
+on e.dep_id = d.dep_id
+join salary_grade s
+on e.salary >= s.min_sal and e.salary <=s.max_sal
+order by e.dep_id asc;
+
+#85. Write a query in SQL to list the name, job name, salary, grade and department name of employees except CLERK and sort result set on the basis of highest salary.
+select e.emp_name, e.job_name, e.salary, s.grade, d.dep_name
+from employees e join department d
+on e.dep_id = d.dep_id
+join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+where e.job_name not in ('CLERK')
+order by e.salary desc;
+
+#86. Write a query in SQL to list the employee ID, name, salary, department, grade, experience, and annual salary of employees working for department 1001 or 2001.
+select e.emp_id, e.emp_name, e.salary, d.dep_name, s.grade, age(current_date,hire_date) as "experience", salary*12 as "annual salary"
+from employees e join department d
+on e.dep_id = d.dep_id
+join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+where e.dep_id in (1001,2001);
+
+#87. Write a query in SQL to list the details of the employees along with the details of their departments.
+select e.*, d.dep_name, d.dep_location
+from employees e, department d
+where e.dep_id = d.dep_id;
+
+#88. Write a query in SQL to list the employees who are senior to their own MANAGERS.  #RM:  same as question 63
+select workers.emp_name "worker", workers.hire_date as "worker date", manager.emp_name as "manager", manager.hire_date as "manager date"
+from employees workers, employees manager
+where workers.manager_id = manager.emp_id
+and workers.hire_date > manager.hire_date;
+
+#89. Write a query in SQL to list the employee id, name, salary, and department id of the employees in ascending order of salary who works in the department 1001.
+select *
+from employees
+where dep_id = 1001
+order by salary asc;
+
+#90. Write a query in SQL to find the highest salary from all the employees.
+select salary
+from employees
+order by salary desc limit 1;  #RM:  analysis paralysis
+select max(salary)
+from employees;
