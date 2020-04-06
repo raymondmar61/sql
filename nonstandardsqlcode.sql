@@ -708,3 +708,9 @@ from employees workers, employees manager
 where workers.manager_id = manager.emp_id
 and workers.hire_date > manager.hire_date;
 
+#79. Write a query in SQL to list the employee id, name, annual salary, daily salary of all the employees in the ascending order of annual salary who works as a SALESMAN.  #RM:  sort alias sort by aslias
+select emp_id, emp_name, salary*12 as "annual salary", (salary*12)/365 as "daily salary"
+from employees
+where job_name = 'SANDRINE'
+order by "annual salary" asc;
+
