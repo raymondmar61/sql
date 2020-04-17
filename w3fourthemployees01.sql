@@ -1,6 +1,7 @@
 #https://www.w3resource.com/sql/tutorials.php
 #https://www.w3resource.com/sql-exercises/index.php
 #https://www.w3resource.com/sql-exercises/employee-database-exercise/index.php
+#https://www.w3resource.com/sql-exercises/employee-database-exercise/subqueries-exercises-on-employee-database.php
 
 #https://www.w3resource.com/sql-exercises/employee-database-exercise/index.php
 #1. Write a query in SQL to display all the information of the employees.
@@ -604,3 +605,286 @@ from employees
 order by salary desc limit 1;  #RM:  analysis paralysis
 select max(salary)
 from employees;
+
+#91. Write a query in SQL to find the average salary and average total remuneration(salary and commission) for each type of job.
+select job_name, avg(salary) as "salary", avg(salary+commission) as "salary+commission"
+from employees
+group by job_name;
+
+#92. Write a query in SQL to find the total annual salary distributed against each job in the year 1991.
+select job_name, sum(salary*12)
+from employees
+where hire_date between '1991-01-01' and '1991-12-31'
+group by job_name;
+
+#93. Write a query in SQL to list the employee id, name, department id, location of all the employees.
+select e.emp_id, e.emp_name, e.dep_id, d.dep_location
+from employees e, department d
+where e.dep_id = d.dep_id;
+
+#94. Write a query in SQL to list the employee id, name, location, department of all the departments 1001 and 2001.
+select e.emp_id, e.emp_name, d.dep_location, d.dep_name
+from employees e, department d
+where e.dep_id = d.dep_id
+and e.dep_id in (1001,2001);
+
+#95. Write a query in SQL to list the employee id, name, salary, grade of all the departments 1001 and 2001.
+select e.emp_id, e.emp_name, e.salary, s.grade
+from employees e, salary_grade s
+where e.salary between s.min_sal and s.max_sal
+and e.dep_id in (1001,2001);
+
+#96. Write a query in SQL to list the manager no and the number of employees working for those managers in ascending order on manager id.
+select manager_id, count(manager_id)
+from employees
+where manager_id is not null
+group by manager_id
+order by manager_id;
+
+#97. Write a query in SQL to display the number of employee for each job in each department.  RM:  count number of employees by department and by job.
+select dep_id, job_name, count(*)
+from employees
+group by dep_id, job_name;
+
+#98. Write a query in SQL to list the department where at least two employees are working.
+select dep_id, count(*)
+from employees
+group by dep_id
+having count(*) >= 2;
+
+#99. Write a query in SQL to display the Grade, Number of employees, and maximum salary of each grade.
+select s.grade, count(*), max(e.salary)
+from employees e, salary_grade s
+where e.salary between s.min_sal and s.max_sal
+group by s.grade
+order by s.grade;
+
+#100. Write a query in SQL to display the department name, grade, no. of employees where at least two employees are working as a SALESMAN.
+select d.dep_name, s.grade, count(e.*)
+from employees e join department d
+on e.dep_id = d.dep_id
+join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+where job_name = 'SALESMAN'
+group by d.dep_name, s.grade
+having count(e.*) >= 2;
+
+#101. Write a query in SQL to list the no. of employees in each department where the no. is less than 4.
+select dep_id, count(*)
+from employees
+group by dep_id
+having count(*) < 4;
+
+#102. Write a query in SQL to list the name of departments where atleast 2 employees are working in that department.
+select d.dep_name, count(e.*)
+from employees e, department d
+where e.dep_id = d.dep_id
+group by d.dep_name
+having count(e.*) >= 2;
+
+#103. Write a query in SQL to check whether all the employees numbers are indeed unique.
+select emp_id, count(emp_id) as "Two or more there is a duplicate"
+from employees
+group by emp_id
+having count(emp_id) >=2;
+
+#104. Write a query in SQL to list the no. of employees and average salary within each department for each job name.
+select dep_id, job_name, count(*), avg(salary)
+from employees
+group by dep_id, job_name;
+
+#105. Write a query in SQL to list the names of those employees starting with 'A' and with six characters in length.
+select *
+from employees
+where emp_name like 'A_____';
+#official solution
+select *
+from employees
+where emp_name like 'A%'
+and length(emp_name) = 6;
+
+#106. Write a query in SQL to list the employees whose name is six characters in length and third character must be 'R'.
+select *
+from employees
+where emp_name like '__R___';
+
+#107. Write a query in SQL to list the name of the employee of six characters long and starting with 'A' and ending with 'N'.
+select *
+from employees
+where emp_name like 'A____N';
+
+#108. Write a query in SQL to list the employees who joined in the month of which second character is 'a'.
+select *, to_char(hire_date,'Month')
+from employees
+where to_char(hire_date,'Month') like '_a%';
+
+#109. Write a query in SQL to list the employees whose names containing the character set 'AR' together.
+select *
+from employees
+where emp_name like '%AR%'
+or emp_name like 'AR%'
+or emp_name like '%AR';
+
+#110. Write a query in SQL to list the employees those who joined in 90's.  RM:  It's not 1990 year itself.
+select *
+from employees
+where to_char(hire_date,'yyyy') like '199%';
+#also
+select *
+from employees
+where to_char(hire_date,'yyyy') >= '1990'
+and to_char(hire_date,'yyyy') <= '1999';
+
+#111. Write a query in SQL to list the employees whose ID not starting with digit 68.
+select *
+from employees
+where emp_id <= 67999
+or emp_id >= 69000;
+#official solution
+select *
+from employees
+where trim(to_char(emp_id,'99999')) not like '68%';
+#user solution
+select *
+from employees
+where cast(emp_id as varchar) not like '68%';
+
+#112. Write a query in SQL to list the employees whose names containing the letter 'A'.
+select *
+from employees
+where emp_id like '%A%';
+
+#113. Write a query in SQL to list the employees whose name is ending with 'S' and six characters long.
+select *
+from employees
+where emp_name like '_____S';
+
+#114. Write a query in SQL to list the employees who joined in the month having char 'A' at any position.
+select *, to_char(hire_date,'Month')
+from employees
+where to_char(hire_date,'Month') like '%a%'
+or to_char(hire_date,'Month') like 'A%';
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id	to_char
+66928	BLAZE	MANAGER	68319	1991-05-01	2750.00		3001	May
+65646	JONAS	MANAGER	68319	1991-04-02	2957.00		2001	April
+64989	ADELYN	SALESMAN	66928	1991-02-20	1700.00	400.00	3001	February
+65271	WADE	SALESMAN	66928	1991-02-22	1350.00	600.00	3001	February
+68736	ADNRES	CLERK	67858	1997-05-23	1200.00		2001	May
+69324	MARKER	CLERK	67832	1992-01-23	1400.00		1001	January
+67858	SCARLET	ANALYST	65646	1997-04-19	3100.00		2001	April
+*/
+
+#115. Write a query in SQL to list the employees who joined in the month having second char is 'A'.
+select *, to_char(hire_date,'MONTH')
+from employees
+where to_char(hire_date,'MONTH') like '_A%';
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id	to_char
+66928	BLAZE	MANAGER	68319	1991-05-01	2750.00		3001	MAY
+68736	ADNRES	CLERK	67858	1997-05-23	1200.00		2001	MAY
+69324	MARKER	CLERK	67832	1992-01-23	1400.00		1001	JANUARY
+*/
+
+#https://www.w3resource.com/sql-exercises/employee-database-exercise/subqueries-exercises-on-employee-database.php
+#1. Write a query in SQL to display all the details of managers.
+select *
+from employees
+where emp_id in (
+	select distinct manager_id
+	from employees);
+
+#2. Write a query in SQL to display the employee ID, name, job name, hire date, and experience of all the managers.
+select *, to_number(to_char(current_date,'yyyy'),'0000') - to_number(to_char(hire_date,'yyyy'),'0000') as "Years Worked Experience", age(CURRENT_DATE, hire_date) "Age Experience"
+from employees
+where emp_id in (
+	select distinct manager_id
+	from employees);
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id	Years WORked Experience	Age Experience
+68319	KAYLING	PRESIDENT		1991-11-18	6000.00		1001	29	28 years 4 mons 29 days
+66928	BLAZE	MANAGER	68319	1991-05-01	2750.00		3001	29	28 years 11 mons 16 days
+67832	CLARE	MANAGER	68319	1991-06-09	2550.00		1001	29	28 years 10 mons 8 days
+65646	JONAS	MANAGER	68319	1991-04-02	2957.00		2001	29	29 years 15 days
+67858	SCARLET	ANALYST	65646	1997-04-19	3100.00		2001	23	22 years 11 mons 28 days
+69062	FRANK	ANALYST	65646	1991-12-03	3100.00		2001	29	28 years 4 mons 14 days
+*/
+
+#3. Write a query in SQL to list the employee ID, name, salary, department name of all the 'MANAGERS' and 'ANALYST' working in SYDNEY, PERTH with an exp more than 5 years without receiving the commission and display the list in ascending order of location.
+select e.*, d.dep_location
+from employees e, department d
+where e.dep_id = d.dep_id
+and e.job_name in ('MANAGER','ANALYST')
+and d.dep_location in ('SYDNEY','PERTH')
+and to_number(to_char(current_date,'yyyy'),'0000') - to_number(to_char(hire_date,'yyyy'),'0000') > 5
+and e.commission is null
+order by d.dep_location asc;
+
+#4. Write a query in SQL to display the employee ID, name, salary, department name, location, department ID, job name of all the employees working at SYDNEY or working in the FINANCE deparment with an annual salary above 28000, but the monthly salary should not be 3000 or 2800 and who does not works as a MANAGER and whose ID containing a digit of '3' or '7' in 3rd position. List the result in ascending order of department ID and descending order of job name.  RM:  dumb question.  Copied solution
+#official solution
+select e.emp_id, e.emp_name, e.salary, d.dep_name, d.dep_location, e.dep_id, e.job_name
+from employees e, department d
+where (d.dep_location = 'SYDNEY' or d.dep_name = 'FINANCE')
+and e.dep_id = d.dep_id
+and e.emp_id in (
+	select emp_id
+	from employees e
+	where (12*e.salary) > 28000
+	and e.salary not in (3000,2800)
+	and e.job_name !='MANAGER'
+	and (trim(to_char(emp_id,'99999')) like '__3%' or trim(to_char(emp_id,'99999')) like '__7%'))
+order by e.dep_id asc, e.job_name desc;
+
+#5. Write a query in SQL to list all the employees of grade 2 and 3.
+select *
+from employees
+where salary between (
+	select min_sal
+	from salary_grade
+	where grade = 2)
+and (
+	select max_sal
+	from salary_grade
+	where grade = 3);
+#official solution didn't use subquery
+
+#6. Write a query in SQL to display all the employees of grade 4 and 5 who are working as ANALYST or MANAGER.
+select e.*
+from employees e, salary_grade s
+where e.salary between s.min_sal and s.max_sal
+and s.grade in (4,5)
+and e.job_name in ('ANALYST','MANAGER');
+
+#7. Write a query in SQL to list the details of the employees whose salary is more than the salary of JONAS.
+select *
+from employees
+where salary > (
+	select salary
+	from employees
+	where emp_name = 'JONAS');
+
+#8. Write a query in SQL to list the employees who works in the same designation as FRANK.
+select *
+from employees
+where job_name = (
+	select job_name
+	from employees
+	where emp_name = 'FRANK');
+
+#9. List the employees who are senior to ADELYN[.]
+select *
+from employees
+where hire_date < (
+	select hire_date
+	from employees
+	where emp_name = 'ADELYN');
+
+#10. Write a query in SQL to list the employees of department ID 2001 who works in the designation same as department ID 1001.  #RM:  looking at solutions, find employees working in department id 2001 and have the same job titles in department id 1001.  Dumb question.
+select *
+from employees
+where dep_id = 2001
+and job_name in (
+	select job_name
+	from employees
+	where dep_id = 1001);
+
