@@ -714,3 +714,54 @@ from employees
 where job_name = 'SANDRINE'
 order by "annual salary" asc;
 
+#99. Write a query in SQL to display the Grade, Number of employees, and maximum salary of each grade.
+select s.grade, count(*), max(e.salary)
+from employees e, salary_grade s
+where e.salary between s.min_sal and s.max_sal
+group by s.grade
+order by s.grade;
+
+#111. Write a query in SQL to list the employees whose ID not starting with digit 68.
+select *
+from employees
+where emp_id <= 67999
+or emp_id >= 69000;
+#official solution
+select *
+from employees
+where trim(to_char(emp_id,'99999')) not like '68%';
+#user solution
+select *
+from employees
+where cast(emp_id as varchar) not like '68%';
+
+#https://www.w3resource.com/sql-exercises/employee-database-exercise/subqueries-exercises-on-employee-database.php
+#2. Write a query in SQL to display the employee ID, name, job name, hire date, and experience of all the managers.
+select *, to_number(to_char(current_date,'yyyy'),'0000') - to_number(to_char(hire_date,'yyyy'),'0000') as "Years Worked Experience", age(CURRENT_DATE, hire_date) "Age Experience"
+from employees
+where emp_id in (
+	select distinct manager_id
+	from employees);
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id	Years WORked Experience	Age Experience
+68319	KAYLING	PRESIDENT		1991-11-18	6000.00		1001	29	28 years 4 mons 29 days
+66928	BLAZE	MANAGER	68319	1991-05-01	2750.00		3001	29	28 years 11 mons 16 days
+67832	CLARE	MANAGER	68319	1991-06-09	2550.00		1001	29	28 years 10 mons 8 days
+65646	JONAS	MANAGER	68319	1991-04-02	2957.00		2001	29	29 years 15 days
+67858	SCARLET	ANALYST	65646	1997-04-19	3100.00		2001	23	22 years 11 mons 28 days
+69062	FRANK	ANALYST	65646	1991-12-03	3100.00		2001	29	28 years 4 mons 14 days
+*/
+
+#5. Write a query in SQL to list all the employees of grade 2 and 3.
+select *
+from employees
+where salary between (
+	select min_sal
+	from salary_grade
+	where grade = 2)
+and (
+	select max_sal
+	from salary_grade
+	where grade = 3);
+#official solution didn't use subquery
+
