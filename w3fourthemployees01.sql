@@ -888,3 +888,140 @@ and job_name in (
 	from employees
 	where dep_id = 1001);
 
+#11. Write a query in SQL to list the employees whose salary is same as the salary of FRANK or SANDRINE. List the result in descending order of salary.
+select *
+from employees
+where salary in (
+	select salary
+	from employees
+	where emp_name in ('FRANK','SANDRINE'));
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id
+67858	SCARLET	ANALYST	65646	1997-04-19	3100.00		2001
+69062	FRANK	ANALYST	65646	1991-12-03	3100.00		2001
+63679	SANDRINE	CLERK	69062	1990-12-18	900.00		2001
+*/
+select *
+from employees
+where salary in (
+	select salary
+	from employees
+	where emp_name in ('FRANK','SANDRINE'))
+and emp_name not in ('FRANK','SANDRINE')
+order by salary desc;
+
+#12. Write a query in SQL to list the employees whose designation are same as the designation of MARKER or salary is more than the salary of ADELYN.
+select *
+from employees
+where (job_name = (
+	select job_name
+	from employees
+	where emp_name = 'MARKER')
+and emp_name not in ('MARKER'))
+or (salary > (
+	select salary
+	from employees
+	where emp_name = 'ADELYN')
+and emp_name <> 'ADELYN');
+
+#13. Write a query in SQL to list the employees whose salary is more than the total remuneration of the SALESMAN.  #RM:  employees greater than all salary+commission
+select *
+from employees
+where salary > all (
+	select salary+commission
+	from employees
+	where job_name = 'SALESMAN');
+#official answer is better
+select *
+from employees
+where salary > (
+	select max(salary+commission)
+	from employees
+	where job_name = 'SALESMAN');
+
+#14. Write a query in SQL to list the employees who are senior to BLAZE and working at PERTH or BRISBANE.
+select e.*
+from employees e, department d
+where e.dep_id = d.dep_id
+and e.hire_date < (
+	select hire_date
+	from employees
+	where emp_name = 'BLAZE')
+and e.dep_id in (
+	select dep_id
+	from department
+	where dep_location in ('PERTH','BRISBANE'));
+
+#15. Write a query in SQL to list the employees of grade 3 and 4 working in the department of FINANCE or AUDIT and whose salary is more than the salary of ADELYN and experience is more than FRANK. List the result in the ascending order of experience.  RM:  experience is seniority, not the experience formula to_number(to_char(current_date,'yyyy'),'0000') - to_number(to_char(hire_date,'yyyy'),'0000').
+select e.*
+from employees e join department d
+on e.dep_id = d.dep_id
+join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+where s.grade in (3,4)
+and e.dep_id in (
+	select dep_id
+	from department
+	where dep_name in ('FINANCE','AUDIT'))
+and e.salary > (
+	select salary
+	from employees
+	where emp_name = 'ADELYN')
+and e.hire_date < (
+	select hire_date
+	from employees
+	where emp_name = 'FRANK')
+order by e.hire_date asc;
+
+#16. Write a query in SQL to list the employees whose designation is same as the designation of SANDRINE or ADELYN.
+select *
+from employees
+where job_name in (
+	select job_name
+	from employees
+	where emp_name in ('SANDRINE','ADELYN'));
+
+#17. Write a query in SQL to list any job of department ID 1001 those that are not found in department ID 2001.
+select distinct e1.job_name
+from employees e1
+where e1.dep_id = 1001
+minus
+select distinct e2.job_name
+from employees e2
+where e2.dep_id = 2001;  #RM:  minus doesn't work.  Union, union all, and intersect all work.
+#official solution
+select job_name
+from employees
+where dep_id = 1001
+and job_name not in (
+	select job_name
+	from employees
+	where dep_id = 2001);
+
+#18. Write a query in SQL to find the details of highest paid employee.
+select *
+from employees
+where salary in (
+	select max(salary)
+	from employees);
+
+#19. Write a query in SQL to find the highest paid employees in the department MARKETING.
+select *
+from employees
+where salary = (
+	select max(salary)
+	from employees e, department d
+	where e.dep_id = d.dep_id
+	and d.dep_name = 'MARKETING');
+
+#20. Write a query in SQL to list the employees of grade 3 who have been hired in most recently and belongs to PERTH.
+select *
+from employees
+where hire_date = (
+	select max(hire_date)
+	from employees e join department d
+	on e.dep_id = d.dep_id
+	join salary_grade s
+	on e.salary between s.min_sal and s.max_sal
+	where s.grade = 3
+	and d.dep_location = 'PERTH');

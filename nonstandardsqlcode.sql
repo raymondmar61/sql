@@ -765,3 +765,32 @@ and (
 	where grade = 3);
 #official solution didn't use subquery
 
+#17. Write a query in SQL to list any job of department ID 1001 those that are not found in department ID 2001.
+select distinct e1.job_name
+from employees e1
+where e1.dep_id = 1001
+minus
+select distinct e2.job_name
+from employees e2
+where e2.dep_id = 2001;  #RM:  minus doesn't work.  Union, union all, and intersect all work.
+#official solution
+select job_name
+from employees
+where dep_id = 1001
+and job_name not in (
+	select job_name
+	from employees
+	where dep_id = 2001);
+
+#20. Write a query in SQL to list the employees of grade 3 who have been hired in most recently and belongs to PERTH.
+select *
+from employees
+where hire_date = (
+	select max(hire_date)
+	from employees e join department d
+	on e.dep_id = d.dep_id
+	join salary_grade s
+	on e.salary between s.min_sal and s.max_sal
+	where s.grade = 3
+	and d.dep_location = 'PERTH');
+
