@@ -794,3 +794,173 @@ where hire_date = (
 	where s.grade = 3
 	and d.dep_location = 'PERTH');
 
+#22. Write a query in SQL to list the details of the employees within grade 3 to 5 and belongs to SYDNEY. The employees are not in PRESIDENT designated and salary is more than the highest paid employee of PERTH where no MANAGER and SALESMAN are working under KAYLING.  RM:  highest paid employees works at PERTH, is not a manager, is not a salesman, and doesn't work under KAYLING.
+select e.*
+from employees e join salary_grade s
+on e.salary between s.min_sal and s.max_sal
+join department d
+on e.dep_id = d.dep_id
+where grade in (3,4,5)
+and d.dep_location = 'SYDNEY'
+and e.job_name <> 'PRESIDENT'
+and e.salary > all (
+	select max(e2.salary)
+	from employees e2, department d2
+	where e2.dep_id = d2.dep_id
+	and d2.dep_location = 'PERTH'
+	and e2.job_name not in ('MANAGER','SALESMAN')
+	and e2.manager_id not in (
+		select e3.emp_id
+		from employees e3
+		where e3.emp_name = 'KAYLING'));
+/*
+ emp_id | emp_name | job_name | manager_id | hire_date  | salary  | commission | dep_id
+--------+----------+----------+------------+------------+---------+------------+--------
+  67832 | CLARE    | MANAGER  |      68319 | 1991-06-09 | 2550.00 |            |   1001
+ */
+
+#34. Write a query in SQL to list the employees whose salary is equal or more to the average of maximum and minimum salary.
+select *
+from employees
+where salary >= (
+	select round((max(salary)+min(salary))/2,2)
+	from employees);
+#RM:  avg(max(salary),min(salary)) and avg(max(salary)+min(salary)) are invalid
+
+#35. Write a query in SQL to list the employees who are SALESMAN and gathered an experience which month portion is more than 10.
+#35. Write a query in SQL to list the managers whose salary is more than the average salary his employees.  #Join inside a subquery or first join main query and second join subquery.  Also subquery as temporary table alias and a join.
+#official solution
+select m.*
+from employees m
+where m.emp_id in (
+	select manager_id
+	from employees)
+and m.salary > (
+	select avg(e.salary)
+	from employees e
+	where e.manager_id = m.emp_id);
+#user solution
+select *
+from employees as e join (
+	select manager_id, avg(salary) as m_avg
+	from employees
+	group by manager_id) as j
+on e.emp_id = j.manager_id
+where e.salary > j.m_avg;
+
+#35.  Bonus.  Subquery is a temp table.
+#Find employees working in SYDNEY.
+select *
+from employees as e join (
+	select dep_id, dep_location
+	from department) as d
+on e.dep_id = d.dep_id
+where d.dep_location = 'SYDNEY';
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id	dep_location
+68319	KAYLING	PRESIDENT		1991-11-18	6000.00		1001	SYDNEY
+67832	CLARE	MANAGER	68319	1991-06-09	2550.00		1001	SYDNEY
+69324	MARKER	CLERK	67832	1992-01-23	1400.00		1001	SYDNEY
+*/
+
+#36. Write a query in SQL to list the employees whose salary is less than the salary of his manager but more than the salary of any other manager.  #two subqueries provides two temporary tables.  temp tables.
+select e2.emp_name as "employee", e2.salary as "employee salary", m2.emp_name as "not manager", m2.salary as "not salary"
+from employees e2, employees m2
+where e2.manager_id <> m2.emp_id;
+/*
+employee	employee salary	not manager	not salary
+BLAZE	2750.00	BLAZE	2750.00
+BLAZE	2750.00	CLARE	2550.00
+BLAZE	2750.00	JONAS	2957.00
+BLAZE	2750.00	ADELYN	1700.00
+BLAZE	2750.00	WADE	1350.00
+BLAZE	2750.00	MADDEN	1350.00
+BLAZE	2750.00	TUCKER	1600.00
+BLAZE	2750.00	ADNRES	1200.00
+BLAZE	2750.00	JULIUS	1050.00
+BLAZE	2750.00	MARKER	1400.00
+BLAZE	2750.00	SCARLET	3100.00
+BLAZE	2750.00	FRANK	3100.00
+BLAZE	2750.00	SANDRINE	900.00
+CLARE	2550.00	BLAZE	2750.00
+CLARE	2550.00	CLARE	2550.00
+CLARE	2550.00	JONAS	2957.00
+*/
+#official solution correct
+select distinct employeelowersalary.*
+from (
+	select e.*
+	from employees e, employees m
+	where e.manager_id = m.emp_id
+	and e.salary < m.salary) employeelowersalary,
+	(
+	select *
+	from employees
+	where emp_id in (
+		select manager_id
+		from employees)) managertable
+where employeelowersalary.salary > managertable.salary;
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id
+65646	JONAS	MANAGER	68319	1991-04-02	2957.00		2001
+66928	BLAZE	MANAGER	68319	1991-05-01	2750.00		3001
+*/
+
+#37. Write a query in SQL to list the name and average salary of employees in department wise.  #subquery temporary table from statement
+select e.*, deptaveragesalary."dept average salary"
+from (
+	select dep_id, round(avg(salary),2) as "dept average salary"
+	from employees
+	group by dep_id) deptaveragesalary,
+employees e
+where e.dep_id = deptaveragesalary.dep_id;
+/*
+emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id	dept average salary
+68319	KAYLING	PRESIDENT		1991-11-18	6000.00		1001	3316.67
+66928	BLAZE	MANAGER	68319	1991-05-01	2750.00		3001	1633.33
+67832	CLARE	MANAGER	68319	1991-06-09	2550.00		1001	3316.67
+65646	JONAS	MANAGER	68319	1991-04-02	2957.00		2001	2251.40
+64989	ADELYN	SALESMAN	66928	1991-02-20	1700.00	400.00	3001	1633.33
+65271	WADE	SALESMAN	66928	1991-02-22	1350.00	600.00	3001	1633.33
+66564	MADDEN	SALESMAN	66928	1991-09-28	1350.00	1500.00	3001	1633.33
+68454	TUCKER	SALESMAN	66928	1991-09-08	1600.00	0.00	3001	1633.33
+68736	ADNRES	CLERK	67858	1997-05-23	1200.00		2001	2251.40
+69000	JULIUS	CLERK	66928	1991-12-03	1050.00		3001	1633.33
+69324	MARKER	CLERK	67832	1992-01-23	1400.00		1001	3316.67
+67858	SCARLET	ANALYST	65646	1997-04-19	3100.00		2001	2251.40
+69062	FRANK	ANALYST	65646	1991-12-03	3100.00		2001	2251.40
+63679	SANDRINE	CLERK	69062	1990-12-18	900.00		2001	2251.40
+*/
+
+#38. Write a query in SQL to find out the least 5 earners of the company.
+select *
+from employees
+order by salary asc limit 5;
+#or
+select *
+from employees
+where salary <= (
+	select distinct salary from (
+		select rank() over (order by salary asc) rank, * from employees) as neednamehere
+		where rank = 4);  #RM:  there was a tie for the fifth lowest salary.  Use rank 4 and distinct.
+#official solution
+select *
+from employees e
+where 5 > (
+	select count(*)
+	from employees
+	where e.salary > salary);
+
+#41. Write a query in SQL to list the name of the department where number of employees is equal to the number of characters in the department name.
+select departmentlength.dep_name
+from (
+	select dep_name, length(dep_name) as "characters"
+	from department) departmentlength,
+	(
+	select count(*) as "number employees"
+	from employees
+	group by dep_id) countemployee
+where departmentlength."characters" = countemployee."number employees";
+
+
+
