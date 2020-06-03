@@ -962,5 +962,79 @@ from (
 	group by dep_id) countemployee
 where departmentlength."characters" = countemployee."number employees";
 
+#43. Write a query in SQL to list the employees who joined in the company on the same date.  #RM:  Find employees with the same hire dates.
+#official solution
+select *
+from employees e1
+where hire_date in (
+	select hire_date
+	from employees e2
+	where e1.emp_id <> e2.emp_id);
+#user solutions
+select hiredate1.*
+from (
+	select *
+	from employees) hiredate1
+join (
+	select *
+	from employees) hiredate2
+on hiredate1.hire_date = hiredate2.hire_date
+and hiredate1.emp_id <> hiredate2.emp_id;
+#also
+select *
+from employees a join employees b
+on a.hire_date = b.hire_date
+and a.emp_id <> b.emp_id;
+#RM:  It seems a.emp_id <> b.emp_id or hiredate1.emp_id <> hiredate2.emp_id prevents double posting the answers and prevents all employees returned.
 
+#44. Write a query in SQL to list the name of the departments where more than average number of employees are working.
+select *
+from (
+	select count(emp_id)
+	from employees
+	group by dep_id) averagecount;
+/*
+count
+5
+3
+6
+*/
+select round(avg(employeecount),2) as "needemployeecountcolumnname"
+from (
+	select count(emp_id) as "employeecount"
+	from employees
+	group by dep_id) averagecount;
+/*
+needemployeecountcolumnname
+4.67
+*/
+select *
+from department
+where dep_id in (
+	select dep_id
+	from employees
+	group by dep_id
+	having count(dep_id) > (
+		select round(avg(employeecount),2) as "needemployeecountcolumnname"
+		from (
+			select count(emp_id) as "employeecount"
+			from employees
+			group by dep_id) averagecount));
+
+#50. Write a query in SQL to find all the employees who earn the minimum salary for a designation and arrange the list in ascending order on salary.
+select *
+from employees
+where salary in (
+	select min(salary)
+	from employees
+	group by job_name)
+order by salary asc;
+#also by me
+select employees.*
+from employees join (
+	select min(salary) as "minimumsalarycolumn"
+	from employees
+	group by job_name) minimumsalary
+on employees.salary = minimumsalary."minimumsalarycolumn"
+order by employees.salary asc;
 

@@ -1337,3 +1337,223 @@ from (
 	from employees
 	group by dep_id) countemployee
 where departmentlength."characters" = countemployee."number employees";
+
+#42. Write a query in SQL to list the name of the departments where highest number of employees are working.
+select dep_name
+from department
+where dep_id = (
+	select dep_id
+	from employees
+	group by dep_id
+	order by count(emp_id) desc limit 1);
+
+#43. Write a query in SQL to list the employees who joined in the company on the same date.  #RM:  Find employees with the same hire dates.
+#official solution
+select *
+from employees e1
+where hire_date in (
+	select hire_date
+	from employees e2
+	where e1.emp_id <> e2.emp_id);
+#user solutions
+select hiredate1.*
+from (
+	select *
+	from employees) hiredate1
+join (
+	select *
+	from employees) hiredate2
+on hiredate1.hire_date = hiredate2.hire_date
+and hiredate1.emp_id <> hiredate2.emp_id;
+#also
+select *
+from employees a join employees b
+on a.hire_date = b.hire_date
+and a.emp_id <> b.emp_id;
+#RM:  It seems a.emp_id <> b.emp_id or hiredate1.emp_id <> hiredate2.emp_id prevents double posting the answers and prevents all employees returned.
+
+#44. Write a query in SQL to list the name of the departments where more than average number of employees are working.
+select *
+from (
+	select count(emp_id)
+	from employees
+	group by dep_id) averagecount;
+/*
+count
+5
+3
+6
+*/
+select round(avg(employeecount),2) as "needemployeecountcolumnname"
+from (
+	select count(emp_id) as "employeecount"
+	from employees
+	group by dep_id) averagecount;
+/*
+needemployeecountcolumnname
+4.67
+*/
+select *
+from department
+where dep_id in (
+	select dep_id
+	from employees
+	group by dep_id
+	having count(dep_id) > (
+		select round(avg(employeecount),2) as "needemployeecountcolumnname"
+		from (
+			select count(emp_id) as "employeecount"
+			from employees
+			group by dep_id) averagecount));
+
+#45. Write a query in SQL to list the name of the managers who is having maximum number of employees working under him.
+select *
+from employees
+where emp_id in (
+	select manager_id
+	from employees
+	group by manager_id
+	having count(emp_id) = (
+		select count(emp_id)
+		from employees
+		where manager_id is not null
+		group by manager_id
+		order by count(emp_id) desc limit 1));
+
+#46. Write a query in SQL to list those managers who are getting salary to less than the salary of his employees.  #RM:  find the manager earning a salary less than his employees.  Jonas is the answer.
+select e.emp_name as employee, m.*
+from employees e, employees m
+where e.manager_id = m.emp_id
+and e.salary > m.salary;
+/*
+employee	emp_id	emp_name	job_name	manager_id	hire_date	salary	commission	dep_id
+SCARLET	65646	JONAS	MANAGER	68319	1991-04-02	2957.00		2001
+FRANK	65646	JONAS	MANAGER	68319	1991-04-02	2957.00		2001
+*/
+
+#47. Write a query in SQL to list the details of all the employees who are sub-ordinates to BLAZE.
+select *
+from employees
+where manager_id in (
+	select emp_id
+	from employees
+	where emp_name = 'BLAZE');
+
+#48. Write a query in SQL to list the employees who are working as managers, using co-related subquery.  #RM:  what is a co-related corelated subquery?  
+select *
+from employees
+where emp_id in (
+	select manager_id
+	from employees);  #RM:  This is a co-related subquery?
+
+#49. Write a query in SQL to list the name of the employees for their manager JONAS and also the name of the manager of JONAS.
+select *
+from employees
+where manager_id in (
+	select emp_id
+	from employees
+	where emp_name = 'JONAS')
+or emp_id in (
+	select manager_id
+	from employees
+	where emp_name = 'JONAS');
+#user solution
+select emp_id as subordinate, (select emp_id as emp from employees where emp_name='JONAS'), (select manager_id as superior from employees where emp_name='JONAS'), emp_name as subordinate_name, (select emp_name from employees where emp_name='JONAS'), (select emp_name as superior_name from employees where emp_id in (select manager_id as superior from employees where emp_name='JONAS'))
+from employees
+where manager_id in (
+	select emp_id
+	from employees
+	where emp_name='JONAS');
+/*
+subordinate	emp	superior	subordinate_name	emp_name	superior_name
+67858	65646	68319	SCARLET	JONAS	KAYLING
+69062	65646	68319	FRANK	JONAS	KAYLING
+*/
+
+#50. Write a query in SQL to find all the employees who earn the minimum salary for a designation and arrange the list in ascending order on salary.
+select *
+from employees
+where salary in (
+	select min(salary)
+	from employees
+	group by job_name)
+order by salary asc;
+#also by me
+select employees.*
+from employees join (
+	select min(salary) as "minimumsalarycolumn"
+	from employees
+	group by job_name) minimumsalary
+on employees.salary = minimumsalary."minimumsalarycolumn"
+order by employees.salary asc;
+
+#51. Write a query in SQL to find all the employees who earn the highest salary for a designation and arrange the list in descending order on salary.
+select *
+from employees
+where salary in (
+	select max(salary)
+	from employees
+	group by job_name)
+order by salary desc;
+#also by me
+select employees.*
+from employees join (
+	select max(salary) as "maximumsalarycolumn"
+	from employees
+	group by job_name) maximumsalary
+on employees.salary = maximumsalary."maximumsalarycolumn"
+order by employees.salary desc;
+
+#52. Write a query in SQL to find the most recently hired emps in each department order by hire_date.
+select *
+from employees
+where hire_date in (
+	select max(hire_date)
+	from employees
+	group by dep_id);
+#also by me
+select *
+from employees e join (
+	select max(hire_date) as "recenthiredatescolumn"
+	from employees
+	group by dep_id) recenthiredate
+on e.hire_date = recenthiredate."recenthiredatescolumn";
+
+#53. Write a query in SQL to list the name,salary, and department id for each employee who earns a salary greater than the average salary for their department and list the result in ascending order on department id.
+select *
+from employees e1
+where salary > (
+	select avg(salary)
+	from employees e2
+	where e1.dep_id = e2.dep_id)
+order by dep_id asc;  #RM:  how does the official solution break down by department?
+#also by me
+select employees.*, deptaveragesalary.*
+from employees join (
+	select dep_id, round(avg(salary),2) as "averagesalary"
+	from employees
+	group by dep_id) as deptaveragesalary
+on employees.dep_id = deptaveragesalary.dep_id
+where employees.salary > deptaveragesalary."averagesalary"
+order by employees.dep_id asc;
+
+#54. Write a query in SQL to find the name and designation of the employees who earns a commission and salary is the maximum.  #RM:  question asked what's the highest salary for someone who earns a commission.  Commission is excluded from the highest salary calculation.  Confusing.
+select *
+from employees
+where salary = (
+	select max(salary)
+	from employees
+	where commission is not null);
+
+#55. Write a query in SQL to list the name, designation, and salary of the employees who does not work in the department 1001 but works in same designation and salary as the employees in department 3001.
+select *
+from employees
+where dep_id <> 1001
+and job_name in (
+	select job_name
+	from employees
+	where dep_id = 3001)
+and salary in (
+	select salary
+	from employees
+	where dep_id = 3001);
