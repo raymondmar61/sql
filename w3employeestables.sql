@@ -38,3 +38,22 @@ Sample table: salary_grade
 (5 rows)
 */
 
+select e.emp_id as "employee id", e.emp_name as "employee name", e.manager_id as "manager id", m.emp_name as "manager name"
+from employees e, employees m
+where m.emp_id = e.manager_id;
+/*
+employee id employee name manager id  manager name
+66928 BLAZE 68319 KAYLING
+67832 CLARE 68319 KAYLING
+65646 JONAS 68319 KAYLING
+64989 ADELYN  66928 BLAZE
+65271 WADE  66928 BLAZE
+66564 MADDEN  66928 BLAZE
+68454 TUCKER  66928 BLAZE
+68736 ADNRES  67858 SCARLET
+69000 JULIUS  66928 BLAZE
+69324 MARKER  67832 CLARE
+67858 SCARLET 65646 JONAS
+69062 FRANK 65646 JONAS
+63679 SANDRINE  69062 FRANK
+*/
