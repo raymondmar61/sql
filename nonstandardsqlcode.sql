@@ -1038,3 +1038,80 @@ from employees join (
 on employees.salary = minimumsalary."minimumsalarycolumn"
 order by employees.salary asc;
 
+#57. Write a query in SQL to list the department id, name, designation, salary, and net salary of the employees only who gets a commission and earn the second highest earnings.
+select *
+from employees
+where (salary+commission) = (
+	select (salary+commission) from (
+		select salary+commission, rank() over (order by salary+commission desc) from employees where commission is not null) neednamehere
+		where ranknumber = 2);  #error message
+select *
+from employees
+where emp_name in (
+	select emp_name from (
+		select emp_name, salary+commission, rank() over (order by salary+commission desc)
+		from employees
+		where commission is not null) neednamehere
+	where rank = 2);
+
+#68. Write a query in SQL to list the employees whose salary is same as any one of the employee.
+select *
+from employees
+where salary in (
+	select salary
+	from employees
+	group by salary
+	having count(salary) > 1);
+#user solution
+SELECT *
+FROM employees a
+WHERE a.salary = any (
+	SELECT b.salary
+	FROM employees b
+	WHERE a.emp_id <> b.emp_id);
+#official solution
+select *
+from employees
+where salary in (
+	select salary
+	from employees e
+	where employees.emp_id <> e.emp_id);
+
+#72. Write a query in SQL to list the highest paid employees working under KAYLING.
+select *
+from employees
+where emp_id in (
+	select emp_id from (
+		select emp_id, salary, rank() over (order by salary desc)
+		from employees
+		where manager_id = (
+			select emp_id
+			from employees
+			where emp_name = 'KAYLING')) neednamehere
+	where rank = 1);
+#official solution.  RM:  It's easier
+select *
+from employees
+where salary = (
+	select max(salary)
+	from employees
+	where manager_id in (
+		select emp_id
+		from employees
+		where emp_name = 'KAYLING'));
+
+#74. Write a query in SQL to find out the employees whose salaries are greater than the salaries of their managers.  #RM:  subquery in from statement subquery from statement.
+select e.emp_id as "employee id", e.emp_name as "employee name", e.manager_id as "manager id", m.emp_name as "manager name"
+from employees e, employees m
+where m.emp_id = e.manager_id
+and e.salary > m.salary;
+#also
+select employees.*
+from employees, (
+	select emp_id, emp_name, salary
+	from employees
+	where emp_id in (
+		select distinct manager_id
+		from employees)) managers
+where employees.manager_id = managers.emp_id
+and employees.salary > managers.salary;

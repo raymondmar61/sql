@@ -1557,3 +1557,284 @@ and salary in (
 	select salary
 	from employees
 	where dep_id = 3001);
+
+#56. Write a query in SQL to list the department id, name, designation, salary, and net salary (salary+commission) of the SALESMAN who are earning maximum net salary.
+select *, salary+commission	as "net salary"
+from employees
+where salary+commission	= (
+	select max(salary+commission)
+	from employees
+	where commission is not null);
+
+#57. Write a query in SQL to list the department id, name, designation, salary, and net salary of the employees only who gets a commission and earn the second highest earnings.
+select *
+from employees
+where (salary+commission) = (
+	select (salary+commission) from (
+		select salary+commission, rank() over (order by salary+commission desc) from employees where commission is not null) neednamehere
+		where ranknumber = 2);  #error message
+select *
+from employees
+where emp_name in (
+	select emp_name from (
+		select emp_name, salary+commission, rank() over (order by salary+commission desc)
+		from employees
+		where commission is not null) neednamehere
+	where rank = 2);  #search by employee's name for rank()
+#user solution
+select dep_id,emp_name, job_name, salary, salary+commission as net_salary from employees where emp_name in (
+select a.emp_name from (
+select emp_name,salary+commission, rank () over (order by salary+commission desc) from employees where commission is not null)a where rank=2)
+
+#58. Write a query in SQL to list the department ID and their average salaries for those department where the average salary is less than the averages for all departments.
+select dep_id, round(avg(salary),2)
+from employees
+group by dep_id
+having avg(salary) < (
+	select avg(salary)
+	from employees);
+
+#59. Write a query in SQL to display the unique department of the employees.  #RM:  literally run a query distinct dep_id in employees table.  Display the department information.
+select *
+from department
+where dep_id in (
+	select distinct(dep_id)
+	from employees);
+
+#60. Write a query in SQL to list the details of the employees working at PERTH.
+select *
+from employees
+where dep_id = (
+	select dep_id
+	from department
+	where dep_location = 'PERTH');
+
+#61. Write a query in SQL to list the employees of grade 2 and 3 who belongs to the city PERTH.
+select *
+from employees
+where dep_id = (
+	select dep_id
+	from department
+	where dep_location = 'PERTH')
+and salary between (
+	select distinct min_sal
+	from salary_grade
+	where grade = 2)
+	and (
+	select distinct max_sal
+	from salary_grade
+	where grade = 3);  #RM: for some reason distinct keyword must be included because website prints the min_sal and max_sal twice.
+
+#62. Write a query in SQL to list the employees whose designation is same as either the designation of [ADELYN] or the salary is more than salary of WADE.  #RM:  designation is job_name
+select *
+from employees
+where job_name = (
+	select job_name
+	from employees
+	where emp_name = 'ADELYN')
+or salary > (
+	select salary
+	from employees
+	where emp_name = 'WADE');
+
+#63. Write a query in SQL to list the employees of department 1001 whose salary is more than the salary of ADELYN.
+select *
+from employees
+where dep_id = 1001
+and salary > (
+	select salary
+	from employees
+	where emp_name = 'ADELYN');
+
+#64. Write a query in SQL to list the managers who are senior to KAYLING and who are junior to SANDRINE.
+select distinct e.manager_id as "manager id", m.emp_name as "manager name"
+from employees e, employees m
+where m.emp_id = e.manager_id
+and m.hire_date < (
+	select hire_date
+	from employees
+	where emp_name = 'KAYLING')
+and m.hire_date > (
+	select hire_date
+	from employees
+	where emp_name = 'SANDRINE');
+
+#65. Write a query in SQL to list the ID, name,location,salary, and department of the all the employees belonging to the department where KAYLING works.
+select *
+from employees
+where dep_id = (
+	select dep_id
+	from employees
+	where emp_name = 'KAYLING')
+and emp_name not in ('KAYLING');  #RM:  KAYLING is shown without emp_name not in ('KAYLING')
+
+#66. Write a query in SQL to list the employees whose salary grade are greater than the grade of MARKER.
+select *
+from employees
+where salary > (
+	select distinct max_sal
+	from salary_grade
+	where grade = (
+		select distinct s.grade
+		from salary_grade s, employees e
+		where e.salary between s.min_sal and s.max_sal
+		and e.salary = (
+			select salary
+			from employees
+			where emp_name = 'MARKER'))); #RM: for some reason distinct keyword must be included because website prints the min_sal and max_sal twice.
+
+#67. Write a query in SQL to list the employees of the grade same as the grade of TUCKER or experience is more than SANDRINE and who are belonging to SYDNEY or PERTH.
+#official solution
+select *
+from employees e, department d, salary_grade s
+where e.dep_id= d.dep_id
+and d.dep_location in ('SYDNEY','PERTH')
+and e.salary between s.min_sal and s.max_sal
+and (
+	s.grade in (
+		select s.grade
+		from employees e, salary_grade s
+		where e.salary between s.min_sal and s.max_sal
+		and e.emp_name = 'TUCKER')
+	or age (current_date,hire_date) > (
+		select age(current_date,hire_date)
+		from employees
+		where emp_name = 'SANDRINE'));
+
+#68. Write a query in SQL to list the employees whose salary is same as any one of the employee.
+select *
+from employees
+where salary in (
+	select salary
+	from employees
+	group by salary
+	having count(salary) > 1);
+#user solution
+SELECT *
+FROM employees a
+WHERE a.salary = any (
+	SELECT b.salary
+	FROM employees b
+	WHERE a.emp_id <> b.emp_id);
+#official solution
+select *
+from employees
+where salary in (
+	select salary
+	from employees e
+	where employees.emp_id <> e.emp_id);
+
+#69. Write a query in SQL to list the total remuneration (salary+commission) of all sales person of MARKETING department.  #RM:  the question and its answer doesn't make sense.
+select sum(salary+commission)
+from employees
+where dep_id = (
+	select dep_id
+	from department
+	where dep_name = 'MARKETING')
+and job_name = 'SALESMAN';
+
+#70. Write a query in SQL to list the details of most recently hired employees of department 3001.
+select *
+from employees
+where dep_id = 3001
+and hire_date in (
+	select max(hire_date)
+	from employees
+	where dep_id = 3001);
+
+#71. Write a query in SQL to list the highest paid employees of PERTH who joined before the most recently hired employee of grade 2.
+select *
+from employees
+where salary = (
+	select max(e.salary)
+	from employees e, department d
+	where e.dep_id = d.dep_id
+	and d.dep_location = 'PERTH')
+and hire_date < (
+	select max(e.hire_date)
+	from employees e, salary_grade s
+	where e.salary between s.min_sal and s.max_sal
+	and s.grade = 2);
+
+#72. Write a query in SQL to list the highest paid employees working under KAYLING.
+select *
+from employees
+where emp_id in (
+	select emp_id from (
+		select emp_id, salary, rank() over (order by salary desc)
+		from employees
+		where manager_id = (
+			select emp_id
+			from employees
+			where emp_name = 'KAYLING')) neednamehere
+	where rank = 1);
+#official solution.  RM:  It's easier
+select *
+from employees
+where salary = (
+	select max(salary)
+	from employees
+	where manager_id in (
+		select emp_id
+		from employees
+		where emp_name = 'KAYLING'));
+
+#73. Write a query in SQL to list the name, salary, and commission for those employees whose net pay is greater than or equal to the salary of any other employee in the company.
+select e1.emp_name, e1.salary, e1.commission
+from employees e1
+where e1.salary+e1.commission >= any (
+	select e2.salary+e2.commission
+	from employees e2);
+/*
+emp_name	salary	commission
+ADELYN	1700.00	400.00
+WADE	1350.00	600.00
+MADDEN	1350.00	1500.00
+TUCKER	1600.00	0.00
+*/
+#official solution  #RM:  what?
+select e.emp_name, e.salary, e.commission
+from employees e
+where (
+	select max(salary+commission)
+	from employees) >= any (
+		select salary
+		from employees);
+/*
+emp_name	salary	commission
+KAYLING	6000.00	
+BLAZE	2750.00	
+CLARE	2550.00	
+JONAS	2957.00	
+ADELYN	1700.00	400.00
+WADE	1350.00	600.00
+MADDEN	1350.00	1500.00
+TUCKER	1600.00	0.00
+ADNRES	1200.00	
+JULIUS	1050.00	
+MARKER	1400.00	
+SCARLET	3100.00	
+FRANK	3100.00	
+SANDRINE	900.00	
+*/
+
+#74. Write a query in SQL to find out the employees whose salaries are greater than the salaries of their managers.  #RM:  subquery in from statement subquery from statement.
+select e.emp_id as "employee id", e.emp_name as "employee name", e.manager_id as "manager id", m.emp_name as "manager name"
+from employees e, employees m
+where m.emp_id = e.manager_id
+and e.salary > m.salary;
+#also
+select employees.*
+from employees, (
+	select emp_id, emp_name, salary
+	from employees
+	where emp_id in (
+		select distinct manager_id
+		from employees)) managers
+where employees.manager_id = managers.emp_id
+and employees.salary > managers.salary;
+
+
+
+
+
