@@ -1115,3 +1115,27 @@ from employees, (
 		from employees)) managers
 where employees.manager_id = managers.emp_id
 and employees.salary > managers.salary;
+
+#75. Write a query in SQL to find the maximum average salary drawn for each job name except for PRESIDENT.
+select job_name, round(avg(salary),2) as maxavgsalary
+from employees
+where job_name <> 'PRESIDENT'
+group by job_name
+order by maxavgsalary desc limit 1;
+#RM:  no user solution used rank() and group by
+#official solution
+select max(maxavgsalary)
+from (
+	select round(avg(salary),2) as maxavgsalary
+	from employees
+	where job_name <> 'PRESIDENT'
+	group by job_name) neednamehere;
+
+#https://www.w3resource.com/sql-exercises/movie-database-exercise/subqueries-exercises-on-movie-database.php
+#11. Write a query in SQL to find the movie title, and the highest number of stars that movie received and arranged the result according to the group of a movie and the movie title appear alphabetically in ascending order.  RM:  Post the movie title and it's highest rating.  It's not return the movie and its highest rating star separately.  Two tables joined using group by in one table.
+select mov_title, max(rev_stars)
+from movie, rating
+where movie.mov_id = rating.mov_id
+and rating.rev_stars is not null
+group by movie.mov_title
+order by mov_title;
