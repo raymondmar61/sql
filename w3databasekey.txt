@@ -1,0 +1,3 @@
+hrdatabase is Oracle database Steven King
+employees is employees database KAYLING
+orderssalesman is unknown database James Hoog
