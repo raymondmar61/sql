@@ -2,6 +2,7 @@
 #https://www.w3resource.com/sql-exercises/index.php
 #https://www.w3resource.com/sql-exercises/movie-database-exercise/basic-exercises-on-movie-database.php
 #https://www.w3resource.com/sql-exercises/movie-database-exercise/subqueries-exercises-on-movie-database.php
+#https://www.w3resource.com/sql-exercises/movie-database-exercise/joins-exercises-on-movie-database.php
 
 #https://www.w3resource.com/sql-exercises/movie-database-exercise/basic-exercises-on-movie-database.php
 #1. Write a query in SQL to find the name and year of the movies.
@@ -255,3 +256,124 @@ where mov_id in (
 		from movie_cast
 		group by act_id
 		having count(act_id) >= 2));
+
+#https://www.w3resource.com/sql-exercises/movie-database-exercise/joins-exercises-on-movie-database.php
+#1. Write a query in SQL to find the name of all reviewers who have rated their ratings with a NULL value.
+select reviewer.*
+from reviewer join rating
+on reviewer.rev_id = rating.rev_id
+where rating.rev_stars is null;
+#also
+select *
+from reviewer
+where rev_id in (
+	select rev_id
+	from rating
+	where rev_stars is null);
+
+#2. Write a query in SQL to list the first and last names of all the actors who were cast in the movie 'Annie Hall', and the roles they played in that production.
+select a.*
+from actor a join movie_cast mc
+on a.act_id = mc.act_id
+join movie m
+on m.mov_id = mc.mov_id
+where m.mov_title = 'Annie Hall';
+
+#3. Write a query in SQL to find the name of movie and director (first and last names) who directed a movie that casted a role for 'Eyes Wide Shut'.
+select d.*, m.mov_title
+from director d join movie_direction md
+on d.dir_id = md.dir_id
+join movie_cast mc
+on md.mov_id = mc.mov_id
+join movie m
+on mc.mov_id = m.mov_id
+where m.mov_title = 'Eyes Wide Shut';
+
+#4. Write a query in SQL to find the name of movie and director (first and last names) who directed a movie that casted a role as Sean Maguire.
+select d.*, m.mov_title
+from director d join movie_direction md
+on d.dir_id = md.dir_id
+join movie_cast mc
+on md.mov_id = mc.mov_id
+join movie m
+on mc.mov_id = m.mov_id
+where mc.role = 'Sean Maguire';
+
+#5. Write a query in SQL to list all the actors who have not acted in any movie between 1990 and 2000.
+select a.*
+from actor a join movie_cast mc
+on a.act_id = mc.act_id
+join movie m
+on mc.mov_id = m.mov_id
+where m.mov_year < 1990
+or m.mov_year > 2000;
+
+#6. Write a query in SQL to list first and last name of all the directors with number of genres movies the directed with genres name, and arranged the result alphabetically with the first and last name of the director.
+select d.dir_fname, d.dir_lname, g.gen_title, count(g.*)/4 as "Divide by four because w3 database bug"
+from director d join movie_direction md
+on d.dir_id = md.dir_id
+join movie_genres mg
+on md.mov_id = mg.mov_id
+join genres g
+on g.gen_id = mg.gen_id
+group by d.dir_fname, d.dir_lname, g.gen_title
+order by d.dir_fname, d.dir_lname;
+
+#7. Write a query in SQL to list all the movies with year and genres.
+select m.*, g.gen_title
+from movie m, genres g, movie_genres mg
+where m.mov_id = mg.mov_id
+and mg.gen_id = g.gen_id;
+
+#8. Write a query in SQL to list all the movies with year, genres, and name of the director.
+select m.*, g.gen_title, d.dir_fname, d.dir_lname
+from movie m, genres g, movie_genres mg, director d, movie_direction md
+where m.mov_id = mg.mov_id
+and mg.gen_id = g.gen_id
+and m.mov_id = md.mov_id
+and md.dir_id = d.dir_id;
+
+#9. Write a query in SQL to list all the movies with title, year, date of release, movie duration, and first and last name of the director which released before 1st january 1989, and sort the result set according to release date from highest date to lowest.
+select m.*, d.*
+from movie m, director d, movie_direction md
+where m.mov_id = md.mov_id
+and md.dir_id = d.dir_id
+and m.mov_dt_rel < '1989-01-01'  #RM:  year and movie release year can be different
+order by m.mov_dt_rel desc;
+
+#10. Write a query in SQL to compute a report which contain the genres of those movies with their average time and number of movies for each genres.
+select g.gen_title, round(avg(m.mov_time),2), count(m.*)/2 as "Divide by two because w3 database bug"
+from movie m, genres g, movie_genres mg
+where m.mov_id = mg.mov_id
+and mg.gen_id = g.gen_id
+group by g.gen_title;
+
+#11. Write a query in SQL to find those lowest duration movies along with the year, director's name, actor's name and his/her role in that production.  #RM:  Find the shortest length movie(s).
+select m.mov_title, m.mov_year, d.dir_fname, d.dir_lname, a.act_fname, a.act_lname, mc.role
+from movie m natural join actor a
+natural join director d
+natural join movie_direction md
+natural join movie_cast mc
+where mov_time = (
+	select min(mov_time)
+	from movie);
+
+#12. Write a query in SQL to find all the years which produced a movie that received a rating of 3 or 4, and sort the result in increasing order.
+select m.mov_year, r.rev_stars
+from movie m natural join rating r
+where r.rev_stars between 3 and 4;
+
+#13. Write a query in SQL to return the reviewer name, movie title, and stars in an order that reviewer name will come first, then by movie title, and lastly by number of stars.
+select re.rev_name, m.mov_title, ra.rev_stars
+from movie m natural join rating ra
+natural join reviewer re
+where re.rev_name is not null
+order by re.rev_name, m.mov_title, ra.rev_stars;
+
+#14. Write a query in SQL to find movie title and number of stars for each movie that has at least one rating and find the highest number of stars that movie received and sort the result by movie title.  #RM:  find the movie and the movie's highest rated star.  There are movies with multiple revieweres and multiple star ratings.
+select m.mov_title, max(r.rev_stars)
+from movie m, rating r
+where m.mov_id = r.mov_id
+and r.rev_stars is not null
+group by m.mov_title
+order by m.mov_title;
