@@ -1139,3 +1139,19 @@ where movie.mov_id = rating.mov_id
 and rating.rev_stars is not null
 group by movie.mov_title
 order by mov_title;
+
+#https://www.w3resource.com/sql-exercises/movie-database-exercise/joins-exercises-on-movie-database.php
+#11. Write a query in SQL to find those lowest duration movies along with the year, director's name, actor's name and his/her role in that production.  #RM:  Find the shortest length movie(s).
+select m.mov_title, m.mov_year, d.dir_fname, d.dir_lname, a.act_fname, a.act_lname, mc.role
+from movie m natural join actor a
+natural join director d
+natural join movie_direction md
+natural join movie_cast mc
+where mov_time = (
+	select min(mov_time)
+	from movie);
+
+#12. Write a query in SQL to find all the years which produced a movie that received a rating of 3 or 4, and sort the result in increasing order.
+select m.mov_year, r.rev_stars
+from movie m natural join rating r
+where r.rev_stars between 3 and 4;
