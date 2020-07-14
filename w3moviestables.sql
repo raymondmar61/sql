@@ -186,3 +186,43 @@ Sample table: movie_direction
     218 |    921
     215 |    922
     221 |    923
+
+Sample table: genres
+gen_id |      gen_title
+--------+----------------------
+   1001 | Action
+   1002 | Adventure
+   1003 | Animation
+   1004 | Biography
+   1005 | Comedy
+   1006 | Crime
+   1007 | Drama
+   1008 | Horror
+   1009 | Music
+   1010 | Mystery
+   1011 | Romance
+   1012 | Thriller
+   1013 | War
+
+Sample table: movie_genres
+ mov_id | gen_id
+--------+--------
+    922 |   1001
+    917 |   1002
+    903 |   1002
+    912 |   1003
+    911 |   1005
+    908 |   1006
+    913 |   1006
+    926 |   1007
+    928 |   1007
+    918 |   1007
+    921 |   1007
+    902 |   1008
+    923 |   1009
+    907 |   1010
+    927 |   1010
+    901 |   1010
+    914 |   1011
+    906 |   1012
+    904 |   1013
