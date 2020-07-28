@@ -1155,3 +1155,59 @@ where mov_time = (
 select m.mov_year, r.rev_stars
 from movie m natural join rating r
 where r.rev_stars between 3 and 4;
+
+#19. Write a query in SQL to find the cast list for the movie Chinatown.
+select a.act_fname, a.act_lname, mc.role
+from movie_cast mc join movie
+on mc.mov_id = movie.mov_id
+join actor a
+on mc.act_id = a.act_id
+where movie.mov_title = 'Chinatown';
+#also
+select a.act_fname, a.act_lname
+from actor a join movie_cast mc
+on a.act_id = mc.act_id
+where mc.mov_id = (
+	select mov_id
+	from movie
+	where mov_title = 'Chinatown');
+
+#20. Write a query in SQL to find the movie in which the actor appeared whose first and last name are 'Harrison' and 'Ford'.
+select movie.mov_title
+from movie_cast mc join movie
+on mc.mov_id = movie.mov_id
+join actor a
+on mc.act_id = a.act_id
+where a.act_fname = 'Harrison'
+and a.act_lname = 'Ford';
+#also
+select movie.mov_title
+from movie, movie_cast mc
+where movie.mov_id = mc.mov_id
+and mc.act_id = (
+	select act_id
+	from actor
+	where act_fname = 'Harrison'
+	and act_lname = 'Ford');
+
+#22. Write a query in SQL to find the highest-rated Mystery movie, and report the title, year, and rating.
+select movie.*, r.rev_stars
+from movie join rating r
+on movie.mov_id = r.mov_id
+where r.rev_stars in (
+	select max(rev_stars)
+	from rating
+	where mov_id in (
+		select mov_id
+		from movie_genres
+		where gen_id in (
+			select gen_id
+			from genres
+			where gen_title = 'Mystery')))
+and movie.mov_id in (
+	select mov_id
+	from movie_genres
+	where gen_id in (
+		select gen_id
+		from genres
+		where gen_title = 'Mystery'));

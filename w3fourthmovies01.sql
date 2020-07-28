@@ -370,10 +370,212 @@ natural join reviewer re
 where re.rev_name is not null
 order by re.rev_name, m.mov_title, ra.rev_stars;
 
-#14. Write a query in SQL to find movie title and number of stars for each movie that has at least one rating and find the highest number of stars that movie received and sort the result by movie title.  #RM:  find the movie and the movie's highest rated star.  There are movies with multiple revieweres and multiple star ratings.
+#14. Write a query in SQL to find movie title and number of stars for each movie that has at least one rating and find the highest number of stars that movie received and sort the result by movie title.  #RM:  find the movie and the movie's highest rated star.  There are multiple revieweres reviewing multiple movies.
 select m.mov_title, max(r.rev_stars)
 from movie m, rating r
 where m.mov_id = r.mov_id
 and r.rev_stars is not null
 group by m.mov_title
 order by m.mov_title;
+
+#15. Write a query in SQL to find the director's first and last name together with the title of the movie(s) they directed and received the rating.
+select d.dir_fname, d.dir_lname, movie.mov_title, r.rev_stars
+from movie join rating r
+on movie.mov_id = r.mov_id
+join movie_direction m
+on movie.mov_id = m.mov_id
+join director d
+on m.dir_id = d.dir_id
+where r.rev_stars is not null;
+
+#16. Write a query in SQL to find the movie title, actor first and last name, and the role for those movies where one or more actors acted in two or more movies.
+select movie.mov_title, a.act_fname, a.act_lname, m.role
+from movie join movie_cast m
+on movie.mov_id = m.mov_id
+left join actor a
+on m.act_id = a.act_id
+where m.act_id in (
+	select m.act_id
+	from movie_cast m
+	group by m.act_id
+	having count(m.act_id) >= 2);
+
+#17. Write a query in SQL to find the first and last name of a director and the movie he or she directed, and the actress appeared which first name was Claire and last name was Danes along with her role in that movie.
+select d.dir_fname, d.dir_lname, movie.mov_title, a.act_fname, a.act_lname, mc.role
+from movie join movie_direction md
+on movie.mov_id = md.mov_id
+join director d
+on md.dir_id = d.dir_id
+join movie_cast mc
+on movie.mov_id = mc.mov_id
+join actor a
+on mc.act_id = a.act_id
+where a.act_fname = 'Claire'
+and a.act_lname = 'Danes';
+
+#18. Write a query in SQL to find the first and last name of an actor with their role in the movie which was also directed by themselve.
+select d.dir_fname, d.dir_lname, movie.mov_title, a.act_fname, a.act_lname, mc.role
+from movie join movie_direction md
+on movie.mov_id = md.mov_id
+join director d
+on md.dir_id = d.dir_id
+join movie_cast mc
+on movie.mov_id = mc.mov_id
+join actor a
+on mc.act_id = a.act_id
+where a.act_fname = d.dir_fname
+and a.act_lname = d.dir_lname;
+
+#19. Write a query in SQL to find the cast list for the movie Chinatown.
+select a.act_fname, a.act_lname, mc.role
+from movie_cast mc join movie
+on mc.mov_id = movie.mov_id
+join actor a
+on mc.act_id = a.act_id
+where movie.mov_title = 'Chinatown';
+#also
+select a.act_fname, a.act_lname
+from actor a join movie_cast mc
+on a.act_id = mc.act_id
+where mc.mov_id = (
+	select mov_id
+	from movie
+	where mov_title = 'Chinatown');
+
+#20. Write a query in SQL to find the movie in which the actor appeared whose first and last name are 'Harrison' and 'Ford'.
+select movie.mov_title
+from movie_cast mc join movie
+on mc.mov_id = movie.mov_id
+join actor a
+on mc.act_id = a.act_id
+where a.act_fname = 'Harrison'
+and a.act_lname = 'Ford';
+#also
+select movie.mov_title
+from movie, movie_cast mc
+where movie.mov_id = mc.mov_id
+and mc.act_id = (
+	select act_id
+	from actor
+	where act_fname = 'Harrison'
+	and act_lname = 'Ford');
+
+#21. Write a query in SQL to find the highest-rated movie, and report its title, year, rating, and releasing country.
+select movie.*
+from movie
+where mov_id in (
+	select mov_id
+	from rating
+	where rev_stars in (
+		select max(rev_stars)
+		from rating));
+#official solution
+select movie.*, rating.rev_stars
+from movie natural join rating
+where rev_stars in (
+	select max(rev_stars)
+	from rating);
+
+#22. Write a query in SQL to find the highest-rated Mystery movie, and report the title, year, and rating.
+select movie.*, r.rev_stars
+from movie join rating r
+on movie.mov_id = r.mov_id
+join movie_genres mg
+on movie.mov_id = mg.mov_id
+join genres g
+on mg.gen_id = g.gen_id
+where mg.gen_id in (
+	select gen_id
+	from genres
+	where gen_title = 'Mystery'));
+#subquery from clause needs an alias.  RM:  Practice subquery from clause not applicable to the exercise.
+select mov_id from (
+	select *
+	from movie) neednamehere;
+select max(rev_stars) from (
+	select movie.*, r.rev_stars
+	from movie join rating r
+	on movie.mov_id = r.mov_id
+	join movie_genres mg
+	on movie.mov_id = mg.mov_id
+	join genres g
+	on mg.gen_id = g.gen_id
+	where mg.gen_id in (
+		select gen_id
+		from genres
+		where gen_title = 'Mystery')) needsnamehere;
+select * from (
+	select movie.*, r.rev_stars
+	from movie join rating r
+	on movie.mov_id = r.mov_id
+	join movie_genres mg
+	on movie.mov_id = mg.mov_id
+	join genres g
+	on mg.gen_id = g.gen_id
+	where mg.gen_id in (
+		select gen_id
+		from genres
+		where gen_title = 'Mystery')) needsnamehere;
+#correct solution I wrote
+select movie.*, r.rev_stars
+from movie join rating r
+on movie.mov_id = r.mov_id
+where r.rev_stars in (
+	select max(rev_stars)
+	from rating
+	where mov_id in (
+		select mov_id
+		from movie_genres
+		where gen_id in (
+			select gen_id
+			from genres
+			where gen_title = 'Mystery')))
+and movie.mov_id in (
+	select mov_id
+	from movie_genres
+	where gen_id in (
+		select gen_id
+		from genres
+		where gen_title = 'Mystery'));
+
+#23. Write a query in SQL to generate a report which shows the year when most of the Mystery movies produces, and number of movies and their average rating.
+select movie.mov_year, count(movie.mov_year), avg(r.rev_stars)
+from movie join rating r
+on movie.mov_id = r.mov_id
+where r.rev_stars in (
+	select max(rev_stars)
+	from rating
+	where mov_id in (
+		select mov_id
+		from movie_genres
+		where gen_id in (
+			select gen_id
+			from genres
+			where gen_title = 'Mystery')))
+and movie.mov_id in (
+	select mov_id
+	from movie_genres
+	where gen_id in (
+		select gen_id
+		from genres
+		where gen_title = 'Mystery'))
+group by movie.mov_year
+order by count(movie.mov_year) desc limit 1;
+
+#24. Write a query in SQL to generate a report which contain the columns movie title, name of the female actor, year of the movie, role, movie genres, the director, date of release, and rating of that movie.
+select movie.mov_title, actor.act_fname, actor.act_lname, movie.mov_year, movie_cast.role, genres.gen_title, director.dir_fname, director.dir_lname, movie.mov_dt_rel, rating.rev_stars
+from movie join movie_cast
+on movie.mov_id = movie_cast.mov_id
+join actor
+on actor.act_id = movie_cast.act_id
+join movie_direction
+on movie_direction.mov_id = movie.mov_id
+join director
+on director.dir_id = movie_direction.dir_id
+join movie_genres
+on movie_genres.mov_id = movie.mov_id
+join genres
+on genres.gen_id = movie_genres.gen_id
+join rating
+on rating.mov_id = movie.mov_id
+where actor.act_gender = 'F';
