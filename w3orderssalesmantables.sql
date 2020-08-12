@@ -95,4 +95,13 @@ Sample table: emp_details
    733843 Mario           Saule                   63
    631548 Alan            Snappy                  27
    839139 Maria           Foster                  57
+
+Sample table: emp_department
+DPT_CODE DPT_NAME        DPT_ALLOTMENT
+-------- --------------- -------------
+      57 IT                      65000
+      63 Finance                 15000
+      47 HR                     240000
+      27 RD                      55000
+      89 QC                      75000
 */
