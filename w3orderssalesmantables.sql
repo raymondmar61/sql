@@ -104,4 +104,14 @@ DPT_CODE DPT_NAME        DPT_ALLOTMENT
       47 HR                     240000
       27 RD                      55000
       89 QC                      75000
+
+Sample table: company_mast
+COM_ID COM_NAME
+------ -------------
+    11 Samsung
+    12 iBall
+    13 Epsion
+    14 Zebronics
+    15 Asus
+    16 Frontech
 */
