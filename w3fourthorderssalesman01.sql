@@ -4,6 +4,7 @@
 #https://www.w3resource.com/sql-exercises/sql-boolean-operators.php
 #https://www.w3resource.com/sql-exercises/sql-wildcard-special-operators.php
 #https://www.w3resource.com/sql-exercises/sql-aggregate-functions.php
+#https://www.w3resource.com/sql-exercises/sql-fromatting-output-exercises.php
 
 #https://www.w3resource.com/sql-exercises/sql-retrieve-from-table.php
 #1. Write a SQL statement to display all the information of all salesmen.
@@ -224,7 +225,7 @@ where commission > 0.10 and commission < 0.12;
 #8. Write a SQL query to display all orders where purchase amount less than 200 or exclude those orders which order date is on or greater than 10th Feb,2012 and customer id is below 3009.
 select *
 from orders
-where purch_amt < 200 or (ord_date < '2012-02-10' and customer_id >= 3009);
+where purch_amt < 200 or (ord_date < '2012-o2-10' and customer_id >= 3009);
 
 #9. Write a SQL statement to exclude the rows which satisfy 1) order dates are 2012-08-17 and purchase amount is below 1000 2) customer id is greater than 3005 and purchase amount is below 1000.
 select *
@@ -515,3 +516,64 @@ from emp_department;
 select emp_dept, count(*)
 from emp_details
 group by emp_dept;
+
+#https://www.w3resource.com/sql-exercises/sql-fromatting-output-exercises.php
+#1. Write a SQL statement to display the commission with the percent sign ( % ) with salesman ID, name and city columns for all the salesmen.
+select salesman_id, name, city, commission || '%' as "commission%", concat(commission*100,'%') as "concat"
+from salesman;
+
+#2. Write a SQL statement to find out the number of orders booked for each day and display it in such a format like "For 2001-10-10 there are 15 orders".
+select ord_date, count(ord_date), 'For ' || ord_date || ' there are ' || count(ord_date) || ' orders.' as "Multiple counts"
+from orders
+group by ord_date;
+
+#3. Write a query to display the orders according to the order number arranged by ascending order.
+select *
+from orders
+order by ord_no asc;
+
+#4. Write a SQL statement to arrange the orders according to the order date in such a manner that the latest date will come first then previous dates.
+select *
+from orders
+order by ord_date desc;
+
+#5. Write a SQL statement to display the orders with all information in such a manner that, the older order date will come first and the highest purchase amount of same day will come first.
+select *
+from orders
+order by ord_date asc, purch_amt desc;
+
+#6. Write a SQL statement to display the customer name, city, and grade, etc. and the display will be arranged according to the smallest customer ID.
+select *
+from customer
+order by customer_id;
+
+#7. Write a SQL statement to make a report with salesman ID, order date and highest purchase amount in such an arrangement that, the smallest salesman ID will come first along with their smallest order date.  #RM:  Find the salesman's highest purchase amount for each date.  Sort by salesman_id lowest to highest and then order date earlest to latest.
+select *
+from orders
+order by salesman_id, ord_date;
+#correction
+select salesman_id, ord_date, max(purch_amt)
+from orders
+group by salesman_id, ord_date
+order by salesman_id, ord_date;
+
+#8. Write a SQL statement to display customer name, city and grade in such a manner that, the customer holding highest grade will come first.
+select *
+from customer
+group by grade desc;
+
+#9. Write a SQL statement to make a report with customer ID in such a manner that, the largest number of orders booked by the customer will come first along with their highest purchase amount.
+select customer_id, count(customer_id), max(purch_amt)
+from orders
+group by customer_id
+order by 2 desc;
+
+#10. Write a SQL statement to make a report with order date in such a manner that, the latest order date will come last along with the total purchase amount and total commission (15% for all salesmen) for that date.  #RM:  total the orders by date ascending earliest to latest and total the commission 15%
+select *, round(purch_amt*.15,2) as "Total commission 15%"
+from orders
+order by ord_date, purch_amt;
+#correction
+select ord_date, sum(purch_amt), round(sum(purch_amt)*.15,2) as "Total commission 15%"
+from orders
+group by ord_date
+order by ord_date asc;
