@@ -1211,3 +1211,76 @@ and movie.mov_id in (
 		select gen_id
 		from genres
 		where gen_title = 'Mystery'));
+
+#https://www.w3resource.com/sql-exercises/sql-aggregate-functions.php
+#10. Write a SQL statement to find the highest purchase amount ordered by the each customer on a particular date with their ID, order date and highest purchase amount.  #RM:  question is highest purchase by customer id and by date
+select customer_id, ord_date, max(purch_amt)
+from orders
+group by customer, ord_date;
+#bonus highest customer purchase include all information
+select *
+from orders
+where purch_amt in (
+	select max(purch_amt)
+	from orders
+	group by customer_id); #incorrect
+select *
+from orders mainorders
+where purch_amt in (
+	select max(purch_amt)
+	from orders
+	where mainorders.customer_id = orders.customer_id
+	group by customer_id);
+
+#11. Write a SQL statement to find the highest purchase amount on a date '2012-08-17' for each salesman with their ID.  #RM:  analysis paralysis.  Find the highest purchase maount group by salesman on 08/17/2012.
+select salesman_id, max(purch_amt)
+from orders
+where ord_date = '2012-08-17'
+group by salesman_id;
+#all information returned
+select *
+from orders mainorders
+where purch_amt = (
+	select max(suborders.purch_amt)
+	from orders suborders
+	where suborders.ord_date = '2012-08-17'
+	and mainorders.salesman_id = suborders.salesman_id
+	group by suborders.salesman_id);
+
+
+#https://www.w3resource.com/sql-exercises/sql-joins-exercises.php
+#11. Write a SQL statement to make a report with customer name, city, order number, order date, order amount salesman name and commission to find that either any of the existing customers have placed no order or placed one or more orders by their salesman or by own.
+select c.cust_name, c.city, o.ord_no, o.ord_date, o.purch_amt, s.name, s.commission
+from customer c left join orders o
+on c.customer_id = o.customer_id
+left join salesman s
+on c.salesman_id = s.salesman_id;
+
+#25. Write a SQL query to display the name of each company along with the ID and price for their most expensive product.  RM:  Find the company's or com_name's most expensive product.
+#Incorrect
+select c.com_name, i.pro_name, max(i.pro_price)
+from item_mast i join company_mast c
+on i.pro_com = c.com_id
+group by c.com_name, i.pro_name;
+/*
+com_name	pro_name	max
+Asus	Mother Board	3200.00
+Epsion	Refill cartridge	350.00
+iBall	Mouse	250.00
+Epsion	Printer	2600.00
+iBall	CD drive	800.00
+Frontech	Key Board	450.00
+Samsung	Monitor	5000.00
+Frontech	Speaker	550.00
+iBall	DVD drive	900.00
+Zebronics	ZIP drive	250.00
+*/
+#correct
+select c.com_name, i.pro_name, i.pro_price
+from item_mast i join company_mast c
+on i.pro_com = c.com_id
+and i.pro_price in (
+	select max(pro_price)
+	from item_mast ia
+	where ia.pro_com = c.com_id
+	group by pro_com);
