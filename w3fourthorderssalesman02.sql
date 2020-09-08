@@ -2,6 +2,7 @@
 #https://www.w3resource.com/sql-exercises/index.php
 #https://www.w3resource.com/sql-exercises/sql-exercises-quering-on-multiple-table.php
 #https://www.w3resource.com/sql-exercises/sql-joins-exercises.php
+#https://www.w3resource.com/sql-exercises/subqueries/index.php
 
 #https://www.w3resource.com/sql-exercises/sql-exercises-quering-on-multiple-table.php
 #1. Write a query to find those customers with their name and those salesmen with their name and city who lives in the same city.
@@ -280,3 +281,366 @@ from emp_details, emp_department
 where emp_details.emp_dept = emp_department.dpt_code
 group by emp_department.dpt_name
 having count(*) > 2;
+
+#https://www.w3resource.com/sql-exercises/subqueries/index.php
+#1. Write a query to display all the orders from the orders table issued by the salesman 'Paul Adam'.
+select *
+from orders
+where salesman_id = (
+	select salesman_id
+	from orders
+	where name = 'Paul Adam');
+
+#2. Write a query to display all the orders for the salesman who belongs to the city London.
+select *
+from orders
+where salesman_id in (
+	select salesman_id
+	from salesman
+	where city = 'London');
+
+#3. Write a query to find all the orders issued against the salesman who may works for customer whose id is 3007.  RM:  Confusing.  Question asked find all orders from salesman_id for which customer_id 3007 is the salesman_id's customer_id.
+select *
+from orders
+where salesman_id in (
+	select salesman_id
+	from orders
+	where customer_id = 3007);
+
+#4. Write a query to display all the orders which values are greater than the average order value for 10th October 2012.
+select *
+from orders
+where purch_amt > (
+	select avg(purch_amt)
+	from orders
+	where ord_date = '2012-10-10');
+
+#5. Write a query to find all orders attributed to a salesman in New york.
+select *
+from orders
+where salesman_id in (
+	select salesman_id
+	from salesman
+	where city = 'New York');
+
+#6. Write a query to display the commission of all the salesmen servicing customers in Paris.
+select commission
+from salesman
+where salesman_id = (
+	select salesman_id
+	from customer
+	where city = 'Paris');
+
+#7. Write a query to display all the customers whose id is 2001 bellow the salesman ID of Mc Lyon.  RM:  Dumb question.  Subtract 2,001 from salesman_id which matches salesman Mc Lyon.  The number is the customer_id in customer table.
+select *
+from customer
+where customer_id in (
+	select salesman_id - 2001
+	from salesman
+	where name = 'Mc Lyon');
+
+#8. Write a query to count the customers with grades above New York's average.
+select grade, count(*)
+from customer
+group by grade
+having grade > (
+	select avg(grade)
+	from customer
+	where city = 'New York');
+
+#9. Write a query to extract the data from the orders table for those salesman who earned the maximum commission.
+select *
+from orders
+where salesman_id in (	
+	select salesman_id
+	from salesman
+	where commission = (
+		select max(commission)
+		from salesman));
+
+#10. Write a query to display all the customers with orders issued on date 17th August, 2012.
+select *
+from customer
+where customer_id in (
+	select customer_id
+	from orders
+	where ord_date = '2012-08-17');
+
+#11. Write a query to find the name and numbers of all salesmen who had more than one customer.
+select salesman_id, count(salesman_id)
+from customer
+where salesman_id in (
+	select salesman_id
+	from customer
+	group by salesman_id
+	having count(salesman_id) > 1)
+group by salesman_id;
+#answers question correctly
+select s1.name, count(c1.salesman_id)
+from salesman s1, customer c1
+where s1.salesman_id in (
+	select c2.salesman_id
+	from customer c2
+	group by c2.salesman_id
+	having count(c2.salesman_id) > 1)
+and s1.salesman_id = c1.salesman_id
+group by s1.name;
+/*
+name	count
+Nail Knite	2
+James Hoog	2
+*/
+
+#12. Write a query to find all orders with order amounts which are above-average amounts for their customers.  #RM:  I don't understand the question.
+#official solution
+select * 
+from orders a
+where purch_amt > (
+	select avg(purch_amt)
+	from orders b
+	where b.customer_id = a.customer_id);
+
+#13. Write a queries to find all orders with order amounts which are on or above-average amounts for their customers. 
+#official solution
+select * 
+from orders a
+where purch_amt >= (
+	select avg(purch_amt)
+	from orders b
+	where b.customer_id = a.customer_id);
+
+#14. Write a query to find the sums of the amounts from the orders table, grouped by date, eliminating all those dates where the sum was not at least 1000.00 above the maximum order amount for that date.
+select ord_date, sum(purch_amt)
+from orders
+where ord_date in (
+	select ord_date
+	from orders
+	group by ord_date
+	having sum(purch_amt) > max(purch_amt)+1000)
+group by ord_date;
+#official solution
+select ord_date, sum(purch_amt)
+from orders a
+group by ord_date
+having sum(purch_amt) > (
+	select 1000.00 + max(purch_amt) 
+    from orders b 
+    where a.ord_date = b.ord_date);
+
+#15. Write a query to extract the data from the customer table if and only if one or more of the customers in the customer table are located in London.
+select *
+from customer
+where 1 > (
+	select count(*)
+	from customer
+	where city = 'Paris');
+#official solution
+select *
+from customer
+where exists (
+	select *
+	from customer 
+	where city = 'London');
+
+#16. Write a query to find the salesmen who have multiple customers.
+select *
+from salesman
+where salesman_id in (
+	select salesman_id
+	from customer
+	group by salesman_id
+	having count(salesman_id) > 1);
+
+#17. Write a query to find all the salesmen who worked for only one customer.
+select *
+from salesman
+where salesman_id in (
+	select salesman_id
+	from customer
+	group by salesman_id
+	having count(salesman_id) = 1);
+
+#18. Write a query that extract the rows of all salesmen who have customers with more than one orders.
+select *
+from salesman
+where salesman_id in (
+	select salesman_id
+	from customer
+	where customer_id in (
+		select customer_id
+		from orders
+		group by customer_id
+		having count(customer_id) > 1));
+
+#19. Write a query to find salesmen with all information who lives in the city where any of the customers lives.  #RM:  Find all salesman who lives in any cities where the customer lives.
+select *
+from salesman
+where city = any (
+	select city
+	from customer);
+
+#20. Write a query to find all the salesmen for whom there are customers that follow them.
+select *
+from salesman
+where city in (
+	select city
+	from customer);
+
+#21. Write a query to display the salesmen which name are alphabetically lower than the name of the customers.
+select *
+from salesman
+where name < any (
+	select cust_name
+	from customer);
+
+#22. Write a query to display the customers who have a greater gradation than any customer who belongs to the alphabetically lower than the city New York.  #RM:  graduation is grade
+select *
+from customer
+where grade > any (
+	select grade
+	from customer
+	where city < 'New York');
+
+#23. Write a query to display all the orders that had amounts that were greater than at least one of the orders on September 10th 2012.
+select *
+from orders
+where purch_amt > any (
+	select purch_amt
+	from orders
+	where ord_date = '2012-09-10');
+
+#24. Write a query to find all orders with an amount smaller than any amount for a customer in London. (Using ANY keyword)
+select *
+from orders
+where purch_amt < any (
+	select purch_amt
+	from orders
+	where customer_id in (
+		select customer_id
+		from customer
+		where city = 'London'));
+
+#25. Write a query to display all orders with an amount smaller than any amount for a customer in London. (Using MAX)
+select *
+from orders
+where purch_amt < (
+	select max(purch_amt)
+	from orders
+	where customer_id in (
+		select customer_id
+		from customer
+		where city = 'London'));
+
+#26. Write a query to display only those customers whose grade are, in fact, higher than every customer in New York.
+select *
+from customer
+where grade > all (
+	select grade
+	from customer
+	where city = 'New York');
+
+#27. Write a query in sql to find the name, city, and the total sum of orders amount a salesman collects. Salesman should belong to the cities where any of the customer belongs.
+select s.name, s.city, sum(o.purch_amt)
+from salesman s, orders o
+where s.salesman_id = o.salesman_id
+and s.city in (
+	select city
+	from customer)
+group by s.name, s.city;
+
+#28. Write a query to get all the information for those customers whose grade is not as the grade of customer who belongs to the city London.  #RM:  There is a null grade in customer with city London.
+select *
+from customer
+where grade not in (
+	select grade
+	from customer
+	where city = 'London'
+	and grade is not null);
+
+#29. Write a query to find all those customers whose grade are not as the grade, belongs to the city Paris.
+select *
+from customer
+where grade not in (
+	select grade
+	from customer
+	where city = 'Paris');
+
+#30. Write a query to find all those customers who hold a different grade than any customer of the city Dallas.
+select *
+from customer
+where not grade = any (
+	select grade
+	from customer
+	where city = 'Dallas');
+
+#31. Write a SQL query to find the average price of each manufacturer's products along with their name.
+select c.com_name, i.pro_name, avg(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name, i.pro_name;
+
+#32. Write a SQL query to display the average price of the products which is more than or equal to 350 along with their names.
+select c.com_name, i.pro_name, avg(i.pro_price)
+from company_mast c, item_mast i
+where c.com_id = i.pro_com
+group by c.com_name, i.pro_name
+having avg(i.pro_price) >= 350;
+
+#33. Write a SQL query to display the name of each company, price for their most expensive product along with their Name.  #RM:  find the company's most expensive product.  Include the most expensive product's name.  #RM:  same as question 25 in https://www.w3resource.com/sql-exercises/sql-joins-exercises.php.
+select c.com_name, i.pro_name, i.pro_price
+from item_mast i join company_mast c
+on i.pro_com = c.com_id
+and i.pro_price in (
+	select max(pro_price)
+	from item_mast ia
+	where ia.pro_com = c.com_id
+	group by pro_com);
+
+#34. Write a query in SQL to find all the details of employees whose last name is Gabriel or Dosio.
+select *
+from emp_details
+where emp_lname in ('Gabriel','Dosio');
+
+#35. Write a query in SQL to display all the details of employees who works in department 89 or 63.
+select *
+from emp_details
+where emp_dept in (89,93);
+
+#36. Write a query in SQL to display the first name and last name of employees working for the department which allotment amount is more than Rs.50000.
+select *
+from emp_details
+where emp_dept in (
+	select dpt_code
+	from emp_department
+	where dpt_allotment > 50000);
+
+#37. Write a query in SQL to find the departments which sanction amount is larger than the average sanction amount of all the departments.
+select *
+from emp_department
+where dpt_allotment > (
+	select avg(dpt_allotment)
+	from emp_department);
+
+#38. Write a query in SQL to find the names of departments with more than two employees are working.
+select *
+from emp_department
+where dpt_code in (
+	select emp_dept
+	from emp_details
+	group by emp_dept
+	having count(emp_dept) > 2);
+
+#39. Write a query in SQL to find the first name and last name of employees working for departments which sanction amount is second lowest.
+select *
+from emp_details
+where emp_dept in (
+	select dpt_code
+	from (
+		select dpt_code, rank() over (order by dpt_allotment asc) rankcolumnname
+		from emp_department) neednamehere
+	where rankcolumnname = 2);
+/*
+emp_idno	emp_fname	emp_lname	emp_dept
+631548	Alan	Snappy	27
+539569	George	Mardy	27
+*/
