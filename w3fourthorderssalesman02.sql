@@ -3,6 +3,7 @@
 #https://www.w3resource.com/sql-exercises/sql-exercises-quering-on-multiple-table.php
 #https://www.w3resource.com/sql-exercises/sql-joins-exercises.php
 #https://www.w3resource.com/sql-exercises/subqueries/index.php
+#https://www.w3resource.com/sql-exercises/union/sql-union.php
 
 #https://www.w3resource.com/sql-exercises/sql-exercises-quering-on-multiple-table.php
 #1. Write a query to find those customers with their name and those salesmen with their name and city who lives in the same city.
@@ -644,3 +645,318 @@ emp_idno	emp_fname	emp_lname	emp_dept
 631548	Alan	Snappy	27
 539569	George	Mardy	27
 */
+
+#https://www.w3resource.com/sql-exercises/union/sql-union.php
+#1. Write a query to display all salesmen and customer located in London.  
+select s.salesman_id, s.name, s.city
+from salesman s
+union
+(select c.customer_id, c.cust_name, c.city
+from customer c
+where c.city = 'London');
+
+#2. Write a query to display distinct salesman and their cities.
+#official solution  RM:  I don't understand.  Now I do, distinct salesman_id and cities from salesman table and customer table
+select salesman_id, city
+from customer
+union
+(select salesman_id, city
+from salesman);
+
+#3. Write a query to display all the salesmen and customer involved in this inventory management system.
+select salesman_id, customer_id
+from salesman
+union
+(select salesman_id, customer_id
+from customer);
+
+#4. Write a query to make a report of which salesman produce the largest and smallest orders on each date.
+select s.salesman_id, s.name, o1.ord_date as "date largest order"
+from salesman s, orders o1
+where s.salesman_id = o1.salesman_id
+and o1.purch_amt = (
+	select max(o2.purch_amt)
+	from orders o2
+	where o2.ord_date = o1.ord_date)
+union
+(select s.salesman_id, s.name, o1.ord_date as "date smallest order"
+from salesman s, orders o1
+where s.salesman_id = o1.salesman_id
+and o1.purch_amt = (
+	select min(o2.purch_amt)
+	from orders o2
+	where o2.ord_date = o1.ord_date));
+#official solution
+select a.salesman_id, name, ord_no, "highest on", ord_date
+from salesman a, orders b
+where a.salesman_id = b.salesman_id
+and b.purch_amt = (
+	select max(purch_amt)
+	from orders c
+	where c.ord_date = b.ord_date)
+union
+(select a.salesman_id, name, ord_no, "lowest on", ord_date
+from salesman a, orders b
+where a.salesman_id = b.salesman_id
+and b.purch_amt =
+	(select min (purch_amt)
+	from orders c
+	where c.ord_date = b.ord_date));
+
+#5. Write a query to make a report of which salesman produce the largest and smallest orders on each date and arranged the orders number in smallest to the largest number.
+select s.salesman_id, s.name, o1.ord_date as "date largest order"
+from salesman s, orders o1
+where s.salesman_id = o1.salesman_id
+and o1.purch_amt = (
+	select max(o2.purch_amt)
+	from orders o2
+	where o2.ord_date = o1.ord_date)
+union
+(select s.salesman_id, s.name, o1.ord_date as "date smallest order"
+from salesman s, orders o1
+where s.salesman_id = o1.salesman_id
+and o1.purch_amt = (
+	select min(o2.purch_amt)
+	from orders o2
+	where o2.ord_date = o1.ord_date));
+#official solution
+select a.salesman_id, name, ord_no, "highest on", ord_date
+from salesman a, orders b
+where a.salesman_id = b.salesman_id
+and b.purch_amt = (
+	select max(purch_amt)
+	from orders c
+	where c.ord_date = b.ord_date)
+union
+(select a.salesman_id, name, ord_no, "lowest on", ord_date
+from salesman a, orders b
+where a.salesman_id = b.salesman_id
+and b.purch_amt =
+	(select min (purch_amt)
+	from orders c
+	where c.ord_date = b.ord_date))
+order by o1.ord_no;
+
+#6. Write a query to list all the salesmen, and indicate those who do not have customers in their cities, as well as whose who do.
+#RM:  List salesmen with customers in same cities and list salesmen with customer in different cities.
+select s.*, c.city as "Customer City", 'Salesmen And Customers In Same City'
+from salesman s, customer c
+where s.salesman_id = c.salesman_id
+and s.city = c.city
+union
+(select s.*, c.city as "Customer City", 'Salesmen And Customers In Different City'
+from salesman s, customer c
+where s.salesman_id = c.salesman_id
+and s.city <> c.city);
+
+#7. Write a query to that appends strings to the selected fields, indicating whether or not a specified salesman was matched to a customer in his city.
+select s.*, c.city as "Customer City", 'Salesmen And Customers In Same City'
+from salesman s, customer c
+where s.salesman_id = c.salesman_id
+and s.city = c.city
+union
+(select s.*, c.city as "Customer City", 'Salesmen And Customers In Different City'
+from salesman s, customer c
+where s.salesman_id = c.salesman_id
+and s.city <> c.city);
+
+#8. Create a union of two queries that shows the names, cities, and ratings of all customers. Those with a rating of 200 or greater will also have the words "High Rating", while the others will have the words "Low Rating".
+select cust_name, city, grade, 'High Rating'
+from customer
+where grade >= 200
+union
+(select cust_name, city, grade, 'Low Rating'
+from customer
+where grade < 200);
+#RM:  using case
+select cust_name, city, grade, (case when grade >=200 then 'High Rating' else 'Low Rating' end) as "Label Rating Type"
+from customer;
+
+#9. Write a command that produces the name and number of each salesman and each customer with more than one current order. Put the results in alphabetical order.
+select customer_id, cust_name
+from customer mainquery
+where 1 < (
+	select count(*)
+	from customer subquery
+	where mainquery.customer_id = subquery.customer_id)
+union
+(select salesman_id, name
+from salesman mainquery
+where 1 < (
+	select count(*)
+	from salesman subquery
+	where mainquery.salesman_id = subquery.salesman_id))
+order by 2;
+
+#https://www.w3resource.com/sql-exercises/view/sql-view.php
+#RM:  w3 website query editor available for select queries only.  RM:  Interesting!  In the future practice views on my ININ account.
+#1. Write a query to create a view for those salesmen belongs to the city New York.
+create view newyorksalesmen as
+	select *
+	from salesman
+	where city = 'New York';
+
+#2. Write a query to create a view for all salesmen with columns salesman_id, name, and city. 
+create view allsalesmen as
+	select salesman_id, name, city
+	from salesman;
+
+#3. Write a query to find the salesmen of the city New York who achieved the commission more than 13%.
+#RM:  after creating the view newyorksalesmen13, you can use the view newyorksalesmen13 in the from clause of a select query the same way for a standard select query.  The view newyorksalesmen13 saves time writing the same query(?) accessing the salesman table New York frequently.  It's a simple example.  Idea is same for complex situations.
+create view newyorksalesmen13 as
+	select *
+	from salesman
+select *
+from newyorksalesmen13
+where commission > .13;
+
+#4. Write a query to create a view to getting a count of how many customers we have at each level of a grade.
+create view allcustomers as
+	select *
+	from customers
+select grade, count(*)
+from allcustomers
+group by grade;
+#official solution
+create view gradecount (grade, number) as
+	select grade, count(*)
+	from customer
+	group by grade;
+
+#5. Write a query to create a view to keeping track the number of customers ordering, number of salesmen attached, average amount of orders and the total amount of orders in a day.
+create view trackcustomers as
+	select ord_date, count(*), avg(purch_amt), sum(purch_amt)
+	from trackcustomers
+	group by ord_date;
+#official solution
+create view trackcustomers as
+	select ord_date, count(distinct customer_id), avg(purch_amt), sum(purch_amt)
+	from orders
+	group by ord_date;
+
+
+#6. Write a query to create a view that shows for each order the salesman and customer by name.
+create view salesmancustomername as
+	select s.name as salesmanname, c.cust_name as customername
+	from salesman s, customer c, orders o
+	where o.customer_id = c.customer_id
+	and o.salesman_id = s.salesman_id;
+
+#7. Write a query to create a view that finds the salesman who has the customer with the highest order of a day.
+create view highestorderperday as
+	select o.*, s.name
+	from orders o join salesman s
+	on o.salesman_id = s.salesman_id
+select ord_no, ord_date, name
+from highestorderperday h1
+where h1.ord_no in (
+	select ord_date, max(purch_amt)
+	from highestorderperday h2
+	where h2.ord_no = h1.ord_no
+	group by ord_date);
+#official solution
+create view highestorderperday as
+	select o.ord_date, s.salesman_id, s.name
+	from salesman s, orders o
+	where s.salesman_id = o.salesman_id
+	and o.purch_amt = (
+		select max(purch_amt)
+		from orders ob
+		where ob.ord_date = o.ord_date);
+
+#8. Write a query to create a view that finds the salesman who has the customer with the highest order at least 3 times on a day.
+create view highestorderthreetimes as
+	select distinct salesman_id, name
+	from highestorderperday h1
+	where 3 <= (
+		select count(*)
+		from highestorderperday h2
+		where h1.salesman_id = h2.salesman_id);
+
+#9. Write a query to create a view that shows all of the customers who have the highest grade.
+create view customershighestgrade as
+	select *
+	from customer
+	where grade = (
+		select max(grade)
+		from customer);
+
+#10. Write a query to create a view that shows the number of the salesman in each city.
+create view countsalesmanbycity as
+	select city, count(*)
+	from salesman
+	group by city;
+
+#11. Write a query to create a view that shows the average and total orders for each salesman after his or her name. (Assume all names are unique)
+create view salesmannumbers as
+	select s.name, avg(purch_amt), sum(purch_amt)
+	from salesman s, orders o
+	where s.salesman_id = o.salesman_id
+	group by s.name;
+
+#12. Write a query to create a view that shows each salesman with more than one customers.
+create view morethanonecustomer as
+	select *
+	from salesman
+	where salesman_id in (
+		select salesman_id, count(*)
+		from customer
+		having count(*) > 1);
+#official solution
+create view morethanonecustomer as
+	select *
+	from salesman mainquery
+	where 1 < (
+		select count(*)
+		from salesman subquery
+		where mainquery.salesman_id = subquery.salesman_id);
+
+#13. Write a query to create a view that shows all matches of customers with salesman such that at least one customer in the city of customer served by a salesman in the city of the salesman.  #RM:  I don't understand the question.
+#official solution
+create view citymatch (custcity, salescity) as
+	select distinct a.city, b.city
+	from customer a, salesman b
+	where a.salesman_id = b.salesman_id;
+
+#14. Write a query to create a view that shows the number of orders in each day.
+create view numberoforders as
+	select ord_date, count(*)
+	from orders
+	group by ord_date;
+#official solution
+create view numberoforders (ord_date, odcount) as
+	select ord_date, count(*)
+	from orders
+	group by ord_date;
+
+#15. Write a query to create a view that finds the salesmen who issued orders on October 10th, 2012.
+create view orders10102012 as
+	select *
+	from salesman
+	where salesman_id in (
+		select salesman_id
+		from orders
+		where ord_date = '2012-10-10');
+#also
+create view orders10102012 as
+	select *
+	from salesman
+	where salesman.salesman_id = orders.salesman_id
+	and orders.ord_date = '2012-10-10';
+
+#16. Write a query to create a view that finds the salesmen who issued orders on either August 17th, 2012 or October 10th, 2012
+create view orders10102012or08172012 as
+	select *
+	from salesman
+	where salesman_id in (
+		select salesman_id
+		from orders
+		where ord_date = '2012-10-10'
+		or ord_date = '2012-08-17');
+#also
+create view orders10102012or08172012 as
+	select *
+	from salesman
+	where salesman.salesman_id = orders.salesman_id
+	and orders.ord_date = '2012-10-10'
+	or orders.ord_date = '2012-08-17';
