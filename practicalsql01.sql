@@ -196,11 +196,56 @@ select *
 from employees join departments
 on employees.dept_id = departments.dept_id;
 /*
-join:  returns rows from both tables where matching values are found in the joined columns of both tables
+join:  returns rows from both tables where matching values are found in the joined columns of both tables.
 inner join:  returns rows from both tables where matching values are found in the joined columns of both tables
 left join:  returns every row from the left table plus rows that match values in the joined column from the right table.  When a left table row doesn't have a match in the right table, the result shows no values from the right table.
 right join:  returns every row from the right table plus rows that match values in the joined column from the left table.  When a right table row doesn't have a match in the left table, the result shows no values from the left table.
 full outer join:  returns every row from both tables and matches rows; then joins the rows where values in the joined columns match.  If there's no match for a value in either the left table or right table, the query result contains an empty row for the other table.  See all rows from both tables regardless of whether any match.
 cross join:  returns every possible combination of rows from both tables.
 */
-#start page 141 bottom add schools_left table and schools_right table
+create table schools_left (id integer, constraint id_key primary key (id), left_school varchar(30));
+insert into schools_left (id, left_school)
+values (1, 'Oak Street School'), (2, 'Roosevelt High School'), (5, 'Washington Middle School'), (6, 'Jefferson High School');
+create table schools_right (id integer, constraint id_key primary key (id), right_school varchar(30));
+insert into schools_right (id, right_school)
+values (1, 'Oak Street School'), (2, 'Roosevelt High School'), (3, 'Morrison Elementary'), (4, 'Chase Magnet Academy'), (6, 'Jefferson High School');
+select *
+from schools_left join schools_right
+on schools_left.id = schools_right.id;
+select *
+from schools_left left join schools_right
+on schools_left.id = schools_right.id;
+select *
+from schools_left right join schools_right
+on schools_left.id = schools_right.id;
+select *
+from schools_left full outer join schools_right
+on schools_left.id = schools_right.id;
+select *
+from schools_left cross join schools_right;
+#find missing data or find missing rows use null.  Filter to show all rows without a match.
+select *
+from schools_left left join schools_right
+on schools_left.id = schools_right.id
+where schools_right.id is null;
+/*
+id 	left_school id 	right_school
+5 Washington Middle School NULL NULL
+*/
+select schools_left.id, schools_left.left_school, schools_right.right_school
+from schools_left left join schools_right
+on schools_left.id = schools_right.id;
+select sl.id, sl.left_school, sr.right_school
+from schools_left sl left join schools_right sr
+on sl.id = sr.id;
+create table schools_enrollment (id integer, enrollment integer);
+insert into schools_enrollment (id, enrollment)
+values (1, 360), (2, 1001), (5, 450), (6, 927);
+create table schools_grades (id integer, grades varchar(10));
+insert into schools_grades (id, grades)
+values (1, 'k-3'), (2, '9-12'), (5, '6-8'), (6, '9-12');
+select sl.id, sl.left_school, se.enrollment, sg.grades
+from schools_left sl join schools_enrollment se
+on sl.id = se.id
+join schools_grades sg
+on sl.id = sg.id;
