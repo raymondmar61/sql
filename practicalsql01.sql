@@ -249,3 +249,57 @@ from schools_left sl join schools_enrollment se
 on sl.id = se.id
 join schools_grades sg
 on sl.id = sg.id;
+
+#Practical SQL Chapter 7 Table Design That Works For You
+create table albums (album_id bigserial, album_catalog_code varchar(100), album_title text, album_aritst text, album_release_date date, album_genre varchar(40), album_description text);
+create table songs (song_id bigserial, song_title text, song_artist text, album_id bigint);
+
+create table albums (album_id bigserial, constraint albumidpk primary key (album_id), album_catalog_code varchar(100) not null, album_title text not null, album_aritst text not null, album_release_date date, album_genre varchar(40), album_description text);
+create table songs (song_id bigserial, song_title text not null, song_artist text not null, album_id bigint references albums (album_id) on delete cascade, constraint songidpk primary key (song_id));  #on delete cascade to delete the rows in songs when the albums table deletes its rows.
+
+#Practical SQL Chapter 8 Extracting Information By Grouping And Summarizing
+select count(*)
+from pls_fy2014_pupld14a;
+select count(*)
+from pls_fy2009_pupld09a;
+select count(libname)
+from pls_fy2014_pupld14a;
+select count(distinct libname)
+from pls_fy2014_pupld14a;
+select max(visits), min(visits)
+from pls_fy2014_pupld14a;
+select city, stabr
+from pls_fy2014_pupld14a
+group by city, stabr
+order by city, stabr;
+select stabr, count(*)
+from pls_fy2014_pupld14a
+group by stabr
+order by count(*) desc;
+select stabr, stataddr, count(*)
+from pls_fy2014_pupld14a
+group by stabr, stataddr
+order by stabr asc, count(*) desc;
+select sum(visits) as visits_2014
+from pls_fy2014_pupld14a
+where visits >=0; #-1 means nonresponse and -3 means not applicable in visits
+select sum(visits) as visits_2009
+from pls_fy2009_pupld09a
+where visits >=0; #-1 means nonresponse and -3 means not applicable in visits
+select sum(pls14.visits) as visits_2014, sum(pls09.visits) as visits_2009
+from pls_fy2014_pupld14a pls14 join pls_fy2009_pupld09a pls09
+on pls14.fscskey = pls09.fscskey
+where pls14.visits >=0  and pls09.visits >=0; #-1 means nonresponse and -3 means not applicable in visits.  Book stated Although we joined the tables on fscskey, it’s entirely possible that some library agencies that appear in both tables merged or split between 2009 and 2014. A call to the IMLS asking about caveats for working with this data is a good idea.
+select pls14.stabr, sum(pls14.visits) as visits_2014, sum(pls09.visits) as visits_2009, round(((sum(pls14.visits) - sum(pls09.visits))/sum(pls09.visits))*100,2) as pct_change
+from pls_fy2014_pupld14a pls14 join pls_fy2009_pupld09a pls09
+on pls14.fscskey = pls09.fscskey
+where pls14.visits >=0  and pls09.visits >=0 #-1 means nonresponse and -3 means not applicable in visits.  Book stated Although we joined the tables on fscskey, it’s entirely possible that some library agencies that appear in both tables merged or split between 2009 and 2014. A call to the IMLS asking about caveats for working with this data is a good idea.
+group by pls14.stabr
+order by pct_change desc;
+select pls14.stabr, sum(pls14.visits) as visits_2014, sum(pls09.visits) as visits_2009, round(((sum(pls14.visits) - sum(pls09.visits))/sum(pls09.visits))*100,2) as pct_change
+from pls_fy2014_pupld14a pls14 join pls_fy2009_pupld09a pls09
+on pls14.fscskey = pls09.fscskey
+where pls14.visits >=0  and pls09.visits >=0 #-1 means nonresponse and -3 means not applicable in visits.  Book stated Although we joined the tables on fscskey, it’s entirely possible that some library agencies that appear in both tables merged or split between 2009 and 2014. A call to the IMLS asking about caveats for working with this data is a good idea.
+group by pls14.stabr
+having sum(pls14.visits) > 50000000
+order by pct_change desc;
