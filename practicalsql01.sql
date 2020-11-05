@@ -303,3 +303,68 @@ where pls14.visits >=0  and pls09.visits >=0 #-1 means nonresponse and -3 means 
 group by pls14.stabr
 having sum(pls14.visits) > 50000000
 order by pct_change desc;
+
+#Practical SQL Chapter 9 Inspecting And Modifying Data
+select company, street, city, st, count(*) as address_count
+from meat_poultry_egg_inspect
+group by company, street, city, st
+having count(*) > 1
+order by company, street, city, st;
+select st, count(*) as st_count
+from meat_poultry_egg_inspect
+group by st
+order by st;
+select est_number, company, city, st, zip
+from meat_poultry_egg_inspect
+where st is null;
+#phpMyAdmin MySQL is null didn't work
+select est_number, company, city, st, zip
+from meat_poultry_egg_inspect
+where st = "";
+select company, count(*) as company_count
+from meat_poultry_egg_inspect
+group by company
+order by company;
+select length(zip), count(*) as length_count
+from meat_poultry_egg_inspect
+group by length(zip)
+order by length(zip);
+select st, count(*) as st_count
+from meat_poultry_egg_inspect
+where length(zip) < 5
+group by st
+order by st;
+update meat_poultry_egg_inspect
+set st = 'MN'
+where est_number = 'V18677A';
+update meat_poultry_egg_inspect
+set st = 'AL'
+where est_number = 'M45319+P45319';
+update meat_poultry_egg_inspect
+set st = 'WI'
+where est_number = 'M263A+P263A+V263A';
+update meat_poultry_egg_inspect
+set company = 'Armour-Eckrich Meats'
+where company like 'Armour%';
+alter table meat_poultry_egg_inspect alter column zip set varchar(5);
+update meat_poultry_egg_inspect
+set zip = '00' || zip
+where st in ('PR','VI') and length(zip) = 3;
+update meat_poultry_egg_inspect
+set zip = '0' || zip
+where st in ('CT','MA','ME','NH','NJ','RI','VT') and length(zip) = 4;
+alter table meat_poultry_egg_inspect add column inspection_date date;
+update meat_poultry_egg_inspect inspecttable
+set inspection_date = '2019-12-01'
+where exists (
+	select state_regions.region
+	from state_regions
+	where inspecttable.st = state_regions.st
+	and state_regions.region = 'New England');
+select st, inspection_date
+from meat_poultry_egg_inspect
+group by st, inspection_date
+order by st;
+delete from meat_poultry_egg_inspect
+where st in ('PR','VI');
+alter table meat_poultry_egg_inspect drop column inspection_date;
