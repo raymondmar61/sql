@@ -368,3 +368,55 @@ order by st;
 delete from meat_poultry_egg_inspect
 where st in ('PR','VI');
 alter table meat_poultry_egg_inspect drop column inspection_date;
+
+#Practical SQL Chapter 10 Statistical Functions in SQL
+create table acs_2011_2015_stats (geoid varchar(14), county varchar(50) not null, st varchar(20) not null, pct_travel_60_min numeric(5,3) not null, pct_bachelors_higher numeric(5,3) not null, pct_masters_higher numeric(5,3) not null check (pct_masters_higher <= pct_bachelors_higher), median_hh_income integer, constraint geoid_key primary key (geoid));
+#Pearson correlation coefficient denoted as r.  corr(y dependent variable,x independent variable).  The r is a measure for quantifying the strenght of a linear relationship between two variables between -1 and 1.  An increase or decrease in one variable correlates to a change in another variable.  Perfect correlation is near zero.  Positive r means a direct relationship one variable increases the other variable increases.  Negative r means an indirect relationship one variable decreases the other variable increases.  .6-.99 string to nearly perfect relationship.  .3 to .59 moderate relationship.
+#RM:  MySQL doesn't have corr function.  I used another formula https://stackoverflow.com/questions/2457645/mysql-math-is-it-possible-to-calculate-a-correlation-in-a-query
+select (avg(x * y) - avg(x) * avg(y)) / (sqrt(avg(x * x) - avg(x) * avg(x)) * sqrt(avg(y * y) - avg(y) * avg(y))) as correlationpopulation
+from table;
+select (count(*) * sum(x * y) - sum(x) * sum(y)) / (sqrt(count(*) * sum(x * x) - sum(x) * sum(x)) * sqrt(count(*) * sum(y * y) - sum(y) * sum(y))) as correlationsample
+from table;
+select corr(median_hh_income, pct_bachelors_higher) as bachelorsincomer
+from acs_2011_2015_stats;
+select (avg(pct_bachelors_higher * median_hh_income) - avg(pct_bachelors_higher) * avg(median_hh_income)) / (sqrt(avg(pct_bachelors_higher * pct_bachelors_higher) - avg(pct_bachelors_higher) * avg(pct_bachelors_higher)) * sqrt(avg(median_hh_income * median_hh_income) - avg(median_hh_income) * avg(median_hh_income))) as correlationpopulation
+from acs_2011_2015_stats; #return correlationpopulation 0.6826412788227766
+select round(corr(median_hh_income, pct_bachelors_higher),2) as bachelorsincomer, round(corr(pct_travel_60_min, median_hh_income),2) as incometravelr, round(corr(pct_travel_60_min, pct_bachelors_higher),2) as bachelorstravelr
+from acs_2011_2015_stats;
+select round((avg(pct_bachelors_higher * median_hh_income) - avg(pct_bachelors_higher) * avg(median_hh_income)) / (sqrt(avg(pct_bachelors_higher * pct_bachelors_higher) - avg(pct_bachelors_higher) * avg(pct_bachelors_higher)) * sqrt(avg(median_hh_income * median_hh_income) - avg(median_hh_income) * avg(median_hh_income))),2) as bachelorsincomer, round((avg(median_hh_income * pct_travel_60_min) - avg(median_hh_income) * avg(pct_travel_60_min)) / (sqrt(avg(median_hh_income * median_hh_income) - avg(median_hh_income) * avg(median_hh_income)) * sqrt(avg(pct_travel_60_min * pct_travel_60_min) - avg(pct_travel_60_min) * avg(pct_travel_60_min))),2) as incometravelr, round((avg(pct_bachelors_higher * pct_travel_60_min) - avg(pct_bachelors_higher) * avg(pct_travel_60_min)) / (sqrt(avg(pct_bachelors_higher * pct_bachelors_higher) - avg(pct_bachelors_higher) * avg(pct_bachelors_higher)) * sqrt(avg(pct_travel_60_min * pct_travel_60_min) - avg(pct_travel_60_min) * avg(pct_travel_60_min))),2) as bachelorstravelr
+from acs_2011_2015_stats; #return bachelorsincomer incometravelr bachelorstravelr 0.68 0.05 -0.14
+select round(regr_slope(median_hh_income, pct_bachelors_higher),2) as slope, round(regr_intercept(median_hh_income, pct_bachelors_higher),2) as intercept
+from acs_2011_2015_stats;
+select round(regr_r2(median_hh_income, pct_bachelors_higher),3) as r_squared
+from acs_2011_2015_stats;
+create table widget_companies (id int, company varchar(30) not null, widget_output integer not null);
+insert into widget_companies (company, widget_output)
+values
+    ('Morse Widgets', 125000),
+    ('Springfield Widget Masters', 143000),
+    ('Best Widgets', 196000),
+    ('Acme Inc.', 133000),
+    ('District Widget Inc.', 201000),
+    ('Clarke Amalgamated', 620000),
+    ('Stavesacre Industries', 244000),
+    ('Bowers Widget Emporium', 201000);
+select company, widget_output, rank() over (order by widget_output desc), dense_rank() over (order by widget_output desc)
+from widget_companies; #rank() includes a gap or skip number in the rank order where there are ties, dense_rank() ties are shared without a gap or skip number.
+create table store_sales (store varchar(30), category varchar(30) not null, unit_sales bigint not null, constraint store_category_key primary key (store, category));
+insert into store_sales (store, category, unit_sales)
+values
+    ('Broders', 'Cereal', 1104),
+    ('Wallace', 'Ice Cream', 1863),
+    ('Broders', 'Ice Cream', 2517),
+    ('Cramers', 'Ice Cream', 2112),
+    ('Broders', 'Beer', 641),
+    ('Cramers', 'Cereal', 1003),
+    ('Cramers', 'Beer', 640),
+    ('Wallace', 'Cereal', 980),
+    ('Wallace', 'Beer', 988);
+select category, store, unit_sales, rank() over (partition by category order by unit_sales desc)
+from store_sales;
+
+#Practical SQL Chapter 11 Working With Dates And Times
+
+
