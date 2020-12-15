@@ -419,4 +419,81 @@ from store_sales;
 
 #Practical SQL Chapter 11 Working With Dates And Times
 
+#Practical SQL Chapter 15 Saving Time With Views, Functions, And Triggers
+create view nevada_countries_pop_2010 as
+    select geo_name, state_fips, county_fips, p0010001 as 'population 2010'
+    from us_counties_2010
+    where state_us_abbreviation = 'NV'
+    order by county_fips;
+#RM:  Ran query in phpMyAdmin my webpage.  Created a view in innova18_practicalsql database under Views.  Give create view a name nevada_countries_pop_2010.  Next create a SQL query to populate view nevada_countries_pop_2010.
+#also
+create or replace view nevada_countries_pop_2010 as  #if a view exists, replace existing view with the new view
+    select geo_name, state_fips, county_fips, p0010001 as 'population 2010'
+    from us_counties_2010
+    where state_us_abbreviation = 'NV'
+    order by county_fips;
+#RM:  Ran query in phpMyAdmin my webpage.  Created a view in innova18_practicalsql database under Views.  Give create view a name nevada_countries_pop_2010.  Next create a SQL query to populate view nevada_countries_pop_2010.
+drop view nevada_countries_pop_2010; #delete view
+#access the data in view nevada_countries_pop_2010 like a table
+select *
+from nevada_countries_pop_2010
+limit 5;
+create or replace view country_pop_change_2010_2000 as
+    #select c2010.geo_name, c2010.state_us_abbreviation as st, c2010.state_fips, c2010.county_fips, c2010.p0010001 as pop_2010, c2000.p0010001 as pop_2000, round((cast(c2010.p0010001 as numeric(8,1))-c2000.p0010001)/c2000.p0010001*100,1) as 'percent change 2010 2000'
+    select c2010.geo_name, c2010.state_us_abbreviation as st, c2010.state_fips, c2010.county_fips, c2010.p0010001 as pop_2010, c2000.p0010001 as pop_2000, ((c2010.p0010001-c2000.p0010001)/c2000.p0010001)*100 as 'percent change 2010 2000'
+    from us_counties_2010 c2010 inner join us_counties_2000 c2000
+    on c2010.state_fips = c2000.state_fips
+    order by c2010.state_fips, c2000.state_fips;
+#access the data in view country_pop_change_2010_2000 like a table
+select geo_name, st, pop_2010, `percent change 2010 2000`  #RM:  MySQL escape character backtick `.  Other options brackets [], double quotes, and escape character before single quote or double quote.
+from country_pop_change_2010_2000;
+select geo_name, st, pop_2010, `percent change 2010 2000`
+from country_pop_change_2010_2000
+where st = 'NV'
+limit 5;
+#Update or insert data in the table a view queries must reference a single table; in other words, update the view updates the source table the view comes from.  If the view's query joins tables, you can't perform inserts or updates directly.  A view's query can't contain distinct, group by, or other clauses.
+create or replace view employees_tax_dept as
+    select emp_id, first_name, last_name, dept_id
+    from employees
+    where dept_id = 1
+    order by emp_id
+    with local check option;  #with local check option rejects any insert or update which doesn't meet the criteria of the where clause; e.g., no insert or updates if the dep_id is 3.
+select *
+from employees_tax_dept;
+/*
+emp_id first_name last_name dept_id
+1 Nancy Jones 1
+2 Lee Smith 1
+*/
+insert into employees_tax_dept (first_name, last_name, dept_id)
+values ('Suzanne','Legere',1);
+insert into employees_tax_dept (first_name, last_name, dept_id)
+values ('Jamil','White',2);  #error message because with local check option rejects any insert or update which doesn't meet the criteria of the where clause; e.g., no insert or updates if the dep_id is 2.
+select *
+from employees_tax_dept;
+/*
+emp_id first_name last_name dept_id
+0 Suzanne Legere 1
+1 Nancy Jones 1
+2 Lee Smith 1
+*/
+select *
+from employees;  #0 Suzanne Legere 1 is added to the employees database
+update employees_tax_dept
+set last_name = 'Le Gere'
+where emp_id = 0;
+delete from employees_tax_dept
+where emp_id = 0;
 
+#Practical SQL Chapter 18 Identifying And Telling The Story Behind Your Data
+/*
+1.  Start with a question.
+2.  Document your process.
+3.  Gather your data.
+4.  Create a database if necessary.
+5.  Assess the data's origins.  Find information about the origins and maintenance methods.  Find the details of the data.
+6.  Interview the data with queries.  Run queries in the data.  Common queries are aggregates such as counts, sum, sorts, and grouping.
+7.  Consult the data's owner.  Ask questions or address concerns to a person who knows the data.  For example, outliers, missing data, incomplete data, limits of the data.
+8.  Identify key indicators and trends over time.
+9.  Ask why.
+10.  Communicate your findings.
