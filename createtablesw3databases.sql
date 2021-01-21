@@ -889,3 +889,9 @@ insert into jobgrades values("UK","United Kingdom",1);
 insert into jobgrades values("US","United States of America",2);
 insert into jobgrades values("ZM","Zambia",4);
 insert into jobgrades values("ZW","Zimbabwe",4);
+create table regions
+(region_id integer not null primary key, region_name varchar(25));
+insert into regions values (1, "Europe");
+insert into regions values (2, "Americas");
+insert into regions values (3, "Asia");
+insert into regions values (4, "Middle East and Africa");
