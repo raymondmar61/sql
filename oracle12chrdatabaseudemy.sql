@@ -44,3 +44,61 @@ select employee_id, salary, salary*12 as "Annual Salary"
 from employees;
 select hire_date, date_add(hire_date,interval 5 day) as "Add five days"
 from employees;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 17 USING WHERE CLAUSE - YouTube [720p]
+select *
+from employees;
+select *
+from employees
+where salary > 10000;
+select *
+from employees
+where job_id = 'IT_PROG';
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 18 COMPARISON OPERATORS - YouTube [720p]
+select *
+from employees
+where hire_date > '1/1/2005';  #Incorrect
+select *
+from employees
+where hire_date > '2005-01-01';  #Correct
+select *
+from employees
+where hire_date = '2007-05-21';
+select *
+from employees
+where manager_id != 100;
+#or
+select *
+from employees
+where manager_id <> 100;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 19 BETWEEN ... AND OPERATOR - YouTube [720p]
+select first_name, last_name, salary
+from employees
+where salary between 10000 and 15000; #10,000 and 15,000 are included
+select *
+from employees
+where hire_date between '2002-01-02' and '2005-01-29';
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 20 IN OPERATOR - YouTube [720p]
+select employee_id, first_name, last_name, salary, manager_id
+from employees
+where employee_id in (100, 105, 102, 200);
+select *
+from employees
+where first_name in ('Steven','Peter','Adam','aa');
+select *
+from employees
+where hire_date in ('2008-03-08','2005-01-30',sysdate);  #sysdate invalid in phpMyAdmin.  MySQL use curdate() for today's date.
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 21 LIKE OPERATOR - YouTube [720p]
+select first_name, last_name
+from employees
+where first_name like 'A%';
+select first_name
+from employees
+where first_name like '_r%'; #search first names the second character is lower case r.
+select *
+from employees
+where job_id like 'SA%';
