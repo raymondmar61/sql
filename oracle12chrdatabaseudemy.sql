@@ -102,3 +102,69 @@ where first_name like '_r%'; #search first names the second character is lower c
 select *
 from employees
 where job_id like 'SA%';
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 22 IS NULL OPERATOR - YouTube [720p]
+#RM:  I needed to set Steven and employee_id 100 to NULL
+update employees
+set manager_id = NULL
+where employee_id = 100;
+select first_name
+from employees
+where manager_id is NULL;
+select first_name
+from employees
+where manager_id = NULL;  #error message on phpMyAdmin
+#RM:  I needed to set commission_pct to NULL for employees not earning a commission perceneteage
+update employees
+set commission_pct = NULL
+where commission_pct = 0.00;
+select *
+from employees
+where commission_pct is NULL;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 23 LOGICAL OPERATORS (AND, OR, NOT) - YouTube [720p]
+select *
+from employees
+where job_id = 'SA_REP'
+and salary > 10000;
+select *
+from employees
+where job_id = 'SA_REP'
+or salary > 10000;
+select first_name, last_name, salary, job_id
+from employees
+where job_id = 'IT_PROG'
+and salary >= 5000;
+select first_name, last_name, salary, job_id
+from employees
+where job_id = 'IT_PROG'
+or salary >= 5000;
+select *
+from employees
+where salary > 10000
+and job_id not in ('SA_MAN','ST_CLERK','SH_CLERK');
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 24 RULES OF PRECEDENCE - YouTube [720p]
+select first_name, last_name, job_id, salary
+from employees
+where job_id = 'IT_PROG'
+or job_id = 'ST_CLERK'
+and salary > 5000;
+select first_name, last_name, job_id, salary
+from employees
+where (job_id = 'IT_PROG'
+or job_id = 'ST_CLERK')
+and salary > 5000;
+select first_name, last_name, job_id, salary
+from employees
+where job_id = 'IT_PROG'
+or (job_id = 'ST_CLERK'
+and salary > 5000);
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 25 ORDER BY CLAUSE - YouTube [720p]
+select first_name, last_name, salary
+from employees
+order by last_name;
+select first_name, last_name, salary
+from employees
+order by salary desc;
