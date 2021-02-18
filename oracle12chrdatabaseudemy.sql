@@ -168,3 +168,29 @@ order by last_name;
 select first_name, last_name, salary
 from employees
 order by salary desc;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 26 ASC AND DESC OPERATORS - YouTube [720p]
+select first_name, last_name, salary
+from employees
+order by first_name, last_name;
+select first_name, last_name, salary*12 as yearysalary
+from employees
+order by first_name, yearysalary;
+select first_name, salary, commission_pct
+from employees
+order by first_name desc, last_name asc;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 27 NULLS FIRST AND NULLS LAST OPERATORS - YouTube [720p]
+select first_name, salary, commission_pct
+from employees
+order by commission_pct nulls first;
+#sort by column position
+select first_name, salary, commission_pct
+from employees
+order by 3;  #sort by commission_pct as the third column
+select *
+from employees
+order by 5;  #sort by the fifth column which is the phone_number in results
+select *
+from employees
+order by 1 desc, 2 asc;  #sort by the first column employee_id and then the second column first_name in results
