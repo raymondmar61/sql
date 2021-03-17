@@ -334,3 +334,69 @@ select hire_date, sysdate as "system's date", current_date as "current date from
 from employees;  #Oracle
 select hire_date, hire_date+4 as "Add four days"
 from employees
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 34 DATE FUNCTIONS
+select hire_date, add_months(hire_date,1) as "Add one month"
+from employees;
+select start_date, end_date, months_between(start_date, end_date) as "Number of months between"
+from jobhistory;
+select hire_date, round(hire_date, 'month') as "Round date up if day is 15 or greater", trunc(hire_date, 'year') as "Truncate date by year"
+from employees;
+select hire_date, next_day(hire_date,'Tuesday') as "Returns next specified name day after hire_date"
+from employees;
+select hire_date, last_day(hire_date) as "Last day of the hire_date's month"
+from employees;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 35 CONVERSION FUNCTIONS - YouTube [720p]
+select *
+from employees
+where hire_date = '2003-06-17';
+select *
+from employees
+where department_id = '90'; #Oracle convert string number to number because column department_id is formatted as number.  RM:  bad habit to add quotes to numbers when column is number format.
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 36 TO_CHAR, TO _DATE, TO_NUMBER FUNCTIONS (PART 1) - YouTube [720p]
+select first_name, last_name, hire_date, to_char(hire_date,'YYYY') as "Extract year"
+from employees;
+select first_name, last_name, hire_date, to_char(hire_date,'YY') as "Extract year two digits"
+from employees;
+select first_name, last_name, hire_date, to_char(hire_date,'YEAR') as "Extract year text"
+from employees;
+select first_name, last_name, hire_date, to_char(hire_date,'Mon') as "Extract month abbreviation Jan May Dec"
+from employees;
+select first_name, last_name, hire_date, to_char(hire_date,'MONTH') as "Extract month JANUARY MAY DECEMBER"
+from employees;
+#mysql
+select first_name, last_name, hire_date, year(hire_date) as "Extract year"
+from employees;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 37 TO_CHAR, TO_DATE, TO_NUMBER FUNCTIONS (PART 2) - YouTube [720p]
+select employee_id, to_char(employee_id, "dd") as "Ordinal number 5"
+from employees;
+#or
+select employee_id, to_char(employee_id, "ddth") as "Ordinal number 5th"
+from employees;
+select employee_id, to_char(employee_id, "ddsp") as "Spelling number spelling text four"
+from employees;
+select salary, to_char(salary, '$99,999.99') as "$24,000.00 $9,000.00 $12,008.00"
+from employees;
+select salary*commission_pct, to_char(salary*commission_pct,'$99,9999.99') as "$680.00 $2,250.00"
+from employees
+where commission_pct is not null
+select salary*commission_pct, to_char(salary*commission_pct,'$099,9999.99') as "$000,680.00 $002,250.00"
+from employees
+where commission_pct is not null
+select first_name, last_name, hire_date
+from employees
+where hire_date > to_date('Jun 12, 2005','Mon DD, YYYY');
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 38 NVL, NVL2, NULLIF, COALESCE FUNCTIONS - YouTube [720p]
+select job_id, first_name, last_name, commission_pct, nvl(commission_pct,0) as "Display 0 if commission_pct is null"
+from employees;
+#mysql
+select job_id, first_name, last_name, commission_pct, ifnull(commission_pct,0) as "Display 0 if commission_pct is null"
+from employees;
+select job_id, first_name, last_name, commission_pct, nvl2(commission_pct,"There is a commission_pct","There is no commission_pct") as "If not null, then first quote, else second quote"
+from employees;
+select state_province, city, coalesce(state_province, city, "Return no state_province no city") as "Check if state_province, city null.  If both true, then display Return no state_province no city"
+from locations;
