@@ -400,3 +400,93 @@ select job_id, first_name, last_name, commission_pct, nvl2(commission_pct,"There
 from employees;
 select state_province, city, coalesce(state_province, city, "Return no state_province no city") as "Check if state_province, city null.  If both true, then display Return no state_province no city"
 from locations;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 39 CONDITIONAL EXPRESSIONS (CASE-DECODE) - YouTube [720p]
+select first_name, last_name, job_id, salary, hire_date, case job_id when 'ST_MAN' then salary*1.2 when 'SH_MAN' then salary*1.3 when 'SA_MAN' then 1.4*salary else salary end as "Update Salary name case column"
+from employees
+where job_id in ('ST_MAN','SH_MAN','SA_MAN');
+/*
+first_name	last_name	job_id	salary	hire_date	Update Salary name case column	
+Matthew	Weiss	ST_MAN	8000	2004-07-18	9600.0	
+Adam	Fripp	ST_MAN	8200	2005-04-10	9840.0	
+Payam	Kaufling	ST_MAN	7900	2003-05-01	9480.0	
+Shanta	Vollman	ST_MAN	6500	2005-10-10	7800.0	
+Kevin	Mourgos	ST_MAN	5800	2007-11-16	6960.0	
+John	Russell	SA_MAN	14000	2004-10-01	19600.0	
+Karen	Partners	SA_MAN	13500	2005-01-05	18900.0	
+Alberto	Errazuriz	SA_MAN	12000	2005-03-10	16800.0	
+Gerald	Cambrault	SA_MAN	11000	2007-10-15	15400.0	
+Eleni	Zlotkey	SA_MAN	10500	2008-01-29	14700.0	
+*/
+select first_name, last_name, job_id, salary as "return rows where clause equals one IT_PROG and SA_MAN"
+from employees
+where (case
+	when job_id = 'IT_PROG' and salary > 5000 then 1
+	when job_id = 'SA_MAN' and salary > 10000 then 1
+	else 0 end) = 1;
+/*
+first_name	last_name	job_id	return rows where clause equals one IT_PROG and SA_MAN	
+Alexander	Hunold	IT_PROG	9000	
+Bruce	Ernst	IT_PROG	6000	
+John	Russell	SA_MAN	14000	
+Karen	Partners	SA_MAN	13500	
+Alberto	Errazuriz	SA_MAN	12000	
+Gerald	Cambrault	SA_MAN	11000	
+Eleni	Zlotkey	SA_MAN	10500	
+*/
+select first_name, last_name, job_id, salary, hire_date, decode(job_id, 'ST_MAN', salary*1.2, 'SH_MAN', salary*1.3, 'SA_MAN', 1.4*salary) as "Update salary name decode column"
+from employees
+where job_id in ('ST_MAN','SH_MAN','SA_MAN');  #decode is Oracle specific
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 40 GROUP FUNCTIONS - YouTube [720p]
+#avg, count, max, min, sum	Group function types.  Null values ignored by default.
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 41 AVG FUNCTION - YouTube [720p]
+select avg(salary), avg(all salary) as "All salaries", avg(distinct salary) as "Distinct salaries"
+from employees;
+/*
+avg(salary) All salaries Distinct salaries
+6461.8318 6461.8318 7067.3793
+*/
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 42 COUNT FUNCTION - YouTube [720p]
+select count(*), count(manager_id) as "Count manager_id", count(all manager_id), count(distinct manager_id)
+from employees;
+/*
+count(*) Count manager_id count(all manager_id) count(distinct manager_id)
+107 106 106 18
+*/
+select count(*), count(commission_pct) as "Count rows with commission_pct", count(distinct commission_pct), count(nvl(commission_pct,0)) as "Return 0 if commission_pct is null"
+from employees;
+select count(*), count(commission_pct) as "Count rows with commission_pct", count(distinct commission_pct), count(ifnull(commission_pct,0)) as "mysql Return 0 if commission_pct is null"
+from employees;
+/*
+count(*) Count rows with commission_pct count(distinct commission_pct) mysql Return 0 if commission_pct is null
+107 35 7 107
+*/
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 43 MAX FUNCTION - YouTube [720p]
+select max(salary), max(hire_date), max(first_name)
+from employees;
+/*
+max(salary) max(hire_date) max(first_name)
+24000	2008-04-21	Winston	
+*/
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 44 MIN FUNCTION - YouTube [720p]
+select min(commission_pct), min(nvl(commission_pct,0)) as "Return 0 if commission_pct is null", min(hire_date), min(first_name)
+from employees;
+select min(commission_pct), min(ifnull(commission_pct,0)) as "mysql Return 0 if commission_pct is null", min(hire_date), min(first_name)
+from employees;
+/*
+min(commission_pct) mysql Return 0 if commission_pct is null min(hire_date) min(first_name)
+0.10 0.00 2001-01-13 Adam
+*/
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 45 SUM FUNCTION - YouTube [720p]
+select sum(salary), sum(distinct salary) as "Sum distinct salaries"
+from employees;
+/*
+sum(salary) Sum distinct salaries
+691416 409908
+*/
