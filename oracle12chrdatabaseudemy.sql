@@ -490,3 +490,82 @@ from employees;
 sum(salary) Sum distinct salaries
 691416 409908
 */
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 46 OVERVIEW OF GROUP FUNCTION - YouTube [720p]
+select min(salary), max(hire_date), avg(salary), count(*)
+from employees;
+/*
+min(salary) max(hire_date) avg(salary) count(*)
+2100 2008-04-21 6461.8318 107
+*/
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 47 GROUP BY CLAUSE - YouTube [720p]
+select avg(salary)
+from employees;
+
+select avg(salary)
+from employees
+where job_id = 'IT_PROG';
+
+select department_id, avg(salary) #divide rows into smaller groups
+from employees
+group by department_id
+order by avg(salary);
+
+select job_id, avg(salary)
+from employees
+group by job_id;
+
+select job_id, department_id, manager_id, avg(salary) #RM:  the arrangement columns from left to right in select and group by are different
+from employees
+group by department_id, job_id, manager_id;
+
+select avg(salary)
+from employees
+group by job_id;
+
+select avg(salary), sum(salary), min(salary), max(salary), count(*)
+from employees
+group by department_id
+order by avg(salary);
+
+select department_id as "Departments ID Number", avg(salary)
+from employees
+group by department_id
+order by "Departments ID Number";
+
+select department_id, avg(salary) as "Average Salary"
+from employees
+where job_id in ('ST_MAN','SH_CLERK','ST_CLERK')
+group by job_id, department_id
+order by "Average Salary";
+
+select job_id, avg(salary), sum(salary), max(hire_date)
+from employees
+where job_id in ('IT_PROG','ST_MAN','AC_ACCOUNT')
+group by job_id;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 48 HAVING [CLAUSE] - YouTube [720p]
+select job_id, avg(salary) as "All Average Salaries"
+from employees
+group by job_id;
+
+select job_id, avg(salary) as "Average Salaries Greater Than 10,000"
+from employees
+group by job_id
+having avg(salary) > 10000;
+
+select job_id, avg(salary)
+from employees
+where hire_date > '2000-01-21'
+group by job_id
+having avg(salary) > 10000;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 49 NESTING GROUP FUNCTIONS - YouTube [720p]
+select department_id, max(avg(salary))
+from employees
+group by department_id; #error message
+
+select max(avg(salary))
+from employees
+group by department_id; #return 1933.33
