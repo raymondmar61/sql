@@ -1,3 +1,5 @@
+#phpMyAdmin innova18_w3hrstevenking database
+
 #[ORACLE DATABASE TUTORIALS] LECTURE 9 DESCRIBE COMMAND - YouTube [720p]
 desc employees;
 
@@ -529,10 +531,10 @@ from employees
 group by department_id
 order by avg(salary);
 
-select department_id as "Departments ID Number", avg(salary)
+select department_id as "departments ID Number", avg(salary)
 from employees
 group by department_id
-order by "Departments ID Number";
+order by "departments ID Number";
 
 select department_id, avg(salary) as "Average Salary"
 from employees
@@ -569,3 +571,108 @@ group by department_id; #error message
 select max(avg(salary))
 from employees
 group by department_id; #return 1933.33
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 50 JOINING MULTIPLE TABLES AND TYPES OF JOINS - YouTube [720p]
+select *
+from employees;
+
+select *
+from departments;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 51 NATURAL JOINS - YouTube [720p]
+select first_name, last_name, department_id
+from employees natural join departments; #manager_id and departments columns department_id and manager_id are the common columns
+
+select *
+from employees natural join departments; #returns 32 rows.  Employee Steven King is not returned because manager_id is null.  Departments table there is no manager_id is null and department_id is 90.  Also matching columns manager_id and department_id between employees and departments are the leftmost columns.
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 52 JOIN WITH USING CLAUSE - YouTube [720p]
+select *
+from employees join departments
+using (department_id); #parenthesis is required.  Steven King is returned because department_id matches.
+
+select *
+from employees join departments
+using (department_id, manager_id); #parenthesis is required.  Steven King is not returned because department_id matches and manager_id doesn't match.
+
+select first_name, last_name, department_id
+from employees join departments
+using (department_id);  #parenthesis is required.
+
+select * from employees join departments using (department_id); #parenthesis is required.  Steven King is returned because department_id matches. select * from employees join departments using (department_id, manager_id); #parenthesis is required.  Steven King is not returned because department_id matches and manager_id doesn't match. select first_name, last_name, department_id from employees join departments using (department_id);  #parenthesis is required.
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 53 HANDLING AMBIGUOUS COLUMN NAMES - YouTube [720p]
+select first_name, last_name, department_name, manager_id
+from employees join departments
+using (department_name); #error message because manager_id is common in employees table and departments table
+
+select first_name, last_name, department_name, e.manager_id
+from employees e join departments d
+using (department_id); #table aliases on the immediate right of table name
+
+select e.first_name, e.last_name, d.department_name, e.manager_id
+from employees e join departments d
+using (d.department_name); #Can't give an alias to a column that us in the using clause or natural join
+
+select e.first_name, e.last_name, d.department_name, e.manager_id
+from departments d join employees e
+using (d.department_name); #Can't give an alias to a column that us in the using clause or natural join
+
+select e.first_name, e.last_name, d.department_name, e.manager_id
+from employees e join departments d
+using (manager_id); #Can't give an alias to a column that us in the using clause or natural join; however, MySQL SQL code works.
+
+select e.first_name, e.last_name, d.department_name, manager_id
+from employees e join departments d
+using (manager_id); #works
+
+select e.first_name, e.last_name, d.department_name, e.manager_id from employees e join departments d using (d.department_name); #Can't give an alias to a column that us in the using clause or natural join select e.first_name, e.last_name, d.department_name, e.manager_id from departments d join employees e using (d.department_name); #Can't give an alias to a column that us in the using clause or natural join select e.first_name, e.last_name, d.department_name, e.manager_id from employees e join departments d using (manager_id); #Can't give an alias to a column that us in the using clause or natural join; however, MySQL SQL code works. select e.first_name, e.last_name, d.department_name, manager_id from employees e join departments d using (manager_id); #works
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 54 JOIN WITH ON CLAUSE - YouTube [720p]
+select e.first_name, e.last_name, d.manager_id, d.department_name
+from employees e join departments d
+on e.department_id = d.department_id
+and e.manager_id = d.manager_id;
+#same as
+select e.first_name, e.last_name, manager_id, d.department_name
+from employees e join departments d
+using (department_id, manager_id);
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 55 MULTIPLE JOIN OPERATIONS - YouTube [720p]
+select e.first_name, e.last_name, d.department_name, l.city
+from employees e join departments d
+on e.department_id = d.department_id
+join locations l
+on l.location_id = d.location_id;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 56 RESTRICTING JOINS - YouTube [720p]
+select e.first_name, e.last_name, d.department_name, l.city
+from employees e join departments d
+on e.department_id = d.department_id
+join locations l
+on l.location_id = d.location_id
+where d.department_id = 100;
+
+select e.first_name, e.last_name, d.department_name, l.city
+from employees e join departments d
+on e.department_id = d.department_id
+join locations l
+on l.location_id = d.location_id
+and d.department_id = 100;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 57 JOINING UNEQUAL TABLES - YouTube [720p]
+#Using between . . . and or using comparison operators
+select e.first_name, e.last_name, js.job_title, e.salary, js.min_salary, js.max_salary
+from employees e join jobs js
+on e.salary between js.min_salary and js.max_salary; #job_salaries table is jobs table in my MySQL innovateinfinitely.com phpMyAdmin.
+#same as
+select e.first_name, e.last_name, js.job_title, e.salary, js.min_salary, js.max_salary
+from employees e join jobs js
+on e.salary >= js.min_salary
+and e.salary <= js.max_salary; #job_salaries table is jobs table in my MySQL innovateinfinitely.com phpMyAdmin.
+
+select e.first_name, e.last_name, js.job_title, e.salary, js.min_salary, js.max_salary
+from employees e join jobs js
+on e.salary >= js.min_salary
+and e.salary <= js.max_salary
+and e.job_id = js.job_id; #for my phpMyAdmin, there was cartesian cross join.  I needed the e.job_id = js.job_id
