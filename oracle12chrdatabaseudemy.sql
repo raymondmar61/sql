@@ -676,3 +676,305 @@ from employees e join jobs js
 on e.salary >= js.min_salary
 and e.salary <= js.max_salary
 and e.job_id = js.job_id; #for my phpMyAdmin, there was cartesian cross join.  I needed the e.job_id = js.job_id
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 58 SELF JOIN - YouTube [720p]
+select employee_id, first_name, last_name, manager_id
+from employees;
+/*
+employee_id	first_name	last_name	manager_id	
+100	Steven	King	    NULL	
+101	Neena	Kochhar	100	
+102	Lex	De Haan	100	
+103	Alexander	Hunold	102	
+104	Bruce	Ernst	103	
+105	David	Austin	103	
+106	Valli	Pataballa	103	
+107	Diana	Lorentz	103	
+108	Nancy	Greenberg	101	
+*/
+select e.employee_id, e.first_name, e.last_name, e.manager_id, m.first_name as "Manager First Name", m.last_name as "Manager Last Name"
+from employees e join employees m
+on m.employee_id = e.manager_id;
+/*
+employee_id	first_name	last_name	manager_id	Manager First Name	Manager Last Name	
+101	Neena	Kochhar	100	Steven	King	
+102	Lex	De Haan	100	Steven	King	
+103	Alexander	Hunold	102	Lex	De Haan	
+104	Bruce	Ernst	103	Alexander	Hunold	
+105	David	Austin	103	Alexander	Hunold	
+106	Valli	Pataballa	103	Alexander	Hunold	
+107	Diana	Lorentz	103	Alexander	Hunold	
+108	Nancy	Greenberg	101	Neena	Kochhar	
+*/
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 59 OUTER JOINS - YouTube [720p]
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 60 LEFT OUTER JOIN - YouTube [720p]
+select e.first_name, e.last_name, d.department_name
+from employees e left outer join departments d
+on e.department_id = d.department_id;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 61 RIGHT OUTER JOIN - YouTube [720p]
+select e.first_name, e.last_name, d.department_name
+from employees e right outer join departments d
+on e.department_id = d.department_id;
+/*
+...
+first_name last_name department_name
+Michael Hartstein Marketing
+Pat Fay Marketing
+Susan Mavris Human Resources
+Hermann Baer Public Relations
+Shelley Higgins Accounting
+William Gietz Accounting
+NULL NULL Treasury
+NULL NULL Corporate Tax
+NULL NULL Control And Credit
+NULL NULL Shareholder Services
+NULL NULL Benefits
+NULL NULL Manufacturing
+NULL NULL Construction
+NULL NULL Contracting
+NULL NULL Operations
+NULL NULL IT Support
+NULL NULL NOC
+NULL NULL IT Helpdesk
+NULL NULL Government Sales
+NULL NULL Retail Sales
+NULL NULL Recruiting
+NULL NULL Payroll
+*/
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 62 FULL OUTER JOIN - YouTube [720p]
+select e.first_name, e.last_name, e.department_id, d.department_id as "Department ID d", d.department_name
+from employees e full outer join departments d
+on e.department_id = d.department_id;
+#https://stackoverflow.com/questions/4796872/how-to-do-a-full-outer-join-in-mysql
+/*
+SELECT * FROM t1
+LEFT JOIN t2 ON t1.id = t2.id
+UNION ALL
+SELECT * FROM t1
+RIGHT JOIN t2 ON t1.id = t2.id
+WHERE t1.id IS NULL
+*/
+select *
+from employees e
+left join departments d on e.department_id = d.department_id
+union
+select *
+from employees e
+right join  departments d
+on e.department_id = d.department_id;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 63 CROSS JOIN (CARTESIAN PRODUCT) - YouTube [720p]
+select e.first_name, e.last_name, e.department_id, d.department_id as "Department ID d", d.department_name
+from employees e cross join departments d;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 64 USING SUBQUERIES - YouTube [720p]
+select salary
+from employees
+where employee_id = 201; #return 13000
+select *
+from employees
+where salary > (
+	select salary
+	from employees
+	where employee_id = 201);
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 65 SINGLE ROW SUBQUERIES - YouTube [720p]
+select department_id
+from employees
+where employee_id = 201; #return 20
+select *
+from employees
+where department_id = (
+	select department_id
+	from employees
+	where employee_id = 201);
+select *
+from employees
+where department_id = (
+	select department_id
+	from employees
+	where employee_id = 201)
+and salary > (
+	select salary
+	from employees
+	where employee_id = 201);
+select *
+from employees
+where hire_date = (
+	select min(hire_date)
+	from employees);
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 66 MULTIPLE ROW SUBQUERIES - YouTube [720p]
+select first_name, last_name, department_id, salary
+from employees
+where salary in (14000, 15000, 10000);
+select first_name, last_name, department_id, salary as "Salaries are the minimums in departments"
+from employees
+where salary in (
+	select min(salary)
+	from employees
+	group by department_id);
+/*
+first_name	last_name	department_id	Salaries are the minimums in departments	
+Neena	Kochhar	90	17000	
+Lex	De Haan	90	17000	
+Bruce	Ernst	60	6000	
+Diana	Lorentz	60	4200	
+Luis	Popp	100	6900	
+Karen	Colmenares	30	2500	
+Shanta	Vollman	50	6500	
+James	Marlow	50	2500	
+TJ	Olson	50	2100	
+Joshua	Patel	50	2500	
+Peter	Vargas	50	2500	
+Peter	Tucker	80	10000	
+Oliver	Tuvault	80	7000	
+Janette	King	80	10000	
+Sarath	Sewall	80	7000	
+Harrison	Bloom	80	10000	
+Sundita	Kumar	80	6100	
+Kimberely	Grant	0	7000	
+Martha	Sullivan	50	2500	
+Nandita	Sarchand	50	4200	
+Randall	Perkins	50	2500	
+Jennifer	Whalen	10	4400	
+Pat	Fay	20	6000	
+Susan	Mavris	40	6500	
+Hermann	Baer	70	10000	
+*/
+select salary
+from employees
+where job_id = 'SA_MAN';
+/*
+salary	
+14000	
+13500	
+12000	
+11000	
+10500	
+*/
+select first_name, last_name, department_id, salary as "Salaries are greater than the minimum in SA_MAN"
+from employees
+where salary > any (
+	select salary
+	from employees
+	where job_id = 'SA_MAN');
+/*
+first_name	last_name	department_id	Salaries are greater than the minimum in SA_MAN	 
+Steven	King	90	24000	
+Neena	Kochhar	90	17000	
+Lex	De Haan	90	17000	
+Nancy	Greenberg	100	12008	
+Den	Raphaely	30	11000	
+John	Russell	80	14000	
+Karen	Partners	80	13500	
+Alberto	Errazuriz	80	12000	
+Gerald	Cambrault	80	11000	
+Lisa	Ozer	80	11500	
+Ellen	Abel	80	11000	
+Michael	Hartstein	20	13000	
+Shelley	Higgins	110	12008	
+*/
+select first_name, last_name, department_id, salary as "Salaries are equal to any in SA_MAN"
+from employees
+where salary = any (
+	select salary
+	from employees
+	where job_id = 'SA_MAN');
+/*
+first_name	last_name	department_id	Salaries are equal to any in SA_MAN	
+Den	Raphaely	30	11000	
+John	Russell	80	14000	
+Karen	Partners	80	13500	
+Alberto	Errazuriz	80	12000	
+Gerald	Cambrault	80	11000	
+Eleni	Zlotkey	80	10500	
+Clara	Vishney	80	10500	
+Ellen	Abel	80	11000	
+*/
+select first_name, last_name, department_id, salary as "Salaries are less than the maximum SA_MAN"
+from employees
+where salary < any (
+	select salary
+	from employees
+	where job_id = 'SA_MAN');
+/*
+first_name	last_name	department_id	Salaries are less than the maximum SA_MAN 	
+Alexander	Hunold	60	9000	
+Bruce	Ernst	60	6000	
+David	Austin	60	4800	
+Valli	Pataballa	60	4800	
+Diana	Lorentz	60	4200	
+Nancy	Greenberg	100	12008	
+Daniel	Faviet	100	9000	
+John	Chen	100	8200	
+Ismael	Sciarra	100	7700	
+Jose Manuel	Urman	100	7800	
+Luis	Popp	100	6900	
+Den	Raphaely	30	11000	
+Alexander	Khoo	30	3100	
+Shelli	Baida	30	2900	
+Sigal	Tobias	30	2800	
+Guy	Himuro	30	2600	
+Karen	Colmenares	30	2500	
+Matthew	Weiss	50	8000	
+Adam	Fripp	50	8200	
+Payam	Kaufling	50	7900	
+Shanta	Vollman	50	6500	
+Kevin	Mourgos	50	5800	
+Julia	Nayer	50	3200	
+Irene	Mikkilineni	50	2700	
+James	Landry	50	2400	
+...
+*/
+select first_name, last_name, department_id, salary as "Salaries are greater than the maximum in SA_MAN"
+from employees
+where salary > all (
+	select salary
+	from employees
+	where job_id = 'SA_MAN');
+/*
+first_name	last_name	department_id	Salaries are greater than the maximum in SA_MAN	
+Steven	King	90	24000	
+Neena	Kochhar	90	17000	
+Lex	De Haan	90	17000	
+*/
+select first_name, last_name, department_id, salary as "Salaries are less than the minimum in SA_MAN"
+from employees
+where salary < all (
+	select salary
+	from employees
+	where job_id = 'SA_MAN');
+/*
+first_name	last_name	department_id	Salaries are less than the maximum in SA_MAN	
+Alexander	Hunold	60	9000	
+Bruce	Ernst	60	6000	
+David	Austin	60	4800	
+Valli	Pataballa	60	4800	
+Diana	Lorentz	60	4200	
+Daniel	Faviet	100	9000	
+John	Chen	100	8200	
+Ismael	Sciarra	100	7700	
+Jose Manuel	Urman	100	7800	
+Luis	Popp	100	6900	
+Alexander	Khoo	30	3100	
+Shelli	Baida	30	2900	
+Sigal	Tobias	30	2800	
+Guy	Himuro	30	2600	
+Karen	Colmenares	30	2500	
+Matthew	Weiss	50	8000	
+Adam	Fripp	50	8200	
+Payam	Kaufling	50	7900	
+Shanta	Vollman	50	6500	
+Kevin	Mourgos	50	5800	
+Julia	Nayer	50	3200	
+Irene	Mikkilineni	50	2700	
+James	Landry	50	2400	
+Steven	Markle	50	2200	
+Laura	Bissot	50	3300	
+...
+*/
