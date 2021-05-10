@@ -978,3 +978,367 @@ Steven	Markle	50	2200
 Laura	Bissot	50	3300	
 ...
 */
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 67 MULTIPLE COLUMN SUBQUERIES - YouTube [720p]
+select min(salary)
+from employees
+group by department_id;
+/*  return 12 rows
+min(salary)
+7000
+4400
+6000
+2500
+6500
+2100
+4200
+10000
+6100
+17000
+6900
+8300
+*/
+select first_name, last_name, department_id, salary
+from employees
+where salary in (
+	select min(salary)
+	from employees
+	group by department_id);  #incorrectly get the employees who earn the minimmum salaries in all departments.  Actually getting employees earning salaries in the subquery.
+/*
+return 26 rows
+first_name	last_name	department_id	salary	
+Neena	Kochhar	90	17000	
+Lex	De Haan	90	17000	
+Bruce	Ernst	60	6000	
+Diana	Lorentz	60	4200	
+Luis	Popp	100	6900	
+Karen	Colmenares	30	2500	
+Shanta	Vollman	50	6500	
+James	Marlow	50	2500	
+TJ	Olson	50	2100	
+Joshua	Patel	50	2500	
+Peter	Vargas	50	2500	
+Peter	Tucker	80	10000	
+Oliver	Tuvault	80	7000	
+Janette	King	80	10000	
+Sarath	Sewall	80	7000	
+Harrison	Bloom	80	10000	
+Sundita	Kumar	80	6100	
+Kimberely	Grant	0	7000	
+Martha	Sullivan	50	2500	
+Nandita	Sarchand	50	4200	
+Randall	Perkins	50	2500	
+Jennifer	Whalen	10	4400	
+Pat	Fay	20	6000	
+Susan	Mavris	40	6500	
+Hermann	Baer	70	10000	
+*/
+select department_id, min(salary)
+from employees
+group by department_id;
+/*
+department_id	min(salary)	
+0	7000	
+10	4400	
+20	6000	
+30	2500	
+40	6500	
+50	2100	
+60	4200	
+70	10000	
+80	6100	
+90	17000	
+100	6900	
+110	8300	
+*/
+select first_name, last_name, department_id, salary
+from employees
+where (department_id, salary) in (
+	select department_id, min(salary)
+	from employees
+	group by department_id);  #correctly get employees earning salaries in the subquery.
+/*
+first_name	last_name	department_id	salary	
+Neena	Kochhar	90	17000	
+Lex	De Haan	90	17000	
+Diana	Lorentz	60	4200	
+Luis	Popp	100	6900	
+Karen	Colmenares	30	2500	
+TJ	Olson	50	2100	
+Sundita	Kumar	80	6100	
+Kimberely	Grant	0	7000	
+Jennifer	Whalen	10	4400	
+Pat	Fay	20	6000	
+Susan	Mavris	40	6500	
+Hermann	Baer	70	10000	
+William	Gietz	110	8300	
+*/
+
+select first_name, last_name, job_id, salary as "Employee highest salary in each job_id"
+from employees
+where (salary, job_id) in (
+	select max(salary), job_id
+	from employees
+	group by job_id)
+order by salary desc;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 68 SET OPERATORS - YouTube [720p]
+#bonus create table retired_employees
+create table retired_employees (employee_id integer not null primary key, first_name varchar(15), last_name varchar(20), email varchar(20), phone_number varchar(20), hire_date date, job_id varchar(10), salary integer, commission_pct decimal(3,2), manager_id integer, department_id integer);
+#bonus insert rows insert data retired_employees
+insert into retired_employees
+values(103, "Alexander","Hunold","AHUNOLD","590.423.4567","2006-01-03","IT_PROG",9000,0,102,60);
+insert into retired_employees
+values(104, "Bruce","Ernst","BERNST","590.423.4568","2007-05-21","IT_PROG",6000,0,103,60);
+insert into retired_employees
+values(105, "David","Austin","DAUSTIN","590.423.4569","2005-06-25","IT_PROG",4800,0,103,60);
+insert into retired_employees
+values(106, "Valli","Pataballa","VPATABAL","590.423.4560","2006-02-05","IT_PROG",4800,0,103,60);
+insert into retired_employees
+values(107, "Diana","Lorentz","DLORENTZ","590.423.4567","2007-02-07","IT_PROG",4200,0,103,60);
+insert into retired_employees
+values(207, "Omer","Dagasan","ODAGASAN","555.555.5555","1999-01-01","IT_PROG",10000,0,103,60);
+select first_name, last_name as "Last name top query first query priority", salary
+from retired_employees
+union
+select first_name, last_name, salary
+from employees
+order by first_name;
+/*
+first_name   	Last name top query first query priority	salary	
+Adam	Fripp	8200	
+Alana	Walsh	3100	
+Alberto	Errazuriz	12000	
+Alexander	Hunold	9000	
+Alexander	Khoo	3100	
+Alexis	Bull	4100	
+Allan	McEwen	9000	
+Alyssa	Hutton	8800	
+Amit	Banda	6200	
+Anthony	Cabrio	3000	
+Britney	Everett	3900	
+Bruce	Ernst	6000	
+Charles	Johnson	6200	
+Christopher	Olsen	8000	
+...
+*/	
+select first_name, last_name as "UNION ALL includes duplicate rows", salary
+from retired_employees
+union all
+select first_name, last_name, salary
+from employees
+order by first_name;
+/*
+first_name   	Last name top query first query priority	salary	Duplicate rows Alexander Hunold and Bruce Ernst and David Austin
+Adam	Fripp	8200	
+Alana	Walsh	3100	
+Alberto	Errazuriz	12000	
+Alexander	Hunold	9000	
+Alexander	Khoo	3100	
+Alexander	Hunold	9000	
+Alexis	Bull	4100	
+Allan	McEwen	9000	
+Alyssa	Hutton	8800	
+Amit	Banda	6200	
+Anthony	Cabrio	3000	
+Britney	Everett	3900	
+Bruce	Ernst	6000	
+Bruce	Ernst	6000	
+Charles	Johnson	6200	
+Christopher	Olsen	8000	
+Clara	Vishney	10500	
+Curtis	Davies	3100	
+Daniel	Faviet	9000	
+Danielle	Greene	9500	
+David	Lee	6800	
+David	Austin	4800	
+David	Bernstein	9500	
+David	Austin	4800	
+Den	Raphaely	11000	
+*/
+select first_name, last_name, salary
+from retired_employees
+intersect
+select first_name, last_name, salary
+from employees
+order by first_name;
+#MySQL does not support the INTERSECT operator. However, you can emulate the INTERSECT operator.  Source:  https://www.mysqltutorial.org/mysql-intersect/
+select distinct r.employee_id, r.first_name, r.last_name, r.salary
+from retired_employees r inner join employees e
+using (employee_id);  #paranthesis is required
+#or
+select distinct employee_id, first_name, last_name, salary
+from retired_employees
+where employee_id in (
+	select employee_id
+	from employees);
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 69 UNION AND UNION AILL OPERATORS - YouTube [720p]
+select first_name, last_name as "union eliminates duplicate rows", salary
+from retired_employees
+union
+select first_name, last_name, salary
+from employees
+where job_id = "ID_PROG"
+order by first_name;
+/*
+first_name   	union eliminates duplicate rows	salary	
+Alexander	Hunold	9000	
+Bruce	Ernst	6000	
+David	Austin	4800	
+Diana	Lorentz	4200	
+Omer	Dagasan	10000	
+Valli	Pataballa	4800	
+*/
+select first_name, last_name as "union all includes duplicate rows", email, salary, job_id
+from retired_employees
+union all
+select first_name, last_name, email, salary, job_id
+from employees
+order by job_id, first_name;
+/*
+first_name   	union all includes duplicate rows	email	salary	job_id   Duplicates Alexander Hunold, Bruce Ernst, David Austin, Diana Lorentz, Valli Pataballa; not duplicate Omer Dagasan	
+William	Gietz	WGIETZ	8300	AC_ACCOUNT	
+Shelley	Higgins	SHIGGINS	12008	AC_MGR	
+Jennifer	Whalen	JWHALEN	4400	AD_ASST	
+Steven	King	SKING	24000	AD_PRES	
+Lex	De Haan	LDEHAAN	17000	AD_VP	
+Neena	Kochhar	NKOCHHAR	17000	AD_VP	
+Daniel	Faviet	DFAVIET	9000	FI_ACCOUNT	
+Ismael	Sciarra	ISCIARRA	7700	FI_ACCOUNT	
+John	Chen	JCHEN	8200	FI_ACCOUNT	
+Jose Manuel	Urman	JMURMAN	7800	FI_ACCOUNT	
+Luis	Popp	LPOPP	6900	FI_ACCOUNT	
+Nancy	Greenberg	NGREENBE	12008	FI_MGR	
+Susan	Mavris	SMAVRIS	6500	HR_REP	
+Alexander	Hunold	AHUNOLD	9000	IT_PROG	
+Alexander	Hunold	AHUNOLD	9000	IT_PROG	
+Bruce	Ernst	BERNST	6000	IT_PROG	
+Bruce	Ernst	BERNST	6000	IT_PROG	
+David	Austin	DAUSTIN	4800	IT_PROG	
+David	Austin	DAUSTIN	4800	IT_PROG	
+Diana	Lorentz	DLORENTZ	4200	IT_PROG	
+Diana	Lorentz	DLORENTZ	4200	IT_PROG	
+Omer	Dagasan	ODAGASAN	10000	IT_PROG	
+Valli	Pataballa	VPATABAL	4800	IT_PROG	
+Valli	Pataballa	VPATABAL	4800	IT_PROG	
+Michael	Hartstein	MHARTSTE	13000	MK_MAN		
+*/
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 70 INTERESCT OPERATOR - YouTube [720p]
+select first_name, last_name as "intersect returns rows must be in both queries", email, salary, job_id
+from retired_employees
+intersect
+select first_name, last_name, email, salary, job_id
+from employees
+order by first_name, job_id;
+select first_name, last_name as "no intersect in MYSQL", email, salary, job_id
+from retired_employees
+where employee_id in (
+	select employee_id
+	from employees)
+order by first_name;
+/*
+first_name   	no intersect in MYSQL	email	salary	job_id	
+Alexander	Hunold	AHUNOLD	9000	IT_PROG	
+Bruce	Ernst	BERNST	6000	IT_PROG	
+David	Austin	DAUSTIN	4800	IT_PROG	
+Diana	Lorentz	DLORENTZ	4200	IT_PROG	
+Valli	Pataballa	VPATABAL	4800	IT_PROG	
+*/
+select distinct employee_id, first_name, last_name as "include distinct no intersect in MYSQL", email, salary, job_id
+from retired_employees
+where employee_id in (
+	select employee_id
+	from employees)
+order by first_name;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 71 MINUS OPERATOR - YouTube [720p]
+select first_name, last_name as "return rows in first query and not in second query", email, salary, job_id
+from retired_employees
+minus
+select first_name, last_name, email, salary, job_id
+from employees
+order by first_name, job_id;
+#MySQL does not support the MINUS operator.  Use the JOIN clause.  Source:  https://www.mysqltutorial.org/mysql-minus/
+select e.employee_id as "e", r.employee_id as "r", r.first_name, r.last_name as "MYSQL left join return rows in first query and not in second query", r.email, r.salary, r.job_id
+from retired_employees r left join employees e
+on r.employee_id = e.employee_id;
+/*
+e	r	first_name	MYSQL left join return rows in first query and not in second query	email	salary	job_id	
+103	103	Alexander	Hunold	AHUNOLD	9000	IT_PROG	
+104	104	Bruce	Ernst	BERNST	6000	IT_PROG	
+105	105	David	Austin	DAUSTIN	4800	IT_PROG	
+106	106	Valli	Pataballa	VPATABAL	4800	IT_PROG	
+107	107	Diana	Lorentz	DLORENTZ	4200	IT_PROG	
+
+    NULL
+	207	Omer	Dagasan	ODAGASAN	10000	IT_PROG	
+*/
+select r.first_name, r.last_name as "MYSQL left join return rows in first query and not in second query", r.email, r.salary, r.job_id
+from retired_employees r left join employees e
+on r.employee_id = e.employee_id
+where e.employee_id is null;
+/*
+Omer	Dagasan	ODAGASAN	10000	IT_PROG	
+*/
+#or
+select r.first_name, r.last_name as "MYSQL left join return rows in first query and not in second query", r.email, r.salary, r.job_id
+from retired_employees r left join employees e
+using (employee_id)
+where e.employee_id is null;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 72 MATCHING UNMATCHED QUERIES IN SET OPERATIONS - YouTube [720p]
+select job_id, department_id, first_name, last_name
+from employees
+union
+select job_id, department_id, null, null
+from jobhistory;
+select job_id, null as "department_id from jobhistory table", first_name
+from employees
+union
+select job_id, department_id, null
+from jobhistory;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 73 ODER BY WITH SET OPERATORS - YouTube [720p]
+select first_name, last_name, salary, department_id as "order by clause sorts from first query; no query alias in order by"
+from employees
+union
+select first_name, last_name, salary, department_id
+from retired_employees
+order by salary desc;
+/*
+first_name	last_name	salary   	order by clause sorts from first query; no query alias in order by	Focus attention on Omer Dagasan row.
+Steven	King	24000	90	
+Neena	Kochhar	17000	90	
+Lex	De Haan	17000	90	
+John	Russell	14000	80	
+Karen	Partners	13500	80	
+Michael	Hartstein	13000	20	
+Nancy	Greenberg	12008	100	
+Shelley	Higgins	12008	110	
+Alberto	Errazuriz	12000	80	
+Lisa	Ozer	11500	80	
+Den	Raphaely	11000	30	
+Ellen	Abel	11000	80	
+Gerald	Cambrault	11000	80	
+Eleni	Zlotkey	10500	80	
+Clara	Vishney	10500	80	
+Omer	Dagasan	10000	60	
+Peter	Tucker	10000	80	
+Janette	King	10000	80	
+Hermann	Baer	10000	70	
+Harrison	Bloom	10000	80	
+Tayler	Fox	9600	80	
+David	Bernstein	9500	80	
+Patrick	Sully	9500	80	
+Danielle	Greene	9500	80	
+Alexander	Hunold	9000	60	
+Alexander	Hunold	9000	60	
+*/
+select first_name, last_name, salary as "SALARYALIAS", department_id
+from employees
+union
+select first_name, last_name, salary, department_id
+from retired_employees
+order by "SALARYALIAS" desc;
