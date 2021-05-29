@@ -1342,3 +1342,43 @@ union
 select first_name, last_name, salary, department_id
 from retired_employees
 order by "SALARYALIAS" desc;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 74 DATA MANUPULATION LANGUAGE (DML) - YouTube [720p]
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 75 INSERT STATEMENT (PART 1) - YouTube [720p]
+insert into jobs (job_id, job_title, min_salary, max_salary)
+values ("GR_LDR", "Group Leader", 8500, 20000);
+insert into jobs (job_id, job_title, min_salary, max_salary)
+values ("PR_MGR", "Project Manager", 500, 15000);
+insert into jobs
+values ("PR_CRD","Project Coordinator",4000,18000);
+insert into jobs (min_salary, job_id, job_title)
+values (4000, "PR_CRD2","Project Coordinator2");
+insert into departments
+values(280, "Customer Relations",null, null);
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 76 INSERT STATEMENT (PART 2) - YouTube [720p]
+insert into jobhistory (employee_id, start_date, end_date, job_id, department_id)
+values (120, to_date("2003-02-02","yyyy-mm-dd"), sysdate, "IT_PROG", 60);
+#RM:  use to_date to_date('Jun 12, 2005','Mon DD, YYYY')
+insert into jobhistory (employee_id, start_date, end_date, job_id, department_id)
+values (120, to_date("Feb 02, 2003","Mon DD, YYYY"), sysdate, "IT_PROG", 60);
+#RM:  to_date error message on my phpMyAdmin.  Also error message on sysdate.  Need paranthesis.
+insert into jobhistory (employee_id, start_date, end_date, job_id, department_id)
+values (120, "2003-02-02", sysdate(), "IT_PROG", 60);
+#copy table as long as employeescopy table exists
+insert into employeescopy
+select * from employees;
+insert into employeescopy
+select * from employees
+where job_id = "IT_PROG";
+insert into employeescopy (employee_id, first_name, last_name, email, hire_date, job_id, salary)
+select (employee_id, first_name, last_name, email, hire_date, job_id, salary) from employees
+where job_id = "IT_PROG";
+#copy table as long as employeeaddresses table exists
+insert into employeeaddresses
+select employee_id, first_name, last_name, city || " " || street_address as "Address"
+from employees join departments
+using (department_id)
+join locations
+using (location_id);
