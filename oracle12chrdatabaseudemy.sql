@@ -1382,3 +1382,153 @@ from employees join departments
 using (department_id)
 join locations
 using (location_id);
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 77 UPDATE STATEMENT - YouTube [720p]
+#copy table employees as employeescopy for the lesson
+create table employeescopy
+(employee_id integer not null primary key, first_name varchar(15), last_name varchar(20), email	varchar(20), phone_number varchar(20), hire_date date, job_id varchar(10), salary integer, commission_pct decimal(3,2),	manager_id integer, department_id integer);
+insert into employeescopy
+select * from employees;
+delete from employeescopy;  #delete all rows delete rows all
+update employeescopy
+set salary = 500; #update salary column all salary values are 500
+update employeescopy
+set salary = 50000
+where job_id = 'IT_PROG'; #update IT_PROG salaries set all to 50000
+update employeescopy
+set salary = 5, department_id = null
+where job_id = 'IT_PROG'; #update IT_PROG salaries set all to 5 and department_id is null
+update employeescopy
+set (salary, commission_pct) = (
+	select max(salary), max(commission_pct)
+	from employees)
+where job_id = 'IT_PROG';  #RM:  phpMyAdmin error message
+update employeescopy
+set salary = (
+	select max(salary)
+	from employees)
+where job_id = 'IT_PROG';
+update employeescopy
+set commission_pct = (
+	select max(commission_pct)
+	from employees)
+where job_id = 'IT_PROG';  #RM:  phpMyAdmin run two separate update SQL statements
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 78 DELETE STATEMENT - YouTube [720p]
+delete from employeescopy;  #delete table employeescopy
+delete employeescopy;  #delete table employeescopy
+delete from employeescopy
+where job_id = 'IT_PROG'; #delete rows where job_id is IT_PROG
+delete from employeescopy
+where department_id in (
+	select department_id
+	from departments
+	where department_name like 'SA%');
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 79 TRANSACTION CONTROL STATEMENTS - YouTube [720p]
+/*
+Oracle database is a transactional database.  Transaction is for data security.  We see changes before making changes permanent.  Other users see old data before changes are permanent.  Transaction starts with the first execution of a DML statement and finishes with a commit, rollback operation, system failure, DDL Data Definition Languagestatement, or DCL Data Control Language statement.  A DML operation is executed, the affected rows are locked and anyone else can't update or delete these rows.  There are 3 transactional control statements:  commit, rollback, and savepoint.
+*/
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 80 COMMIT AND ROLLBACK STATEMENTS - YouTube [720p]
+rollback; #Rollback is undo all changes on data.  Restores data back to its previous state.  Database goes back to previous.
+commit; #Saves changes database changes in database.  Makes changes permanent and ends transaction.  Can't rollback after a commit.
+#DDL Data Definition Language statement or DCL Data Control Language statement DDL or DCL statements commit is automatically executed.
+#RM:  rollback and commit exists in MySQL.  I can't make it work on phpMyAdmin.
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 81 SAVEPOINT STATEMENT - YouTube [720p]
+savepoint savepointname; #saves the state of the transaction.  We can rollback to the state.  It's like a checkpoint of rollbacks.  Savepoint goes back to the checkpoint; however, the rollbacks and savepoints after the checkpoint thereafter are deleted.
+#For example, if we create four savepoints a, b, c, and d.  Go back to savepoint a.  Rollbacks from savepoints b, c, and d are deleted.
+rollback to savepointb; #Using rollback without savepoints deletes all savepoints.  For example, if I rollback to savepoint B, then savepoint c and savepoint d are deleted.
+rollback *without savepointname*; #Rollsback to beginning of DML or first transaction without any savepoint.
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 82 FOR UPDATE STATEMENT - YouTube [720p]
+#Locks all rows returning from the query.  The lock is released with commit statement or rollback statement.  If a row we want to lock with for update statement is already locked, then the select statement waits until the lock is released.
+#To perform a quick execution, we write nowait keyword.  In this time, control of locked rows passed from the other user to you.  nowait may be harmful to the other user because the user didn't want to change these columns but we forced to change these columns.
+select *
+from employees
+where job_id = 'IT_PROG'
+for update nowait;
+select first_name, last_name, salary
+from employees e join departments d
+using department_id
+where location_id = 1400
+for update;  #employees e table and departments d table these rows are locked.  join rows from all the tables are locked.
+select first_name, last_name, salary
+from employees e join departments d
+using department_id
+where location_id = 1400
+for update of first_name, last_name; #We can use for update of columnname to specify columns we want to lock to prevent locking all the tables.
+#for update wait numberofseconds database waits numberofseconds and afterwards gives control to everyone else.
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 83 DATA DEFINITION LANGUAGE (DDL) - YouTube [360p]
+#Data Definition Language DDL define database structure.  Create objects in the database, alter the structure of the database, drop which is delete objects from the database, truncate remove records from a table including all spaces allocated for the records are removed, comment add comments to the data dictionary, rename renames an object.
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 84 NAMING RULES - YouTube [720p]
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 85 CREATE TABLE STATEMENT - YouTube [720p]
+describe employees;
+/*
+Field Type Null Key Default Extra
+employee_id	int(11)	NO	PRI	    NULL
+		
+first_name	varchar(15)	YES	    NULL
+		
+last_name	varchar(20)	YES		    NULL
+		
+email	varchar(20)	YES		    NULL
+		
+phone_number	varchar(20)	YES		    NULL
+		
+hire_date	date	YES		    NULL
+		
+job_id	varchar(10)	YES		    NULL
+		
+salary	int(11)	YES		    NULL
+		
+commission_pct	decimal(3,2)	YES	
+    NULL
+		
+manager_id	int(11)	YES		    NULL
+		
+department_id	int(11)	YES		    NULL
+*/
+create table myemployees
+(employee_id number(3), first_name varchar2(50), last_name varchar2(50), hire_date date default sysdate); #sysdate invalid in phpMyAdmin.  MySQL use curdate() for today's date.  number invalid.  Use integer.  default doesn't work in MySQL.
+create table myemployees
+(employee_id integer(3), first_name varchar(50), last_name varchar(50), hire_date date curdate()); #MySQL can't default current date https://stackoverflow.com/questions/39808684/mysql-date-field-with-default-curdate-not-datetime
+create table myemployees
+(employee_id integer(3), first_name varchar(50), last_name varchar(50), hire_date date);
+create table tablenameassubquerycopytable
+as subquery;
+create table employeescopyassubquery
+as select * from employees;
+create table employeescopyassubquerywithoutdata
+as select * from employees where 1=2;
+create table employeesitprogrammer
+as select * from employees where job_id = 'IT_PROG';
+create table employeesfirstnamelastnamesalary
+(first_namecopiedtable, last_namecopiedtable, salarycopiedtable)
+as select first_name, last_name, salary from employees; #error message using MySQL
+create table employeesfirstnamelastnamesalary
+(first_name varchar(15), last_name varchar(20), salary integer(11))
+as select first_name, last_name, salary from employees; #MySQL.  column names must be the same in copied table and source table as the subquery
+create table oraclsqlemployeesannualsalary
+(first_namecopiedtable, last_namecopiedtable, salarycopiedtable)
+as select first_name, last_name, 12*salary from employees;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 86 ALTER TABLE STATEMENTS - YouTube [720p]
+alter table employeescopy
+add birthdate date;
+alter table employeescopy
+add (faxnumber number, fathersname varchar2(50), password varchar2(10) default 'abc123');
+alter table employeescopy
+add (faxnumber integer(10), fathersname varchar(50), password varchar(10) default 'abc123'); #MySQL
+alter table employeescopy
+modify fathersname varchar2(100);
+alter table employeescopy
+modify (faxnumber varchar2(11), password varchar2(10) default '0000'); #modifying a column to a default value affects new rows.  Existing rows unchanged.
+alter table employeescopy
+drop column password; #if there is one column to delete, add keyword column
+alter table employeescopy
+drop (faxnumber, password);
