@@ -212,32 +212,32 @@ where upper(last_name) = 'KING';
 select first_name, substr(first_name,5,3) as 'return three characters starting at 5th position', length(first_name), concat(first_name, ' ', last_name)
 from employees;
 /*
-first_name	return three characters starting at 5th position	length(first_name)	concat(first_name, ' ', last_name)	
-Steven	en	6	Steven King	
-Neena	a	5	Neena Kochhar	
-Lex		3	Lex De Haan	
-Alexander	and	9	Alexander Hunold	
-Bruce	e	5	Bruce Ernst	
-David	d	5	David Austin	
-Valli	i	5	Valli Pataballa	
-Diana	a	5	Diana Lorentz	
-Nancy	y	5	Nancy Greenberg	
-Daniel	el	6	Daniel Faviet	
-John		4	John Chen	
-Ismael	el	6	Ismael Sciarra	
-Jose Manuel	 Ma	11	Jose Manuel Urman	
-Luis		4	Luis Popp	
-Den		3	Den Raphaely	
-Alexander	and	9	Alexander Khoo	
-Shelli	li	6	Shelli Baida	
-Sigal	l	5	Sigal Tobias	
-Guy		3	Guy Himuro	
-Karen	n	5	Karen Colmenares	
-Matthew	hew	7	Matthew Weiss	
-Adam		4	Adam Fripp	
-Payam	m	5	Payam Kaufling	
-Shanta	ta	6	Shanta Vollman	
-Kevin	n	5	Kevin Mourgos	
+first_name  return three characters starting at 5th position    length(first_name)  concat(first_name, ' ', last_name)  
+Steven  en  6   Steven King 
+Neena   a   5   Neena Kochhar   
+Lex     3   Lex De Haan 
+Alexander   and 9   Alexander Hunold    
+Bruce   e   5   Bruce Ernst 
+David   d   5   David Austin    
+Valli   i   5   Valli Pataballa 
+Diana   a   5   Diana Lorentz   
+Nancy   y   5   Nancy Greenberg 
+Daniel  el  6   Daniel Faviet   
+John        4   John Chen   
+Ismael  el  6   Ismael Sciarra  
+Jose Manuel  Ma 11  Jose Manuel Urman   
+Luis        4   Luis Popp   
+Den     3   Den Raphaely    
+Alexander   and 9   Alexander Khoo  
+Shelli  li  6   Shelli Baida    
+Sigal   l   5   Sigal Tobias    
+Guy     3   Guy Himuro  
+Karen   n   5   Karen Colmenares    
+Matthew hew 7   Matthew Weiss   
+Adam        4   Adam Fripp  
+Payam   m   5   Payam Kaufling  
+Shanta  ta  6   Shanta Vollman  
+Kevin   n   5   Kevin Mourgos   
 */
 
 #[ORACLE DATABASE TUTORIALS] LECTURE 30 CHARATER FUNCTION (PART 2) - YouTube [720p]
@@ -258,60 +258,60 @@ from employees
 where commission_pct is not null;
 /*
 RM:  selected rows posted
-salary	commission_pct	salary*commission_pct	salary/commission_pct	round(salary/commission_pct,2)	trunc(salary/commission_pct,2)	ceil(salary/commission_pct)	floor(salary/commission_pct)	mod(salary, commission_pct)	
-10000	0.30	3000.00	33333.3333	33333.33	33333.33	33334	33333	0.10	
-7000	0.15	1050.00	46666.6667	46666.67	46666.66	46667	46666	0.10	
-10000	0.35	3500.00	28571.4286	28571.43	28571.42	28572	28571	0.15	
-9500	0.35	3325.00	27142.8571	27142.86	27142.85	27143	27142	0.30	
-9000	0.35	3150.00	25714.2857	25714.29	25714.28	25715	25714	0.10	
-8000	0.30	2400.00	26666.6667	26666.67	26666.66	26667	26666	0.20	
-7500	0.30	2250.00	25000.0000	25000.00	25000.00	25000	25000	0.00	
-7000	0.25	1750.00	28000.0000	28000.00	28000.00	28000	28000	0.00	
-7200	0.10	720.00	72000.0000	72000.00	72000.00	72000	72000	0.00	
-6800	0.10	680.00	68000.0000	68000.00	68000.00	68000	68000	0.00	
-6400	0.10	640.00	64000.0000	64000.00	64000.00	64000	64000	0.00	
-6200	0.10	620.00	62000.0000	62000.00	62000.00	62000	62000	0.00	
-11500	0.25	2875.00	46000.0000	46000.00	46000.00	46000	46000	0.00	
-10000	0.20	2000.00	50000.0000	50000.00	50000.00	50000	50000	0.00	
+salary  commission_pct  salary*commission_pct   salary/commission_pct   round(salary/commission_pct,2)  trunc(salary/commission_pct,2)  ceil(salary/commission_pct) floor(salary/commission_pct)    mod(salary, commission_pct) 
+10000   0.30    3000.00 33333.3333  33333.33    33333.33    33334   33333   0.10    
+7000    0.15    1050.00 46666.6667  46666.67    46666.66    46667   46666   0.10    
+10000   0.35    3500.00 28571.4286  28571.43    28571.42    28572   28571   0.15    
+9500    0.35    3325.00 27142.8571  27142.86    27142.85    27143   27142   0.30    
+9000    0.35    3150.00 25714.2857  25714.29    25714.28    25715   25714   0.10    
+8000    0.30    2400.00 26666.6667  26666.67    26666.66    26667   26666   0.20    
+7500    0.30    2250.00 25000.0000  25000.00    25000.00    25000   25000   0.00    
+7000    0.25    1750.00 28000.0000  28000.00    28000.00    28000   28000   0.00    
+7200    0.10    720.00  72000.0000  72000.00    72000.00    72000   72000   0.00    
+6800    0.10    680.00  68000.0000  68000.00    68000.00    68000   68000   0.00    
+6400    0.10    640.00  64000.0000  64000.00    64000.00    64000   64000   0.00    
+6200    0.10    620.00  62000.0000  62000.00    62000.00    62000   62000   0.00    
+11500   0.25    2875.00 46000.0000  46000.00    46000.00    46000   46000   0.00    
+10000   0.20    2000.00 50000.0000  50000.00    50000.00    50000   50000   0.00    
 */
 
 #[ORACLE DATABASE TUTORIALS] LECTURE 32 NESTING FUNCTIONS - YouTube [720p]
 select first_name, last_name, lpad(upper(concat(first_name, last_name)),20,'*') as "Concat first name and last name upper case must be 20 characters fill rest with * on left"
 from employees;
 /*
-first_name	last_name	Concat first name and last name upper case must be 20 characters fill rest with * on left	
-Steven	King	**********STEVENKING	
-Neena	Kochhar	********NEENAKOCHHAR	
-Lex	De Haan	**********LEXDE HAAN	
-Alexander	Hunold	*****ALEXANDERHUNOLD	
-Bruce	Ernst	**********BRUCEERNST	
-David	Austin	*********DAVIDAUSTIN	
-Valli	Pataballa	******VALLIPATABALLA	
-Diana	Lorentz	********DIANALORENTZ	
-Nancy	Greenberg	******NANCYGREENBERG	
-Daniel	Faviet	********DANIELFAVIET	
-John	Chen	************JOHNCHEN	
-Ismael	Sciarra	*******ISMAELSCIARRA	
-Jose Manuel	Urman	****JOSE MANUELURMAN
+first_name  last_name   Concat first name and last name upper case must be 20 characters fill rest with * on left   
+Steven  King    **********STEVENKING    
+Neena   Kochhar ********NEENAKOCHHAR    
+Lex De Haan **********LEXDE HAAN    
+Alexander   Hunold  *****ALEXANDERHUNOLD    
+Bruce   Ernst   **********BRUCEERNST    
+David   Austin  *********DAVIDAUSTIN    
+Valli   Pataballa   ******VALLIPATABALLA    
+Diana   Lorentz ********DIANALORENTZ    
+Nancy   Greenberg   ******NANCYGREENBERG    
+Daniel  Faviet  ********DANIELFAVIET    
+John    Chen    ************JOHNCHEN    
+Ismael  Sciarra *******ISMAELSCIARRA    
+Jose Manuel Urman   ****JOSE MANUELURMAN
 ...
 */
 select first_name, last_name, concat(first_name, ' ', last_name), replace(concat(first_name, ' ', last_name),' ','!')
 from employees;
 /*
-first_name	last_name	concat(first_name, ' ', last_name)	replace(concat(first_name, ' ', last_name),' ','!')	
-Steven	King	Steven King	Steven!King	
-Neena	Kochhar	Neena Kochhar	Neena!Kochhar	
-Lex	De Haan	Lex De Haan	Lex!De!Haan	
-Alexander	Hunold	Alexander Hunold	Alexander!Hunold	
-Bruce	Ernst	Bruce Ernst	Bruce!Ernst	
-David	Austin	David Austin	David!Austin	
-Valli	Pataballa	Valli Pataballa	Valli!Pataballa	
-Diana	Lorentz	Diana Lorentz	Diana!Lorentz	
-Nancy	Greenberg	Nancy Greenberg	Nancy!Greenberg	
-Daniel	Faviet	Daniel Faviet	Daniel!Faviet	
-John	Chen	John Chen	John!Chen	
-Ismael	Sciarra	Ismael Sciarra	Ismael!Sciarra	
-Jose Manuel	Urman	Jose Manuel Urman	Jose!Manuel!Urman	
+first_name  last_name   concat(first_name, ' ', last_name)  replace(concat(first_name, ' ', last_name),' ','!') 
+Steven  King    Steven King Steven!King 
+Neena   Kochhar Neena Kochhar   Neena!Kochhar   
+Lex De Haan Lex De Haan Lex!De!Haan 
+Alexander   Hunold  Alexander Hunold    Alexander!Hunold    
+Bruce   Ernst   Bruce Ernst Bruce!Ernst 
+David   Austin  David Austin    David!Austin    
+Valli   Pataballa   Valli Pataballa Valli!Pataballa 
+Diana   Lorentz Diana Lorentz   Diana!Lorentz   
+Nancy   Greenberg   Nancy Greenberg Nancy!Greenberg 
+Daniel  Faviet  Daniel Faviet   Daniel!Faviet   
+John    Chen    John Chen   John!Chen   
+Ismael  Sciarra Ismael Sciarra  Ismael!Sciarra  
+Jose Manuel Urman   Jose Manuel Urman   Jose!Manuel!Urman   
 ...
 */
 
@@ -408,40 +408,40 @@ select first_name, last_name, job_id, salary, hire_date, case job_id when 'ST_MA
 from employees
 where job_id in ('ST_MAN','SH_MAN','SA_MAN');
 /*
-first_name	last_name	job_id	salary	hire_date	Update Salary name case column	
-Matthew	Weiss	ST_MAN	8000	2004-07-18	9600.0	
-Adam	Fripp	ST_MAN	8200	2005-04-10	9840.0	
-Payam	Kaufling	ST_MAN	7900	2003-05-01	9480.0	
-Shanta	Vollman	ST_MAN	6500	2005-10-10	7800.0	
-Kevin	Mourgos	ST_MAN	5800	2007-11-16	6960.0	
-John	Russell	SA_MAN	14000	2004-10-01	19600.0	
-Karen	Partners	SA_MAN	13500	2005-01-05	18900.0	
-Alberto	Errazuriz	SA_MAN	12000	2005-03-10	16800.0	
-Gerald	Cambrault	SA_MAN	11000	2007-10-15	15400.0	
-Eleni	Zlotkey	SA_MAN	10500	2008-01-29	14700.0	
+first_name  last_name   job_id  salary  hire_date   Update Salary name case column  
+Matthew Weiss   ST_MAN  8000    2004-07-18  9600.0  
+Adam    Fripp   ST_MAN  8200    2005-04-10  9840.0  
+Payam   Kaufling    ST_MAN  7900    2003-05-01  9480.0  
+Shanta  Vollman ST_MAN  6500    2005-10-10  7800.0  
+Kevin   Mourgos ST_MAN  5800    2007-11-16  6960.0  
+John    Russell SA_MAN  14000   2004-10-01  19600.0 
+Karen   Partners    SA_MAN  13500   2005-01-05  18900.0 
+Alberto Errazuriz   SA_MAN  12000   2005-03-10  16800.0 
+Gerald  Cambrault   SA_MAN  11000   2007-10-15  15400.0 
+Eleni   Zlotkey SA_MAN  10500   2008-01-29  14700.0 
 */
 select first_name, last_name, job_id, salary as "return rows where clause equals one IT_PROG and SA_MAN"
 from employees
 where (case
-	when job_id = 'IT_PROG' and salary > 5000 then 1
-	when job_id = 'SA_MAN' and salary > 10000 then 1
-	else 0 end) = 1;
+    when job_id = 'IT_PROG' and salary > 5000 then 1
+    when job_id = 'SA_MAN' and salary > 10000 then 1
+    else 0 end) = 1;
 /*
-first_name	last_name	job_id	return rows where clause equals one IT_PROG and SA_MAN	
-Alexander	Hunold	IT_PROG	9000	
-Bruce	Ernst	IT_PROG	6000	
-John	Russell	SA_MAN	14000	
-Karen	Partners	SA_MAN	13500	
-Alberto	Errazuriz	SA_MAN	12000	
-Gerald	Cambrault	SA_MAN	11000	
-Eleni	Zlotkey	SA_MAN	10500	
+first_name  last_name   job_id  return rows where clause equals one IT_PROG and SA_MAN  
+Alexander   Hunold  IT_PROG 9000    
+Bruce   Ernst   IT_PROG 6000    
+John    Russell SA_MAN  14000   
+Karen   Partners    SA_MAN  13500   
+Alberto Errazuriz   SA_MAN  12000   
+Gerald  Cambrault   SA_MAN  11000   
+Eleni   Zlotkey SA_MAN  10500   
 */
 select first_name, last_name, job_id, salary, hire_date, decode(job_id, 'ST_MAN', salary*1.2, 'SH_MAN', salary*1.3, 'SA_MAN', 1.4*salary) as "Update salary name decode column"
 from employees
 where job_id in ('ST_MAN','SH_MAN','SA_MAN');  #decode is Oracle specific
 
 #[ORACLE DATABASE TUTORIALS] LECTURE 40 GROUP FUNCTIONS - YouTube [720p]
-#avg, count, max, min, sum	Group function types.  Null values ignored by default.
+#avg, count, max, min, sum  Group function types.  Null values ignored by default.
 
 #[ORACLE DATABASE TUTORIALS] LECTURE 41 AVG FUNCTION - YouTube [720p]
 select avg(salary), avg(all salary) as "All salaries", avg(distinct salary) as "Distinct salaries"
@@ -472,7 +472,7 @@ select max(salary), max(hire_date), max(first_name)
 from employees;
 /*
 max(salary) max(hire_date) max(first_name)
-24000	2008-04-21	Winston	
+24000   2008-04-21  Winston 
 */
 
 #[ORACLE DATABASE TUTORIALS] LECTURE 44 MIN FUNCTION - YouTube [720p]
@@ -681,30 +681,30 @@ and e.job_id = js.job_id; #for my phpMyAdmin, there was cartesian cross join.  I
 select employee_id, first_name, last_name, manager_id
 from employees;
 /*
-employee_id	first_name	last_name	manager_id	
-100	Steven	King	    NULL	
-101	Neena	Kochhar	100	
-102	Lex	De Haan	100	
-103	Alexander	Hunold	102	
-104	Bruce	Ernst	103	
-105	David	Austin	103	
-106	Valli	Pataballa	103	
-107	Diana	Lorentz	103	
-108	Nancy	Greenberg	101	
+employee_id first_name  last_name   manager_id  
+100 Steven  King        NULL    
+101 Neena   Kochhar 100 
+102 Lex De Haan 100 
+103 Alexander   Hunold  102 
+104 Bruce   Ernst   103 
+105 David   Austin  103 
+106 Valli   Pataballa   103 
+107 Diana   Lorentz 103 
+108 Nancy   Greenberg   101 
 */
 select e.employee_id, e.first_name, e.last_name, e.manager_id, m.first_name as "Manager First Name", m.last_name as "Manager Last Name"
 from employees e join employees m
 on m.employee_id = e.manager_id;
 /*
-employee_id	first_name	last_name	manager_id	Manager First Name	Manager Last Name	
-101	Neena	Kochhar	100	Steven	King	
-102	Lex	De Haan	100	Steven	King	
-103	Alexander	Hunold	102	Lex	De Haan	
-104	Bruce	Ernst	103	Alexander	Hunold	
-105	David	Austin	103	Alexander	Hunold	
-106	Valli	Pataballa	103	Alexander	Hunold	
-107	Diana	Lorentz	103	Alexander	Hunold	
-108	Nancy	Greenberg	101	Neena	Kochhar	
+employee_id first_name  last_name   manager_id  Manager First Name  Manager Last Name   
+101 Neena   Kochhar 100 Steven  King    
+102 Lex De Haan 100 Steven  King    
+103 Alexander   Hunold  102 Lex De Haan 
+104 Bruce   Ernst   103 Alexander   Hunold  
+105 David   Austin  103 Alexander   Hunold  
+106 Valli   Pataballa   103 Alexander   Hunold  
+107 Diana   Lorentz 103 Alexander   Hunold  
+108 Nancy   Greenberg   101 Neena   Kochhar 
 */
 
 #[ORACLE DATABASE TUTORIALS] LECTURE 59 OUTER JOINS - YouTube [720p]
@@ -778,9 +778,9 @@ where employee_id = 201; #return 13000
 select *
 from employees
 where salary > (
-	select salary
-	from employees
-	where employee_id = 201);
+    select salary
+    from employees
+    where employee_id = 201);
 
 #[ORACLE DATABASE TUTORIALS] LECTURE 65 SINGLE ROW SUBQUERIES - YouTube [720p]
 select department_id
@@ -789,24 +789,24 @@ where employee_id = 201; #return 20
 select *
 from employees
 where department_id = (
-	select department_id
-	from employees
-	where employee_id = 201);
+    select department_id
+    from employees
+    where employee_id = 201);
 select *
 from employees
 where department_id = (
-	select department_id
-	from employees
-	where employee_id = 201)
+    select department_id
+    from employees
+    where employee_id = 201)
 and salary > (
-	select salary
-	from employees
-	where employee_id = 201);
+    select salary
+    from employees
+    where employee_id = 201);
 select *
 from employees
 where hire_date = (
-	select min(hire_date)
-	from employees);
+    select min(hire_date)
+    from employees);
 
 #[ORACLE DATABASE TUTORIALS] LECTURE 66 MULTIPLE ROW SUBQUERIES - YouTube [720p]
 select first_name, last_name, department_id, salary
@@ -815,167 +815,167 @@ where salary in (14000, 15000, 10000);
 select first_name, last_name, department_id, salary as "Salaries are the minimums in departments"
 from employees
 where salary in (
-	select min(salary)
-	from employees
-	group by department_id);
+    select min(salary)
+    from employees
+    group by department_id);
 /*
-first_name	last_name	department_id	Salaries are the minimums in departments	
-Neena	Kochhar	90	17000	
-Lex	De Haan	90	17000	
-Bruce	Ernst	60	6000	
-Diana	Lorentz	60	4200	
-Luis	Popp	100	6900	
-Karen	Colmenares	30	2500	
-Shanta	Vollman	50	6500	
-James	Marlow	50	2500	
-TJ	Olson	50	2100	
-Joshua	Patel	50	2500	
-Peter	Vargas	50	2500	
-Peter	Tucker	80	10000	
-Oliver	Tuvault	80	7000	
-Janette	King	80	10000	
-Sarath	Sewall	80	7000	
-Harrison	Bloom	80	10000	
-Sundita	Kumar	80	6100	
-Kimberely	Grant	0	7000	
-Martha	Sullivan	50	2500	
-Nandita	Sarchand	50	4200	
-Randall	Perkins	50	2500	
-Jennifer	Whalen	10	4400	
-Pat	Fay	20	6000	
-Susan	Mavris	40	6500	
-Hermann	Baer	70	10000	
+first_name  last_name   department_id   Salaries are the minimums in departments    
+Neena   Kochhar 90  17000   
+Lex De Haan 90  17000   
+Bruce   Ernst   60  6000    
+Diana   Lorentz 60  4200    
+Luis    Popp    100 6900    
+Karen   Colmenares  30  2500    
+Shanta  Vollman 50  6500    
+James   Marlow  50  2500    
+TJ  Olson   50  2100    
+Joshua  Patel   50  2500    
+Peter   Vargas  50  2500    
+Peter   Tucker  80  10000   
+Oliver  Tuvault 80  7000    
+Janette King    80  10000   
+Sarath  Sewall  80  7000    
+Harrison    Bloom   80  10000   
+Sundita Kumar   80  6100    
+Kimberely   Grant   0   7000    
+Martha  Sullivan    50  2500    
+Nandita Sarchand    50  4200    
+Randall Perkins 50  2500    
+Jennifer    Whalen  10  4400    
+Pat Fay 20  6000    
+Susan   Mavris  40  6500    
+Hermann Baer    70  10000   
 */
 select salary
 from employees
 where job_id = 'SA_MAN';
 /*
-salary	
-14000	
-13500	
-12000	
-11000	
-10500	
+salary  
+14000   
+13500   
+12000   
+11000   
+10500   
 */
 select first_name, last_name, department_id, salary as "Salaries are greater than the minimum in SA_MAN"
 from employees
 where salary > any (
-	select salary
-	from employees
-	where job_id = 'SA_MAN');
+    select salary
+    from employees
+    where job_id = 'SA_MAN');
 /*
-first_name	last_name	department_id	Salaries are greater than the minimum in SA_MAN	 
-Steven	King	90	24000	
-Neena	Kochhar	90	17000	
-Lex	De Haan	90	17000	
-Nancy	Greenberg	100	12008	
-Den	Raphaely	30	11000	
-John	Russell	80	14000	
-Karen	Partners	80	13500	
-Alberto	Errazuriz	80	12000	
-Gerald	Cambrault	80	11000	
-Lisa	Ozer	80	11500	
-Ellen	Abel	80	11000	
-Michael	Hartstein	20	13000	
-Shelley	Higgins	110	12008	
+first_name  last_name   department_id   Salaries are greater than the minimum in SA_MAN  
+Steven  King    90  24000   
+Neena   Kochhar 90  17000   
+Lex De Haan 90  17000   
+Nancy   Greenberg   100 12008   
+Den Raphaely    30  11000   
+John    Russell 80  14000   
+Karen   Partners    80  13500   
+Alberto Errazuriz   80  12000   
+Gerald  Cambrault   80  11000   
+Lisa    Ozer    80  11500   
+Ellen   Abel    80  11000   
+Michael Hartstein   20  13000   
+Shelley Higgins 110 12008   
 */
 select first_name, last_name, department_id, salary as "Salaries are equal to any in SA_MAN"
 from employees
 where salary = any (
-	select salary
-	from employees
-	where job_id = 'SA_MAN');
+    select salary
+    from employees
+    where job_id = 'SA_MAN');
 /*
-first_name	last_name	department_id	Salaries are equal to any in SA_MAN	
-Den	Raphaely	30	11000	
-John	Russell	80	14000	
-Karen	Partners	80	13500	
-Alberto	Errazuriz	80	12000	
-Gerald	Cambrault	80	11000	
-Eleni	Zlotkey	80	10500	
-Clara	Vishney	80	10500	
-Ellen	Abel	80	11000	
+first_name  last_name   department_id   Salaries are equal to any in SA_MAN 
+Den Raphaely    30  11000   
+John    Russell 80  14000   
+Karen   Partners    80  13500   
+Alberto Errazuriz   80  12000   
+Gerald  Cambrault   80  11000   
+Eleni   Zlotkey 80  10500   
+Clara   Vishney 80  10500   
+Ellen   Abel    80  11000   
 */
 select first_name, last_name, department_id, salary as "Salaries are less than the maximum SA_MAN"
 from employees
 where salary < any (
-	select salary
-	from employees
-	where job_id = 'SA_MAN');
+    select salary
+    from employees
+    where job_id = 'SA_MAN');
 /*
-first_name	last_name	department_id	Salaries are less than the maximum SA_MAN 	
-Alexander	Hunold	60	9000	
-Bruce	Ernst	60	6000	
-David	Austin	60	4800	
-Valli	Pataballa	60	4800	
-Diana	Lorentz	60	4200	
-Nancy	Greenberg	100	12008	
-Daniel	Faviet	100	9000	
-John	Chen	100	8200	
-Ismael	Sciarra	100	7700	
-Jose Manuel	Urman	100	7800	
-Luis	Popp	100	6900	
-Den	Raphaely	30	11000	
-Alexander	Khoo	30	3100	
-Shelli	Baida	30	2900	
-Sigal	Tobias	30	2800	
-Guy	Himuro	30	2600	
-Karen	Colmenares	30	2500	
-Matthew	Weiss	50	8000	
-Adam	Fripp	50	8200	
-Payam	Kaufling	50	7900	
-Shanta	Vollman	50	6500	
-Kevin	Mourgos	50	5800	
-Julia	Nayer	50	3200	
-Irene	Mikkilineni	50	2700	
-James	Landry	50	2400	
+first_name  last_name   department_id   Salaries are less than the maximum SA_MAN   
+Alexander   Hunold  60  9000    
+Bruce   Ernst   60  6000    
+David   Austin  60  4800    
+Valli   Pataballa   60  4800    
+Diana   Lorentz 60  4200    
+Nancy   Greenberg   100 12008   
+Daniel  Faviet  100 9000    
+John    Chen    100 8200    
+Ismael  Sciarra 100 7700    
+Jose Manuel Urman   100 7800    
+Luis    Popp    100 6900    
+Den Raphaely    30  11000   
+Alexander   Khoo    30  3100    
+Shelli  Baida   30  2900    
+Sigal   Tobias  30  2800    
+Guy Himuro  30  2600    
+Karen   Colmenares  30  2500    
+Matthew Weiss   50  8000    
+Adam    Fripp   50  8200    
+Payam   Kaufling    50  7900    
+Shanta  Vollman 50  6500    
+Kevin   Mourgos 50  5800    
+Julia   Nayer   50  3200    
+Irene   Mikkilineni 50  2700    
+James   Landry  50  2400    
 ...
 */
 select first_name, last_name, department_id, salary as "Salaries are greater than the maximum in SA_MAN"
 from employees
 where salary > all (
-	select salary
-	from employees
-	where job_id = 'SA_MAN');
+    select salary
+    from employees
+    where job_id = 'SA_MAN');
 /*
-first_name	last_name	department_id	Salaries are greater than the maximum in SA_MAN	
-Steven	King	90	24000	
-Neena	Kochhar	90	17000	
-Lex	De Haan	90	17000	
+first_name  last_name   department_id   Salaries are greater than the maximum in SA_MAN 
+Steven  King    90  24000   
+Neena   Kochhar 90  17000   
+Lex De Haan 90  17000   
 */
 select first_name, last_name, department_id, salary as "Salaries are less than the minimum in SA_MAN"
 from employees
 where salary < all (
-	select salary
-	from employees
-	where job_id = 'SA_MAN');
+    select salary
+    from employees
+    where job_id = 'SA_MAN');
 /*
-first_name	last_name	department_id	Salaries are less than the maximum in SA_MAN	
-Alexander	Hunold	60	9000	
-Bruce	Ernst	60	6000	
-David	Austin	60	4800	
-Valli	Pataballa	60	4800	
-Diana	Lorentz	60	4200	
-Daniel	Faviet	100	9000	
-John	Chen	100	8200	
-Ismael	Sciarra	100	7700	
-Jose Manuel	Urman	100	7800	
-Luis	Popp	100	6900	
-Alexander	Khoo	30	3100	
-Shelli	Baida	30	2900	
-Sigal	Tobias	30	2800	
-Guy	Himuro	30	2600	
-Karen	Colmenares	30	2500	
-Matthew	Weiss	50	8000	
-Adam	Fripp	50	8200	
-Payam	Kaufling	50	7900	
-Shanta	Vollman	50	6500	
-Kevin	Mourgos	50	5800	
-Julia	Nayer	50	3200	
-Irene	Mikkilineni	50	2700	
-James	Landry	50	2400	
-Steven	Markle	50	2200	
-Laura	Bissot	50	3300	
+first_name  last_name   department_id   Salaries are less than the maximum in SA_MAN    
+Alexander   Hunold  60  9000    
+Bruce   Ernst   60  6000    
+David   Austin  60  4800    
+Valli   Pataballa   60  4800    
+Diana   Lorentz 60  4200    
+Daniel  Faviet  100 9000    
+John    Chen    100 8200    
+Ismael  Sciarra 100 7700    
+Jose Manuel Urman   100 7800    
+Luis    Popp    100 6900    
+Alexander   Khoo    30  3100    
+Shelli  Baida   30  2900    
+Sigal   Tobias  30  2800    
+Guy Himuro  30  2600    
+Karen   Colmenares  30  2500    
+Matthew Weiss   50  8000    
+Adam    Fripp   50  8200    
+Payam   Kaufling    50  7900    
+Shanta  Vollman 50  6500    
+Kevin   Mourgos 50  5800    
+Julia   Nayer   50  3200    
+Irene   Mikkilineni 50  2700    
+James   Landry  50  2400    
+Steven  Markle  50  2200    
+Laura   Bissot  50  3300    
 ...
 */
 
@@ -1001,85 +1001,85 @@ min(salary)
 select first_name, last_name, department_id, salary
 from employees
 where salary in (
-	select min(salary)
-	from employees
-	group by department_id);  #incorrectly get the employees who earn the minimmum salaries in all departments.  Actually getting employees earning salaries in the subquery.
+    select min(salary)
+    from employees
+    group by department_id);  #incorrectly get the employees who earn the minimmum salaries in all departments.  Actually getting employees earning salaries in the subquery.
 /*
 return 26 rows
-first_name	last_name	department_id	salary	
-Neena	Kochhar	90	17000	
-Lex	De Haan	90	17000	
-Bruce	Ernst	60	6000	
-Diana	Lorentz	60	4200	
-Luis	Popp	100	6900	
-Karen	Colmenares	30	2500	
-Shanta	Vollman	50	6500	
-James	Marlow	50	2500	
-TJ	Olson	50	2100	
-Joshua	Patel	50	2500	
-Peter	Vargas	50	2500	
-Peter	Tucker	80	10000	
-Oliver	Tuvault	80	7000	
-Janette	King	80	10000	
-Sarath	Sewall	80	7000	
-Harrison	Bloom	80	10000	
-Sundita	Kumar	80	6100	
-Kimberely	Grant	0	7000	
-Martha	Sullivan	50	2500	
-Nandita	Sarchand	50	4200	
-Randall	Perkins	50	2500	
-Jennifer	Whalen	10	4400	
-Pat	Fay	20	6000	
-Susan	Mavris	40	6500	
-Hermann	Baer	70	10000	
+first_name  last_name   department_id   salary  
+Neena   Kochhar 90  17000   
+Lex De Haan 90  17000   
+Bruce   Ernst   60  6000    
+Diana   Lorentz 60  4200    
+Luis    Popp    100 6900    
+Karen   Colmenares  30  2500    
+Shanta  Vollman 50  6500    
+James   Marlow  50  2500    
+TJ  Olson   50  2100    
+Joshua  Patel   50  2500    
+Peter   Vargas  50  2500    
+Peter   Tucker  80  10000   
+Oliver  Tuvault 80  7000    
+Janette King    80  10000   
+Sarath  Sewall  80  7000    
+Harrison    Bloom   80  10000   
+Sundita Kumar   80  6100    
+Kimberely   Grant   0   7000    
+Martha  Sullivan    50  2500    
+Nandita Sarchand    50  4200    
+Randall Perkins 50  2500    
+Jennifer    Whalen  10  4400    
+Pat Fay 20  6000    
+Susan   Mavris  40  6500    
+Hermann Baer    70  10000   
 */
 select department_id, min(salary)
 from employees
 group by department_id;
 /*
-department_id	min(salary)	
-0	7000	
-10	4400	
-20	6000	
-30	2500	
-40	6500	
-50	2100	
-60	4200	
-70	10000	
-80	6100	
-90	17000	
-100	6900	
-110	8300	
+department_id   min(salary) 
+0   7000    
+10  4400    
+20  6000    
+30  2500    
+40  6500    
+50  2100    
+60  4200    
+70  10000   
+80  6100    
+90  17000   
+100 6900    
+110 8300    
 */
 select first_name, last_name, department_id, salary
 from employees
 where (department_id, salary) in (
-	select department_id, min(salary)
-	from employees
-	group by department_id);  #correctly get employees earning salaries in the subquery.
+    select department_id, min(salary)
+    from employees
+    group by department_id);  #correctly get employees earning salaries in the subquery.
 /*
-first_name	last_name	department_id	salary	
-Neena	Kochhar	90	17000	
-Lex	De Haan	90	17000	
-Diana	Lorentz	60	4200	
-Luis	Popp	100	6900	
-Karen	Colmenares	30	2500	
-TJ	Olson	50	2100	
-Sundita	Kumar	80	6100	
-Kimberely	Grant	0	7000	
-Jennifer	Whalen	10	4400	
-Pat	Fay	20	6000	
-Susan	Mavris	40	6500	
-Hermann	Baer	70	10000	
-William	Gietz	110	8300	
+first_name  last_name   department_id   salary  
+Neena   Kochhar 90  17000   
+Lex De Haan 90  17000   
+Diana   Lorentz 60  4200    
+Luis    Popp    100 6900    
+Karen   Colmenares  30  2500    
+TJ  Olson   50  2100    
+Sundita Kumar   80  6100    
+Kimberely   Grant   0   7000    
+Jennifer    Whalen  10  4400    
+Pat Fay 20  6000    
+Susan   Mavris  40  6500    
+Hermann Baer    70  10000   
+William Gietz   110 8300    
 */
 
 select first_name, last_name, job_id, salary as "Employee highest salary in each job_id"
 from employees
 where (salary, job_id) in (
-	select max(salary), job_id
-	from employees
-	group by job_id)
+    select max(salary), job_id
+    from employees
+    group by job_id)
 order by salary desc;
 
 #[ORACLE DATABASE TUTORIALS] LECTURE 68 SET OPERATORS - YouTube [720p]
@@ -1105,23 +1105,23 @@ select first_name, last_name, salary
 from employees
 order by first_name;
 /*
-first_name   	Last name top query first query priority	salary	
-Adam	Fripp	8200	
-Alana	Walsh	3100	
-Alberto	Errazuriz	12000	
-Alexander	Hunold	9000	
-Alexander	Khoo	3100	
-Alexis	Bull	4100	
-Allan	McEwen	9000	
-Alyssa	Hutton	8800	
-Amit	Banda	6200	
-Anthony	Cabrio	3000	
-Britney	Everett	3900	
-Bruce	Ernst	6000	
-Charles	Johnson	6200	
-Christopher	Olsen	8000	
+first_name      Last name top query first query priority    salary  
+Adam    Fripp   8200    
+Alana   Walsh   3100    
+Alberto Errazuriz   12000   
+Alexander   Hunold  9000    
+Alexander   Khoo    3100    
+Alexis  Bull    4100    
+Allan   McEwen  9000    
+Alyssa  Hutton  8800    
+Amit    Banda   6200    
+Anthony Cabrio  3000    
+Britney Everett 3900    
+Bruce   Ernst   6000    
+Charles Johnson 6200    
+Christopher Olsen   8000    
 ...
-*/	
+*/  
 select first_name, last_name as "UNION ALL includes duplicate rows", salary
 from retired_employees
 union all
@@ -1129,32 +1129,32 @@ select first_name, last_name, salary
 from employees
 order by first_name;
 /*
-first_name   	Last name top query first query priority	salary	Duplicate rows Alexander Hunold and Bruce Ernst and David Austin
-Adam	Fripp	8200	
-Alana	Walsh	3100	
-Alberto	Errazuriz	12000	
-Alexander	Hunold	9000	
-Alexander	Khoo	3100	
-Alexander	Hunold	9000	
-Alexis	Bull	4100	
-Allan	McEwen	9000	
-Alyssa	Hutton	8800	
-Amit	Banda	6200	
-Anthony	Cabrio	3000	
-Britney	Everett	3900	
-Bruce	Ernst	6000	
-Bruce	Ernst	6000	
-Charles	Johnson	6200	
-Christopher	Olsen	8000	
-Clara	Vishney	10500	
-Curtis	Davies	3100	
-Daniel	Faviet	9000	
-Danielle	Greene	9500	
-David	Lee	6800	
-David	Austin	4800	
-David	Bernstein	9500	
-David	Austin	4800	
-Den	Raphaely	11000	
+first_name      Last name top query first query priority    salary  Duplicate rows Alexander Hunold and Bruce Ernst and David Austin
+Adam    Fripp   8200    
+Alana   Walsh   3100    
+Alberto Errazuriz   12000   
+Alexander   Hunold  9000    
+Alexander   Khoo    3100    
+Alexander   Hunold  9000    
+Alexis  Bull    4100    
+Allan   McEwen  9000    
+Alyssa  Hutton  8800    
+Amit    Banda   6200    
+Anthony Cabrio  3000    
+Britney Everett 3900    
+Bruce   Ernst   6000    
+Bruce   Ernst   6000    
+Charles Johnson 6200    
+Christopher Olsen   8000    
+Clara   Vishney 10500   
+Curtis  Davies  3100    
+Daniel  Faviet  9000    
+Danielle    Greene  9500    
+David   Lee 6800    
+David   Austin  4800    
+David   Bernstein   9500    
+David   Austin  4800    
+Den Raphaely    11000   
 */
 select first_name, last_name, salary
 from retired_employees
@@ -1170,8 +1170,8 @@ using (employee_id);  #paranthesis is required
 select distinct employee_id, first_name, last_name, salary
 from retired_employees
 where employee_id in (
-	select employee_id
-	from employees);
+    select employee_id
+    from employees);
 
 #[ORACLE DATABASE TUTORIALS] LECTURE 69 UNION AND UNION AILL OPERATORS - YouTube [720p]
 select first_name, last_name as "union eliminates duplicate rows", salary
@@ -1182,13 +1182,13 @@ from employees
 where job_id = "ID_PROG"
 order by first_name;
 /*
-first_name   	union eliminates duplicate rows	salary	
-Alexander	Hunold	9000	
-Bruce	Ernst	6000	
-David	Austin	4800	
-Diana	Lorentz	4200	
-Omer	Dagasan	10000	
-Valli	Pataballa	4800	
+first_name      union eliminates duplicate rows salary  
+Alexander   Hunold  9000    
+Bruce   Ernst   6000    
+David   Austin  4800    
+Diana   Lorentz 4200    
+Omer    Dagasan 10000   
+Valli   Pataballa   4800    
 */
 select first_name, last_name as "union all includes duplicate rows", email, salary, job_id
 from retired_employees
@@ -1197,32 +1197,32 @@ select first_name, last_name, email, salary, job_id
 from employees
 order by job_id, first_name;
 /*
-first_name   	union all includes duplicate rows	email	salary	job_id   Duplicates Alexander Hunold, Bruce Ernst, David Austin, Diana Lorentz, Valli Pataballa; not duplicate Omer Dagasan	
-William	Gietz	WGIETZ	8300	AC_ACCOUNT	
-Shelley	Higgins	SHIGGINS	12008	AC_MGR	
-Jennifer	Whalen	JWHALEN	4400	AD_ASST	
-Steven	King	SKING	24000	AD_PRES	
-Lex	De Haan	LDEHAAN	17000	AD_VP	
-Neena	Kochhar	NKOCHHAR	17000	AD_VP	
-Daniel	Faviet	DFAVIET	9000	FI_ACCOUNT	
-Ismael	Sciarra	ISCIARRA	7700	FI_ACCOUNT	
-John	Chen	JCHEN	8200	FI_ACCOUNT	
-Jose Manuel	Urman	JMURMAN	7800	FI_ACCOUNT	
-Luis	Popp	LPOPP	6900	FI_ACCOUNT	
-Nancy	Greenberg	NGREENBE	12008	FI_MGR	
-Susan	Mavris	SMAVRIS	6500	HR_REP	
-Alexander	Hunold	AHUNOLD	9000	IT_PROG	
-Alexander	Hunold	AHUNOLD	9000	IT_PROG	
-Bruce	Ernst	BERNST	6000	IT_PROG	
-Bruce	Ernst	BERNST	6000	IT_PROG	
-David	Austin	DAUSTIN	4800	IT_PROG	
-David	Austin	DAUSTIN	4800	IT_PROG	
-Diana	Lorentz	DLORENTZ	4200	IT_PROG	
-Diana	Lorentz	DLORENTZ	4200	IT_PROG	
-Omer	Dagasan	ODAGASAN	10000	IT_PROG	
-Valli	Pataballa	VPATABAL	4800	IT_PROG	
-Valli	Pataballa	VPATABAL	4800	IT_PROG	
-Michael	Hartstein	MHARTSTE	13000	MK_MAN		
+first_name      union all includes duplicate rows   email   salary  job_id   Duplicates Alexander Hunold, Bruce Ernst, David Austin, Diana Lorentz, Valli Pataballa; not duplicate Omer Dagasan 
+William Gietz   WGIETZ  8300    AC_ACCOUNT  
+Shelley Higgins SHIGGINS    12008   AC_MGR  
+Jennifer    Whalen  JWHALEN 4400    AD_ASST 
+Steven  King    SKING   24000   AD_PRES 
+Lex De Haan LDEHAAN 17000   AD_VP   
+Neena   Kochhar NKOCHHAR    17000   AD_VP   
+Daniel  Faviet  DFAVIET 9000    FI_ACCOUNT  
+Ismael  Sciarra ISCIARRA    7700    FI_ACCOUNT  
+John    Chen    JCHEN   8200    FI_ACCOUNT  
+Jose Manuel Urman   JMURMAN 7800    FI_ACCOUNT  
+Luis    Popp    LPOPP   6900    FI_ACCOUNT  
+Nancy   Greenberg   NGREENBE    12008   FI_MGR  
+Susan   Mavris  SMAVRIS 6500    HR_REP  
+Alexander   Hunold  AHUNOLD 9000    IT_PROG 
+Alexander   Hunold  AHUNOLD 9000    IT_PROG 
+Bruce   Ernst   BERNST  6000    IT_PROG 
+Bruce   Ernst   BERNST  6000    IT_PROG 
+David   Austin  DAUSTIN 4800    IT_PROG 
+David   Austin  DAUSTIN 4800    IT_PROG 
+Diana   Lorentz DLORENTZ    4200    IT_PROG 
+Diana   Lorentz DLORENTZ    4200    IT_PROG 
+Omer    Dagasan ODAGASAN    10000   IT_PROG 
+Valli   Pataballa   VPATABAL    4800    IT_PROG 
+Valli   Pataballa   VPATABAL    4800    IT_PROG 
+Michael Hartstein   MHARTSTE    13000   MK_MAN      
 */
 
 #[ORACLE DATABASE TUTORIALS] LECTURE 70 INTERESCT OPERATOR - YouTube [720p]
@@ -1235,22 +1235,22 @@ order by first_name, job_id;
 select first_name, last_name as "no intersect in MYSQL", email, salary, job_id
 from retired_employees
 where employee_id in (
-	select employee_id
-	from employees)
+    select employee_id
+    from employees)
 order by first_name;
 /*
-first_name   	no intersect in MYSQL	email	salary	job_id	
-Alexander	Hunold	AHUNOLD	9000	IT_PROG	
-Bruce	Ernst	BERNST	6000	IT_PROG	
-David	Austin	DAUSTIN	4800	IT_PROG	
-Diana	Lorentz	DLORENTZ	4200	IT_PROG	
-Valli	Pataballa	VPATABAL	4800	IT_PROG	
+first_name      no intersect in MYSQL   email   salary  job_id  
+Alexander   Hunold  AHUNOLD 9000    IT_PROG 
+Bruce   Ernst   BERNST  6000    IT_PROG 
+David   Austin  DAUSTIN 4800    IT_PROG 
+Diana   Lorentz DLORENTZ    4200    IT_PROG 
+Valli   Pataballa   VPATABAL    4800    IT_PROG 
 */
 select distinct employee_id, first_name, last_name as "include distinct no intersect in MYSQL", email, salary, job_id
 from retired_employees
 where employee_id in (
-	select employee_id
-	from employees)
+    select employee_id
+    from employees)
 order by first_name;
 
 #[ORACLE DATABASE TUTORIALS] LECTURE 71 MINUS OPERATOR - YouTube [720p]
@@ -1265,22 +1265,22 @@ select e.employee_id as "e", r.employee_id as "r", r.first_name, r.last_name as 
 from retired_employees r left join employees e
 on r.employee_id = e.employee_id;
 /*
-e	r	first_name	MYSQL left join return rows in first query and not in second query	email	salary	job_id	
-103	103	Alexander	Hunold	AHUNOLD	9000	IT_PROG	
-104	104	Bruce	Ernst	BERNST	6000	IT_PROG	
-105	105	David	Austin	DAUSTIN	4800	IT_PROG	
-106	106	Valli	Pataballa	VPATABAL	4800	IT_PROG	
-107	107	Diana	Lorentz	DLORENTZ	4200	IT_PROG	
+e   r   first_name  MYSQL left join return rows in first query and not in second query  email   salary  job_id  
+103 103 Alexander   Hunold  AHUNOLD 9000    IT_PROG 
+104 104 Bruce   Ernst   BERNST  6000    IT_PROG 
+105 105 David   Austin  DAUSTIN 4800    IT_PROG 
+106 106 Valli   Pataballa   VPATABAL    4800    IT_PROG 
+107 107 Diana   Lorentz DLORENTZ    4200    IT_PROG 
 
     NULL
-	207	Omer	Dagasan	ODAGASAN	10000	IT_PROG	
+    207 Omer    Dagasan ODAGASAN    10000   IT_PROG 
 */
 select r.first_name, r.last_name as "MYSQL left join return rows in first query and not in second query", r.email, r.salary, r.job_id
 from retired_employees r left join employees e
 on r.employee_id = e.employee_id
 where e.employee_id is null;
 /*
-Omer	Dagasan	ODAGASAN	10000	IT_PROG	
+Omer    Dagasan ODAGASAN    10000   IT_PROG 
 */
 #or
 select r.first_name, r.last_name as "MYSQL left join return rows in first query and not in second query", r.email, r.salary, r.job_id
@@ -1308,33 +1308,33 @@ select first_name, last_name, salary, department_id
 from retired_employees
 order by salary desc;
 /*
-first_name	last_name	salary   	order by clause sorts from first query; no query alias in order by	Focus attention on Omer Dagasan row.
-Steven	King	24000	90	
-Neena	Kochhar	17000	90	
-Lex	De Haan	17000	90	
-John	Russell	14000	80	
-Karen	Partners	13500	80	
-Michael	Hartstein	13000	20	
-Nancy	Greenberg	12008	100	
-Shelley	Higgins	12008	110	
-Alberto	Errazuriz	12000	80	
-Lisa	Ozer	11500	80	
-Den	Raphaely	11000	30	
-Ellen	Abel	11000	80	
-Gerald	Cambrault	11000	80	
-Eleni	Zlotkey	10500	80	
-Clara	Vishney	10500	80	
-Omer	Dagasan	10000	60	
-Peter	Tucker	10000	80	
-Janette	King	10000	80	
-Hermann	Baer	10000	70	
-Harrison	Bloom	10000	80	
-Tayler	Fox	9600	80	
-David	Bernstein	9500	80	
-Patrick	Sully	9500	80	
-Danielle	Greene	9500	80	
-Alexander	Hunold	9000	60	
-Alexander	Hunold	9000	60	
+first_name  last_name   salary      order by clause sorts from first query; no query alias in order by  Focus attention on Omer Dagasan row.
+Steven  King    24000   90  
+Neena   Kochhar 17000   90  
+Lex De Haan 17000   90  
+John    Russell 14000   80  
+Karen   Partners    13500   80  
+Michael Hartstein   13000   20  
+Nancy   Greenberg   12008   100 
+Shelley Higgins 12008   110 
+Alberto Errazuriz   12000   80  
+Lisa    Ozer    11500   80  
+Den Raphaely    11000   30  
+Ellen   Abel    11000   80  
+Gerald  Cambrault   11000   80  
+Eleni   Zlotkey 10500   80  
+Clara   Vishney 10500   80  
+Omer    Dagasan 10000   60  
+Peter   Tucker  10000   80  
+Janette King    10000   80  
+Hermann Baer    10000   70  
+Harrison    Bloom   10000   80  
+Tayler  Fox 9600    80  
+David   Bernstein   9500    80  
+Patrick Sully   9500    80  
+Danielle    Greene  9500    80  
+Alexander   Hunold  9000    60  
+Alexander   Hunold  9000    60  
 */
 select first_name, last_name, salary as "SALARYALIAS", department_id
 from employees
@@ -1386,7 +1386,7 @@ using (location_id);
 #[ORACLE DATABASE TUTORIALS] LECTURE 77 UPDATE STATEMENT - YouTube [720p]
 #copy table employees as employeescopy for the lesson
 create table employeescopy
-(employee_id integer not null primary key, first_name varchar(15), last_name varchar(20), email	varchar(20), phone_number varchar(20), hire_date date, job_id varchar(10), salary integer, commission_pct decimal(3,2),	manager_id integer, department_id integer);
+(employee_id integer not null primary key, first_name varchar(15), last_name varchar(20), email varchar(20), phone_number varchar(20), hire_date date, job_id varchar(10), salary integer, commission_pct decimal(3,2), manager_id integer, department_id integer);
 insert into employeescopy
 select * from employees;
 delete from employeescopy;  #delete all rows delete rows all
@@ -1400,18 +1400,18 @@ set salary = 5, department_id = null
 where job_id = 'IT_PROG'; #update IT_PROG salaries set all to 5 and department_id is null
 update employeescopy
 set (salary, commission_pct) = (
-	select max(salary), max(commission_pct)
-	from employees)
+    select max(salary), max(commission_pct)
+    from employees)
 where job_id = 'IT_PROG';  #RM:  phpMyAdmin error message
 update employeescopy
 set salary = (
-	select max(salary)
-	from employees)
+    select max(salary)
+    from employees)
 where job_id = 'IT_PROG';
 update employeescopy
 set commission_pct = (
-	select max(commission_pct)
-	from employees)
+    select max(commission_pct)
+    from employees)
 where job_id = 'IT_PROG';  #RM:  phpMyAdmin run two separate update SQL statements
 
 #[ORACLE DATABASE TUTORIALS] LECTURE 78 DELETE STATEMENT - YouTube [720p]
@@ -1421,9 +1421,9 @@ delete from employeescopy
 where job_id = 'IT_PROG'; #delete rows where job_id is IT_PROG
 delete from employeescopy
 where department_id in (
-	select department_id
-	from departments
-	where department_name like 'SA%');
+    select department_id
+    from departments
+    where department_name like 'SA%');
 
 #[ORACLE DATABASE TUTORIALS] LECTURE 79 TRANSACTION CONTROL STATEMENTS - YouTube [720p]
 /*
@@ -1470,28 +1470,28 @@ for update of first_name, last_name; #We can use for update of columnname to spe
 describe employees;
 /*
 Field Type Null Key Default Extra
-employee_id	int(11)	NO	PRI	    NULL
-		
-first_name	varchar(15)	YES	    NULL
-		
-last_name	varchar(20)	YES		    NULL
-		
-email	varchar(20)	YES		    NULL
-		
-phone_number	varchar(20)	YES		    NULL
-		
-hire_date	date	YES		    NULL
-		
-job_id	varchar(10)	YES		    NULL
-		
-salary	int(11)	YES		    NULL
-		
-commission_pct	decimal(3,2)	YES	
+employee_id int(11) NO  PRI     NULL
+        
+first_name  varchar(15) YES     NULL
+        
+last_name   varchar(20) YES         NULL
+        
+email   varchar(20) YES         NULL
+        
+phone_number    varchar(20) YES         NULL
+        
+hire_date   date    YES         NULL
+        
+job_id  varchar(10) YES         NULL
+        
+salary  int(11) YES         NULL
+        
+commission_pct  decimal(3,2)    YES 
     NULL
-		
-manager_id	int(11)	YES		    NULL
-		
-department_id	int(11)	YES		    NULL
+        
+manager_id  int(11) YES         NULL
+        
+department_id   int(11) YES         NULL
 */
 create table myemployees
 (employee_id number(3), first_name varchar2(50), last_name varchar2(50), hire_date date default sysdate); #sysdate invalid in phpMyAdmin.  MySQL use curdate() for today's date.  number invalid.  Use integer.  default doesn't work in MySQL.
@@ -1532,3 +1532,55 @@ alter table employeescopy
 drop column password; #if there is one column to delete, add keyword column
 alter table employeescopy
 drop (faxnumber, password);
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 87 DROP TABLE STATEMENT - YouTube [720p]
+drop table tablenametobedeleted;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 88 TRUNCATE TABLE STATEMENT - YouTube [720p]
+#Truncate deletes all rows and commits together.  Deletes removes each row one at a time.  Truncate is a DDL statement.  Drop any table privilege is required to truncate a table.
+truncate table employeescopy;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 89 COMMENT STATEMENT - YouTube [720p]
+comment on column tablename.columnname is 'comment inserted here';
+comment on column employees.job_id is 'comment inserted here';
+comment on table employees is 'comment inserted here';
+#We can't delete a comment.  Instead, add an empty comment.  comment on column tablename.tablecolumn is '';  <--empty string
+select *
+from user_tab_comments
+where table_name = 'tablename';  #view tablename's comments
+select *
+from user_col_comments
+where table_name = 'tablename';  #view tablename's column comments
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 90 RENAME STATEMENT - YouTube [720p]
+alter table employeescopyassubquery
+rename column first_name to firstname;
+
+rename oldtablename to newtablename;
+#or
+alter table oldtablename rename to newtablename;
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 91 CREATING CONSTAINTS - YouTube [720p]
+#We can add constraints creating a table or after creating a table.  Constraints can be column level or table level.  Table level constraints can be formed of more than one column.
+create table tablename
+(columnname number [constraint columnlevelconstraintname] constraint type, first_name varchar2(50), last_name varchar2(50), department_id number, [constraint tablelevelconstraintname] constrainttype (columnname1, . . .));
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 92 NOT NULL CONSTRAINT - YouTube [720p]
+insert into jobs
+values(null,'temp entry','10','1000');  #MySQL said: Documentation  #1048 - Column 'job_id' cannot be null
+create table managerstemp
+(employee_id number not null, first_name varchar2(50), last_name varchar2(50) constraint constraintnamelastnamecolumn not null, department_id number not null);  #there are three not null constraints.  One not null constraint is named.
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 93 UNIQUE CONSTRAINT - YouTube [720p]
+create table managerstemp
+(employee_id number, first_name varchar2(50) unique, last_name varchar2(50) constraint givelastnamecolumnconstraintname unique, department_id number not null, phone_number varchar2(11) unique not null, constraint tablelevelconstriantnameonecolumn unique (department_id), constraint anothertablelevelconstraintnamemultiplecolumns unique (employee_id, first_name, last_name));
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 94 PRIMARY KEY CONTRAINT - YouTube [720p]
+create table managerstemp
+(employee_id number constraint columnlevelconstraintprimarykeyname primary key, first_name varchar2(50), last_name varchar2(50));
+create table managerstemp
+(employee_id number, first_name varchar2(50), last_name varchar2(50), constraint tablelevelconstraintprimarykeyname primary key (employee_id));
+alter table managerstemp
+add constraint updatetableaddconstraintname primary key (employee_id);
+alter table managerstemp
+add constraint updatetableaddtwoconstraintsname primary key (employee_id, last_name);
