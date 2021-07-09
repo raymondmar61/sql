@@ -1584,3 +1584,15 @@ alter table managerstemp
 add constraint updatetableaddconstraintname primary key (employee_id);
 alter table managerstemp
 add constraint updatetableaddtwoconstraintsname primary key (employee_id, last_name);
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 95 FOREIGN KEY CONSTRAINT - YouTube [720p]
+create table managers
+(manager_id number constraint primarykeynamemanagers primary key, first_name, varchar2(50), last_name varchar2(50), department_id number, constraint employeemanagernameforeignkey foreign key (manager_id) references employees (employee_id));  #constraint employeemanagernameforeignkey (manager_id) references employees (employee_id) is the foreign key.  employeemanagernameforeignkey is the foreign key name.  foreign key is the foreign key keyword.  (manager_id) is the foreign key column for which references refers to employees table employee_id column in employees table.  manager_id is both primary key for managers and foreign key for employees.
+delete from departments
+where department_id = 90;  #returns error message delete dependencies first then parent or disable constraint.  Can't delete from parent table departments.
+create table managers
+(manager_id number constraint primarykeynamemanagers primary key, first_name, varchar2(50), last_name varchar2(50), department_id number, constraint employeemanagernameforeignkey foreign key (manager_id) references employees (employee_id) on delete cascade); #on delete casecade keyword deletes dependent rows in the child table when a related row in the parent table is deleted.
+
+#[ORACLE DATABASE TUTORIALS] LECTURE 96 CHECK CONSTRAINT - YouTube [720p]
+create table managers
+(manager_id number constraint primarykeynamemanagers primary key, first_name, varchar2(50), last_name varchar2(50), department_id number, salary number, email varchar2(50), constraint minimumsalaryconstraintname check (salary>0));
