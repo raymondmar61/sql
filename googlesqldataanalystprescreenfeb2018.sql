@@ -1,5 +1,5 @@
 #cPanel-->Databases-->MySQL Databases.  Under Create New Database, type database name at New Database: _*database name*.  Press Create Database.
-#phpMyAdmin innova18_googlefeb2018 database
+#phpMyAdmin _googlefeb2018 database
 #single quotes and double quotes valid inserting values answer is yes
 
 #create tables and insert values

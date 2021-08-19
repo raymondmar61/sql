@@ -1,4 +1,5 @@
-#phpMyAdmin innova18_godaddyjune2020 database
+#cPanel-->Databases-->MySQL Databases.  Under Create New Database, type database name at New Database: _*database name*.  Press Create Database.
+#phpMyAdmin _godaddyjune2020 database
 
 #Create tables
 create table orderdetail
