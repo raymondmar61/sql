@@ -1,3 +1,4 @@
+#Practical SQL By Anthony DeBarros Second Edition Chapter 06 Basic Math And Stats With SQL
 select 11 / 6; --return 1
 select 11 % 6; --return 5
 select 11.0 / 6; --return 1.8333...
