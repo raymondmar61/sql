@@ -410,3 +410,568 @@ client_id	invoice_id	name	amount	name
 5	18	Topiclounge	10.00	Cash	
 5	13	Topiclounge	87.44	Credit Card	
 */
+#compound join condition RM:  what's the point?
+select *
+from order_items oi join order_item_notes oin
+on oi.order_id = oin.order_id
+and oi.product_id = oin.product_id;
+/*
+MySQL returned an empty result set (i.e. zero rows).
+*/
+select *
+from orders o join customers c
+on o.customer_id = c.customer_id;
+--also
+select *
+from orders o, customer c
+where o.customer_id = c.customer_id; #implicit join syntax
+
+select *
+from orders o join customers c
+on o.customer_id = c.customer_id
+/*
+order_id	customer_id	order_date	status	comments	shipped_date	shipper_id	customer_id	first_name	last_name	birth_date	phone	address	city	state	points	
+1	6	2019-01-30	1	NULL	NULL	NULL	6	Elka	Twiddell	1991-09-04	312-480-8498	7 Manley Drive	Chicago	IL	3073	
+2	7	2018-08-02	2	NULL	2018-08-03	4	7	Ilene	Dowson	1964-08-30	615-641-4759	50 Lillian Crossing	Nashville	TN	1672	
+3	8	2017-12-01	1	NULL	NULL	NULL	8	Thacher	Naseby	1993-07-17	941-527-3977	538 Mosinee Center	Sarasota	FL	205	
+4	2	2017-01-22	1	NULL	NULL	NULL	2	Ines	Brushfield	1986-04-13	804-427-9456	14187 Commercial Trail	Hampton	VA	947	
+5	5	2017-08-25	2		2017-08-26	3	5	Clemmie	Betchley	1973-11-07	NULL	5 Spohn Circle	Arlington	TX	3675	
+6	10	2018-11-18	1	Aliquam erat volutpat. In congue.	NULL	NULL	10	Levy	Mynett	1969-10-13	404-246-3370	68 Lawn Avenue	Atlanta	GA	796	
+7	2	2018-09-22	2	NULL	2018-09-23	4	2	Ines	Brushfield	1986-04-13	804-427-9456	14187 Commercial Trail	Hampton	VA	947	
+8	5	2018-06-08	1	Mauris enim leo, rhoncus sed, vestibulum sit amet,...	NULL	NULL	5	Clemmie	Betchley	1973-11-07	NULL	5 Spohn Circle	Arlington	TX	3675	
+9	10	2017-07-05	2	Nulla mollis molestie lorem. Quisque ut erat.	2017-07-06	1	10	Levy	Mynett	1969-10-13	404-246-3370	68 Lawn Avenue	Atlanta	GA	796	
+10	6	2018-04-22	2	NULL	2018-04-23	2	6	Elka	Twiddell	1991-09-04	312-480-8498	7 Manley Drive	Chicago	IL	3073	
+*/
+select c.customer_id, c.first_name, o.order_id
+from customers c join orders o
+on c.customer_id = o.customer_id
+order by c.customer_id;
+/*
+customer_id   	first_name	order_id	
+2	Ines	4	
+2	Ines	7	
+5	Clemmie	8	
+5	Clemmie	5	
+6	Elka	1	
+6	Elka	10	
+7	Ilene	2	
+8	Thacher	3	
+10	Levy	9	
+10	Levy	6	
+*/
+select c.customer_id, c.first_name, o.order_id
+from customers c left join orders o
+on c.customer_id = o.customer_id
+order by c.customer_id; #outer in left outer join optional
+/*
+customer_id   	first_name	order_id	
+1	Babara	NULL	
+2	Ines	4	
+2	Ines	7	
+3	Freddi	NULL	
+4	Ambur	NULL	
+5	Clemmie	8	
+5	Clemmie	5	
+6	Elka	1	
+6	Elka	10	
+7	Ilene	2	
+8	Thacher	3	
+9	Romola	NULL	
+10	Levy	9	
+10	Levy	6	
+*/
+select c.customer_id, c.first_name, o.order_id
+from customers c right join orders o
+on c.customer_id = o.customer_id
+order by c.customer_id; #outer in right outer join optional
+/*
+customer_id   	first_name	order_id	
+2	Ines	4	
+2	Ines	7	
+5	Clemmie	8	
+5	Clemmie	5	
+6	Elka	1	
+6	Elka	10	
+7	Ilene	2	
+8	Thacher	3	
+10	Levy	9	
+10	Levy	6	
+*/
+select *
+from products;
+/*
+product_id	name	quantity_in_stock	unit_price	
+1	Foam Dinner Plate	70	1.21	
+2	Pork - Bacon,back Peameal	49	4.65	
+3	Lettuce - Romaine, Heart	38	3.35	
+4	Brocolinni - Gaylan, Chinese	90	4.53	
+5	Sauce - Ranch Dressing	94	1.63	
+6	Petit Baguette	14	2.39	
+7	Sweet Pea Sprouts	98	3.29	
+8	Island Oasis - Raspberry	26	0.74	
+9	Longan	67	2.26	
+10	Broom - Push	6	1.09	
+*/
+select *
+from order_items;
+/*
+order_id	product_id	quantity	unit_price	
+1	4	4	3.74	
+2	1	2	9.10	
+2	4	4	1.66	
+2	6	2	2.94	
+3	3	10	9.12	
+4	3	7	6.99	
+4	10	7	6.40	
+5	2	3	9.89	
+6	1	4	8.65	
+6	2	4	3.28	
+6	3	4	7.46	
+6	5	1	3.45	
+7	3	7	9.17	
+8	5	2	6.94	
+8	8	2	8.59	
+9	6	5	7.28	
+10	1	10	6.01	
+10	9	9	4.28
+*/
+select p.product_id, p.name, oi.quantity
+from products p left join order_items oi
+on p.product_id = oi.product_id;
+/*
+product_id	name	quantity	
+1	Foam Dinner Plate	2	
+1	Foam Dinner Plate	4	
+1	Foam Dinner Plate	10	
+2	Pork - Bacon,back Peameal	3	
+2	Pork - Bacon,back Peameal	4	
+3	Lettuce - Romaine, Heart	10	
+3	Lettuce - Romaine, Heart	7	
+3	Lettuce - Romaine, Heart	4	
+3	Lettuce - Romaine, Heart	7	
+4	Brocolinni - Gaylan, Chinese	4	
+4	Brocolinni - Gaylan, Chinese	4	
+5	Sauce - Ranch Dressing	1	
+5	Sauce - Ranch Dressing	2	
+6	Petit Baguette	2	
+6	Petit Baguette	5	
+7	Sweet Pea Sprouts	NULL	
+8	Island Oasis - Raspberry	2	
+9	Longan	9	
+10	Broom - Push	7	
+*/
+select *
+from shippers
+/*
+shipper_id	name	
+1	Hettinger LLC	
+2	Schinner-Predovic	
+3	Satterfield LLC	
+4	Mraz, Renner and Nolan	
+5	Waters, Mayert and Prohaska	
+*/
+select c.customer_id, c.first_name, o.order_id, sh.name
+from customers c left join orders o
+on c.customer_id = o.customer_id
+left join shippers sh
+on o.shipper_id = sh.shipper_id
+order by c.customer_id;
+/*
+customer_id   	first_name	order_id	name	
+1	Babara	    NULL    NULL
+2	Ines	7	Mraz, Renner and Nolan	
+2	Ines	4	    NULL
+3	Freddi	    NULL    NULL
+4	Ambur	    NULL    NULL
+5	Clemmie	5	Satterfield LLC	
+5	Clemmie	8	    NULL
+6	Elka	10	Schinner-Predovic	
+6	Elka	1	    NULL
+7	Ilene	2	Mraz, Renner and Nolan	
+8	Thacher	3	    NULL
+9	Romola	    NULL    NULL
+10	Levy	6	    NULL
+10	Levy	9	Hettinger LLC	
+*/
+select o.order_date, o.order_id, c.first_name, sh.name
+from orders o join customers c
+on o.customer_id = c.customer_id
+left join shippers sh
+on o.shipper_id = sh.shipper_id;
+/*
+order_date	order_id	first_name	name	
+2019-01-30	1	Elka	NULL
+2018-08-02	2	Ilene	Mraz, Renner and Nolan	
+2017-12-01	3	Thacher	NULL
+2017-01-22	4	Ines	NULL
+2017-08-25	5	Clemmie	Satterfield LLC	
+2018-11-18	6	Levy	NULL
+2018-09-22	7	Ines	Mraz, Renner and Nolan	
+2018-06-08	8	Clemmie	NULL
+2017-07-05	9	Levy	Hettinger LLC	
+2018-04-22	10	Elka	Schinner-Predovic	
+*/
+select *
+from order_statuses
+/*
+order_status_id	name	
+1	Processed	
+2	Shipped	
+3	Delivered	
+*/
+select o.order_date, o.order_id, c.first_name, sh.name as shipper, os.name as "status order"
+from orders o join customers c
+on o.customer_id = c.customer_id
+left join shippers sh
+on o.shipper_id = sh.shipper_id
+join order_statuses os
+on o.status = os.order_status_id
+order by os.name, o.order_id;
+/*
+order_date	order_id	first_name	shipper	status order	
+2019-01-30	1	Elka	NULL	Processed	
+2017-12-01	3	Thacher	NULL	Processed	
+2017-01-22	4	Ines	NULL	Processed	
+2018-11-18	6	Levy	NULL	Processed	
+2018-06-08	8	Clemmie	NULL	Processed	
+2018-08-02	2	Ilene	Mraz, Renner and Nolan	Shipped	
+2017-08-25	5	Clemmie	Satterfield LLC	Shipped	
+2018-09-22	7	Ines	Mraz, Renner and Nolan	Shipped	
+2017-07-05	9	Levy	Hettinger LLC	Shipped	
+2018-04-22	10	Elka	Schinner-Predovic	Shipped	
+*/
+#Self outer join
+select e.employee_id, e.first_name, m.first_name as "Manager and review self join"
+from employees e join employees m
+on e.reports_to = m.employee_id;
+/*
+employee_id	first_name	Manager and review self join	
+33391	D'arcy	Yovonnda	
+37851	Sayer	Yovonnda	
+40448	Mindy	Yovonnda	
+56274	Keriann	Yovonnda	
+63196	Alaster	Yovonnda	
+67009	North	Yovonnda	
+67370	Elladine	Yovonnda	
+68249	Nisse	Yovonnda	
+72540	Guthrey	Yovonnda	
+72913	Kass	Yovonnda	
+75900	Virge	Yovonnda	
+76196	Mirilla	Yovonnda	
+80529	Lynde	Yovonnda	
+80679	Mildrid	Yovonnda	
+84791	Hazel	Yovonnda	
+95213	Cole	Yovonnda	
+96513	Theresa	Yovonnda	
+98374	Estrellita	Yovonnda	
+115357	Ivy	Yovonnda	
+*/
+select e.employee_id, e.first_name, m.first_name as "Manager"
+from employees e left join employees m
+on e.reports_to = m.employee_id;
+/*
+employee_id	first_name	Manager and review self join	
+37270	Yovonnda	NULL
+33391	D'arcy	Yovonnda	
+37851	Sayer	Yovonnda	
+40448	Mindy	Yovonnda	
+56274	Keriann	Yovonnda	
+63196	Alaster	Yovonnda	
+67009	North	Yovonnda	
+67370	Elladine	Yovonnda	
+68249	Nisse	Yovonnda	
+72540	Guthrey	Yovonnda	
+72913	Kass	Yovonnda	
+75900	Virge	Yovonnda	
+76196	Mirilla	Yovonnda	
+80529	Lynde	Yovonnda	
+80679	Mildrid	Yovonnda	
+84791	Hazel	Yovonnda	
+95213	Cole	Yovonnda	
+96513	Theresa	Yovonnda	
+98374	Estrellita	Yovonnda	
+115357	Ivy	Yovonnda	
+*/
+select o.order_id, c.first_name
+from orders o join customers c
+using (customer_id);
+/*
+order_id	first_name	
+1	Elka	
+2	Ilene	
+3	Thacher	
+4	Ines	
+5	Clemmie	
+6	Levy	
+7	Ines	
+8	Clemmie	
+9	Levy	
+10	Elka	
+*/
+select o.order_id, c.first_name, sh.name as shipper
+from orders o join customers c
+using (customer_id)
+left join shippers sh
+using (shipper_id);
+/*
+order_id	first_name	shipper	
+1	Elka	NULL	
+2	Ilene	Mraz, Renner and Nolan	
+3	Thacher	NULL	
+4	Ines	NULL	
+5	Clemmie	Satterfield LLC	
+6	Levy	NULL	
+7	Ines	Mraz, Renner and Nolan	
+8	Clemmie	NULL	
+9	Levy	Hettinger LLC	
+10	Elka	Schinner-Predovic	
+*/
+select *
+from order_items oi join order_item_notes oin
+on oi.order_id and oin.order_id
+and oi.product_id = oin.product_id;
+/*
+order_id	product_id	quantity	unit_price	note_id	order_Id	product_id	note	
+5	2	3	9.89	1	1	2	first note	
+6	2	4	3.28	1	1	2	first note	
+5	2	3	9.89	2	1	2	second note	
+6	2	4	3.28	2	1	2	second note	
+*/
+select *
+from order_items oi join order_item_notes oin
+using(order_id,product_id);
+/*
+MySQL returned an empty result set
+*/
+select p.date, c.name as client, p.amount, pm.name as "payment method"
+from innova18_sql_invoicing.payments p join innova18_sql_invoicing.clients c
+using (client_id)
+join innova18_sql_invoicing.payment_methods pm
+on p.payment_method = pm.payment_method_id;
+/*
+date	client	amount	payment method	
+2019-02-12	Topiclounge	8.18	Credit Card	
+2019-01-03	Vinte	74.55	Credit Card	
+2019-01-11	Yadel	0.03	Credit Card	
+2019-01-26	Topiclounge	87.44	Credit Card	
+2019-01-15	Yadel	80.31	Credit Card	
+2019-01-15	Yadel	68.10	Credit Card	
+2019-01-08	Topiclounge	32.77	Credit Card	
+2019-01-08	Topiclounge	10.00	Cash	
+*/
+#Natural join.  Easy to code.  The database figures out the join.  User has no control.  Instructor doesn't recommend.
+select o.order_id, c.first_name
+from orders o natural join customers c;
+/*
+order_id	first_name	
+1	Elka	
+2	Ilene	
+3	Thacher	
+4	Ines	
+5	Clemmie	
+6	Levy	
+7	Ines	
+8	Clemmie	
+9	Levy	
+10	Elka	
+*/
+#Cross join.  Combine or join every record on the first table to every record on the second table.  Instructor said an example is one table with sizes small, medium, and large combine with a second table with colors.  Red small, red medium, red large, white small, white medium, white large, blue small, blue medium, blue large, etc.
+select c.first_name, p.name
+from customers c cross join products p
+order by c.first_name;
+#Union.  Combine two queries.  Combine multiple queries.
+select order_id, order_date, 'Active' as "Custom column print Active"
+from orders
+where order_date >= '2019-01-01';
+/*
+order_id order_date Custom column print Active
+1   2019-01-30  Active  
+*/
+select order_id, order_date, 'Archived' as "Custom column print Archived"
+from orders
+where order_date < '2019-01-01';
+/*
+order_id    order_date  Custom column print Archived    
+2   2018-08-02  Archived    
+3   2017-12-01  Archived    
+4   2017-01-22  Archived    
+5   2017-08-25  Archived    
+6   2018-11-18  Archived    
+7   2018-09-22  Archived    
+8   2018-06-08  Archived    
+9   2017-07-05  Archived    
+10  2018-04-22  Archived    
+*/
+select order_id, order_date, 'Active' as "Custom column print Active"
+from orders
+where order_date >= '2019-01-01'
+union
+select order_id, order_date, 'Archived' as "Custom column print Archived"
+from orders
+where order_date < '2019-01-01';
+/*
+order_id    order_date  Custom column print Active  
+1   2019-01-30  Active  
+2   2018-08-02  Archived    
+3   2017-12-01  Archived    
+4   2017-01-22  Archived    
+5   2017-08-25  Archived    
+6   2018-11-18  Archived    
+7   2018-09-22  Archived    
+8   2018-06-08  Archived    
+9   2017-07-05  Archived    
+10  2018-04-22  Archived    
+*/
+#Can combine different columns names from different tables.  The number of columns must be the same for all tables.  RM:  Data types must be the same.
+select first_name as "First query is column name"
+from customers
+union
+select name
+from shippers;
+/*
+First query is column name  
+Babara  
+Ines    
+Freddi  
+Ambur   
+Clemmie 
+Elka    
+Ilene   
+Thacher 
+Romola  
+Levy    
+Hettinger LLC   
+Schinner-Predovic   
+Satterfield LLC 
+Mraz, Renner and Nolan  
+Waters, Mayert and Prohaska 
+*/
+select customer_id, first_name, points, 'Bronze' as type
+from customers
+where points > 0 and points < 2000
+union
+select customer_id, first_name, points, 'Silver' as type
+from customers
+where points >= 2000 and points < 3000
+union
+select customer_id, first_name, points, 'Gold' as type
+from customers
+where points >=3000
+order by first_name;
+/*
+customer_id first_name      points  type    
+4   Ambur   457 Bronze  
+1   Babara  2273    Silver  
+5   Clemmie 3675    Gold    
+6   Elka    3073    Gold    
+3   Freddi  2967    Silver  
+7   Ilene   1672    Bronze  
+2   Ines    947 Bronze  
+10  Levy    796 Bronze  
+9   Romola  1486    Bronze  
+8   Thacher 205 Bronze  
+*/
+#Insert row, insert record
+#default keyword for an auto increment column MySQL generates the unique value number for the auto increment column.  Also default keyword works for columns accepting null values.  And default keyword works for the column to accept the default value.  No need to include the column names for default and NULL values.  Columns for which values SQL inserted by default or use the default value are excluded from insert into values.  See the next SQL code.
+insert into customers
+values (default, 'John','Smith','1990-01-01',NULL,'address insert row','city','CA',default);
+/*
+customer_id first_name  last_name   birth_date  phone   address city    state   points  
+11  John    Smith   1990-01-01      NULL    address insert row  city    CA  0   
+*/
+#Also work.  Columns for which values SQL inserted by default or use the default value are excluded from insert into values.  Remove default, NULL, and default since no column name mentioned in insert into tablename.  Indicate the column names to match the values from left to right.
+insert into customers (first_name, last_name, birth_date,address,city,state)
+values ('John','Smith','1990-01-01','address insert row','city','CA');
+insert into shippers (name)
+values ('Shipper 1 insert'),('Shipper 2 multiple'),('Shipper 3 values');
+insert into products(name, quantity_in_stock,unit_price)
+values ('Product1 no insert',10,1.95),('Product2 auto increment',20,2.95),('Product3 column product_id',30,3.95);
+/*
+product_id  name    quantity_in_stock   unit_price  
+1   Foam Dinner Plate   70  1.21    
+2   Pork - Bacon,back Peameal   49  4.65    
+3   Lettuce - Romaine, Heart    38  3.35    
+4   Brocolinni - Gaylan, Chinese    90  4.53    
+5   Sauce - Ranch Dressing  94  1.63    
+6   Petit Baguette  14  2.39    
+7   Sweet Pea Sprouts   98  3.29    
+8   Island Oasis - Raspberry    26  0.74    
+9   Longan  67  2.26    
+10  Broom - Push    6   1.09    
+11  Product1 no insert  10  1.95    
+12  Product2 auto increment 20  2.95    
+13  Product3 column product_id  30  3.95    
+*/
+#Insert multiple rows in multiple tables at the same time
+insert into orders (customer_id, order_date, status)
+values (1,'2019-01-02',1);
+/*
+order_id    customer_id order_date  status  comments    shipped_date    shipper_id  
+11  1   2019-01-02  1   NULL    NULL    NULL
+*/
+select last_insert_id(); #return 11
+insert into orders (customer_id, order_date, status)
+values (1,'2019-01-02',1); #inserted in orders table is order id 12
+insert into order_items
+values (last_insert_id(),1,1,2.95),(last_insert_id(),2,1,3.95);
+/*
+order_id    customer_id order_date  status  comments    shipped_date    shipper_id  
+12  1   2019-01-02  1   NULL    NULL    NULL
+
+order_id    product_id  quantity    unit_price  
+12  1   1   2.95    
+12  2   1   3.95    
+*/
+#Copy data to a new table.  First, create a new table.  The new table is a copy from an existing table.
+create table orders_archived as
+select * from orders;  #The orders_archived table no primary key and no auto increment attributes copied to orders_archived table.
+#RM:  Trunicate table means delete all data or delete all rows.  Table remains.  Table not deleted.
+insert into orders_archived
+select *
+from orders
+where order_date < '2019-01-01';
+#Update row, update data
+update invoices
+set payment_total = 10, payment_date = '2019-03-01'
+where invoice_id = 1; #update multiple columns in one row
+#RM:  pretend an error.  invoice_id = 1 should be invoice_id = 3.  Restore invoice_id = 1 to its default payment_total 0.00 and set payment_date to NULL.
+update invoices
+set payment_total = default, payment_date = NULL
+where invoice_id = 1;
+update invoices
+set payment_total = invoice_total*.50, payment_date = due_date
+where invoice_id = 3; #update multiple columns in one row using data from other columns
+#Update multiple rows, update multiple data
+update invoices
+set payment_total = invoice_total*.50, payment_date = due_date
+where client_id in (3,4);
+update customers
+set points = points + 50
+where birth_date < '1990-01-01'; #Add 50 points to customers born before 1990
+update invoices
+set payment_total = invoice_total*.50, payment_date = due_date
+where client_id = (
+    select client_id
+    from clients
+    where name = 'Myworks');
+update invoices
+set payment_total = invoice_total*.50, payment_date = due_date
+where client_id in (
+    select client_id
+    from clients
+    where state in ('CA','NY'));
+update orders
+set comments = 'Add comment Gold customer for customers greater than 3,000 points'
+where customer_id in (
+    select customer_id
+    from customers
+    where points > 3000);
+#Delete rows
+#delete from *tablename* deletes all rows in a table or deletes all data
+delete from invoices
+where invoice_id = 1;
+delete from invoices
+where client_id = (
+    select client_id
+    from clients
+    where name = 'Myworks');
