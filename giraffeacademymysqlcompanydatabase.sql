@@ -203,5 +203,126 @@ from works_with;
 22500
 12000
 */
-
-
+insert into branch
+values(4,"Buffalo",null, null);
+select employee.emp_id, employee.first_name "Branch Manager First Name", employee.last_name "Branch Manger Last Name", branch.branch_name as "Branch Name"
+from employee join branch
+on employee.emp_id=branch.mgr_id;
+/*
+# emp_id, Branch Manager First Name, Branch Manger Last Name, Branch Name
+'100', 'David', 'Wallace', 'Corporate'
+'102', 'Michael', 'Scott', 'Scranton'
+'106', 'Josh', 'Porter', 'Stamford'
+*/
+select employee.emp_id, employee.first_name "Branch Manager First Name", employee.last_name "Branch Manger Last Name", branch.branch_name as "Branch Name"
+from employee left join branch
+on employee.emp_id=branch.mgr_id;
+/*
+# emp_id, Branch Manager First Name, Branch Manger Last Name, Branch Name
+'100', 'David', 'Wallace', 'Corporate'
+'101', 'Jan', 'Levinson', NULL
+'102', 'Michael', 'Scott', 'Scranton'
+'103', 'Angela', 'Martin', NULL
+'104', 'Kelly', 'Kapoor', NULL
+'105', 'Stanley', 'Hudson', NULL
+'106', 'Josh', 'Porter', 'Stamford'
+'107', 'Andy', 'Bernard', NULL
+'108', 'Jim', 'Halpert', NULL
+*/
+select employee.emp_id, employee.first_name "Branch Manager First Name", employee.last_name "Branch Manger Last Name", branch.branch_name as "Branch Name"
+from employee right join branch
+on employee.emp_id=branch.mgr_id;
+/*
+# emp_id, Branch Manager First Name, Branch Manger Last Name, Branch Name
+'100', 'David', 'Wallace', 'Corporate'
+'102', 'Michael', 'Scott', 'Scranton'
+'106', 'Josh', 'Porter', 'Stamford'
+NULL, NULL, NULL, 'Buffalo'
+*/
+# select employee.emp_id, employee.first_name "Branch Manager First Name", employee.last_name "Branch Manger Last Name", branch.branch_name as "Branch Name"
+# from employee full outer join branch
+# on employee.emp_id=branch.mgr_id;
+#MySql no full outer join.  Need left join, right join, and union the joins.
+select employee.emp_id, employee.first_name "Branch Manager First Name", employee.last_name "Branch Manger Last Name", branch.branch_name as "Branch Name"
+from employee left join branch
+on employee.emp_id=branch.mgr_id
+union
+select employee.emp_id, employee.first_name "Branch Manager First Name", employee.last_name "Branch Manger Last Name", branch.branch_name as "Branch Name"
+from employee right join branch
+on employee.emp_id=branch.mgr_id;
+/*
+# emp_id, Branch Manager First Name, Branch Manger Last Name, Branch Name
+'100', 'David', 'Wallace', 'Corporate'
+'101', 'Jan', 'Levinson', NULL
+'102', 'Michael', 'Scott', 'Scranton'
+'103', 'Angela', 'Martin', NULL
+'104', 'Kelly', 'Kapoor', NULL
+'105', 'Stanley', 'Hudson', NULL
+'106', 'Josh', 'Porter', 'Stamford'
+'107', 'Andy', 'Bernard', NULL
+'108', 'Jim', 'Halpert', NULL
+NULL, NULL, NULL, 'Buffalo'
+*/
+select first_name, last_name "Employees sold 30,000+"
+from employee
+where emp_id in (
+    select emp_id
+    from works_with
+    where total_sales > 30000);
+/*
+# first_name, Employees sold 30,000+
+'Michael', 'Scott'
+'Stanley', 'Hudson'
+*/
+select client_name as "Clients Michael Scott manages"
+from client
+where branch_id = (
+    select branch_id
+    from branch
+    where mgr_id = 102);
+/*
+# Clients Michael Scott manages
+'Dunmore Highschool'
+'Lackawana Country'
+'Scranton Whitepages'
+'FedEx'
+*/
+#on delete set null foreign key column associated with primary key becomes null
+#on delete set cascade foreign key column associated with primary key its foreign key is deleted
+#The branch table its FOREIGN KEY(mgr_id) REFERENCES employee(emp_id) ON DELETE SET NULL
+delete from employee
+where emp_id = 102;
+select *
+from branch; #branch_id its mgr_id was 102.  It's set to NULL.
+/*
+# branch_id, branch_name, mgr_id, mgr_start_date
+'1', 'Corporate', '100', '2006-02-09'
+'2', 'Scranton', NULL, '1992-04-06'
+'3', 'Stamford', '106', '1998-02-13'
+'4', 'Buffalo', NULL, NULL
+*/
+select *
+from employee; #mgr_id is set to null for emp_id 103, 104, and 105 because their manager was super_id 102
+/*
+# emp_id, first_name, last_name, birth_day, sex, salary, super_id, branch_id
+'100', 'David', 'Wallace', '1967-11-17', 'M', '250000', NULL, '1'
+'101', 'Jan', 'Levinson', '1961-05-11', 'F', '110000', '100', '1'
+'103', 'Angela', 'Martin', '1971-06-25', 'F', '63000', NULL, '2'
+'104', 'Kelly', 'Kapoor', '1980-02-05', 'F', '55000', NULL, '2'
+'105', 'Stanley', 'Hudson', '1958-02-19', 'M', '69000', NULL, '2'
+'106', 'Josh', 'Porter', '1969-09-05', 'M', '78000', '100', '3'
+'107', 'Andy', 'Bernard', '1973-07-22', 'M', '65000', '106', '3'
+'108', 'Jim', 'Halpert', '1978-10-01', 'M', '71000', '106', '3'
+*/
+#The branch_supplier table its FOREIGN KEY(branch_id) REFERENCES branch(branch_id) ON DELETE CASCADE
+delete from branch
+where branch_id = 2;
+select *
+from branch_supplier; #rows with branch_id are deleted
+/*
+# branch_id, supplier_name, supply_type
+'3', 'Hammer Mill', 'Paper'
+'3', 'Patriot Paper', 'Paper'
+'3', 'Stamford Lables', 'Custom Forms'
+'3', 'Uni-ball', 'Writing Utensils'
+*/
