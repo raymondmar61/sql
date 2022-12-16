@@ -182,3 +182,100 @@ from employees;
 # id	lastname	firstname	middlename	age	currentstatus
 1	Smith	Dora		58	employed
 */
+drop table cats;
+create table cats
+(catid int not null auto_increment primary key, name varchar(100), breed varchar(100), age int);
+insert into cats (name, breed, age)
+values("Ringo","Tabby",4),("Cindy","Maine Coon",10),("Dumbledore","Maine Coon",11),("Egg","Persian",4),("Misty","Tabby",13),("George Michael","Ragdoll",9),("Jackson","Sphynx",7);
+select *
+from cats;
+/*
+# catid	name	breed	age
+1	Ringo	Tabby	4
+2	Cindy	Maine Coon	10
+3	Dumbledore	Maine Coon	11
+4	Egg	Persian	4
+5	Misty	Tabby	13
+6	George Michael	Ragdoll	9
+7	Jackson	Sphynx	7
+*/
+select age, name
+from cats
+where age=4 and name="Egg";
+/*
+# age	name
+4	Egg
+*/
+
+select catid as "cat id alias double quotes", age
+from cats
+where catid=age;
+/*
+# cat id alias double quotes	age
+4	4
+7	7
+*/
+set sql_safe_updates = 0; #https://stackoverflow.com/questions/11448068/mysql-error-code-1175-during-update-in-mysql-workbench for Error Code: 1175. You are using safe update mode and you tried to update a table without a WHERE that uses a KEY column.  To disable safe mode, toggle the option in Preferences -> SQL Editor and reconnect.  RM:  I needed to scroll down SQL Editor.  The vertical scroll bar was too thin for me to see.
+update cats
+set breed="Shorthair"
+where breed="Tabby";
+select *
+from cats;
+/*
+# catid	name	breed	age
+1	Ringo	Shorthair	4
+2	Cindy	Maine Coon	10
+3	Dumbledore	Maine Coon	11
+4	Egg	Persian	4
+5	Misty	Shorthair	13
+6	George Michael	Ragdoll	9
+7	Jackson	Sphynx	7
+*/
+update cats
+set name="Jack"
+where name="Jackson";
+update cats
+set breed="British Shorthair"
+where name="Ringo";
+update cats
+set age=12
+where breed="Maine Coon";
+select *
+from cats;
+/*
+# catid	name	breed	age
+1	Ringo	British Shorthair	4
+2	Cindy	Maine Coon	12
+3	Dumbledore	Maine Coon	12
+4	Egg	Persian	4
+5	Misty	Shorthair	13
+6	George Michael	Ragdoll	9
+7	Jack	Sphynx	7
+*/
+delete from cats
+where name="Egg";
+select *
+from cats;
+/*
+# catid	name	breed	age
+1	Ringo	British Shorthair	4
+2	Cindy	Maine Coon	12
+3	Dumbledore	Maine Coon	12
+5	Misty	Shorthair	13
+6	George Michael	Ragdoll	9
+7	Jack	Sphynx	7
+*/
+delete from cats
+where age = 4
+or
+catid=age;
+select *
+from cats;
+/*
+# catid	name	breed	age
+2	Cindy	Maine Coon	12
+3	Dumbledore	Maine Coon	12
+5	Misty	Shorthair	13
+6	George Michael	Ragdoll	9
+*/
+delete from cats; /* Delete all rows.  Doesn't delete cats table */
