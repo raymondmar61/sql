@@ -279,3 +279,89 @@ from cats;
 6	George Michael	Ragdoll	9
 */
 delete from cats; /* Delete all rows.  Doesn't delete cats table */
+
+#Exercise shirts database
+create database shirtsdb;
+create table shirts
+(shirtid int not null auto_increment primary key, article varchar(20), color varchar(20), shirtsize varchar(10), lastworn int); /*lastworn is the number of days shirt worn */
+insert into shirts(article,color,shirtsize,lastworn)
+values("t-shirt","white","S",10),("t-shirt","green","S",200),("polo shirt","black","M",10),("tank top","blue","S",50),("t-shirt","pink","S",0),("polo shirt","red","M",5),("tank top","white","S",200),("tank top","blue","M",15); /* Need to mention column names after insert into sql statement */
+insert into shirts(article,color,shirtsize,lastworn)
+values("polo shirt","purple","M",50);
+select *
+from shirts;
+/*
+# shirtid	article	color	shirtsize	lastworn
+1	t-shirt	white	S	10
+2	t-shirt	green	S	200
+3	polo shirt	black	M	10
+4	tank top	blue	S	50
+5	t-shirt	pink	S	0
+6	polo shirt	red	M	5
+7	tank top	white	S	200
+8	tank top	blue	M	15
+9	polo shirt	purple	M	50
+*/
+select article, color
+from shirts
+where shirtsize = "M";
+/*
+# article	color
+polo shirt	black
+polo shirt	red
+tank top	blue
+polo shirt	purple
+*/
+set sql_safe_updates = 0;
+update shirts
+set shirtsize = "L"
+where article = "polo shirt";
+update shirts
+set lastworn = 0
+where lastworn = 15; /* worn the shirt last worn 15 days ago today.  Set lastworn to zero */
+update shirts
+set shirtsize = "XS", color = "off white" /* separate multiple criteria with a comma.  Using "and" is invalid */
+where color = "white";
+delete from shirts
+where lastworn = 200;
+delete from shirts
+where article = "tank top";
+delete from shirts; /* delete all rows or delete rows all */
+drop table shirts; /* delete table */
+
+#SQL code from a .sql file
+use catapp; /* Activate database, go to database */
+source /home/mar/mysql/sqlfilewrittensublimetext.sql; /* Error code 1064.  It didn't work for MySQL Workbench. */
+/*
+create table catssublimetext
+(catid int not null auto_increment, name varchar(100),age int, primary key (catid));
+*/
+
+#String functions
+create database bookshop;
+use bookshop; /* Activate database, go to database */
+create table books
+(bookid int not null auto_increment, title varchar(100), authorfname varchar(100), authorlname varchar(100), releaseyear int, stockquantity int, pages int, primary key (bookid));
+insert into books (title, authorfname, authorlname, releaseyear, stockquantity, pages)
+values ("The Namesake","Jhumpa","Lahiri",2003,32,291), ("Norse Mythology","Neil","Gaiman",2016,43,304), ("American Gods","Neil","Gaiman",2001,12,465), ("Interpreter of Maladies","Jhumpa","Lahiri",1996,97,198), ("A Hologram for the King: A Novel","Dave","Eggers",2012,154,352), ("The Circle","Dave","Eggers",2013,26,504), ("The Amazing Adventures of Kavalier & Clay","Michael","Chabon",2000,68,634), ("Just Kids","Patti","Smith",2010,55,304), ("A Heartbreaking Work of Staggering Genius","Dave","Eggers",2001,104,437), ("Coraline","Neil","Gaiman",2003,100,208), ("What We Talk About When We Talk About Love:  Stories","Raymond","Carver",1981,23,176), ("Where I'm Calling From: Selected Stories","Raymond","Carver",1989,12,526), ("White Noise","Don","DeLillo",1985,49,320), ("Cannery Row","John","Steinbeck",1945,95,181), ("Oblivion: Stories","David","Foster Wallace",2004,172,329), ("Consider the Lobster","David","Foster Wallace",2005,92,343);
+select *
+from books;
+/*
+# bookid	title	authorfname	authorlname	releaseyear	stockquantity	pages
+1	The Namesake	Jhumpa	Lahiri	2003	32	291
+2	Norse Mythology	Neil	Gaiman	2016	43	304
+3	American Gods	Neil	Gaiman	2001	12	465
+4	Interpreter of Maladies	Jhumpa	Lahiri	1996	97	198
+5	A Hologram for the King: A Novel	Dave	Eggers	2012	154	352
+6	The Circle	Dave	Eggers	2013	26	504
+7	The Amazing Adventures of Kavalier & Clay	Michael	Chabon	2000	68	634
+8	Just Kids	Patti	Smith	2010	55	304
+9	A Heartbreaking Work of Staggering Genius	Dave	Eggers	2001	104	437
+10	Coraline	Neil	Gaiman	2003	100	208
+11	What We Talk About When We Talk About Love:  Stories	Raymond	Carver	1981	23	176
+12	Where I'm Calling From: Selected Stories	Raymond	Carver	1989	12	526
+13	White Noise	Don	DeLillo	1985	49	320
+14	Cannery Row	John	Steinbeck	1945	95	181
+15	Oblivion: Stories	David	Foster Wallace	2004	172	329
+16	Consider the Lobster	David	Foster Wallace	2005	92	343
+*/
