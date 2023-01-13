@@ -365,3 +365,496 @@ from books;
 15	Oblivion: Stories	David	Foster Wallace	2004	172	329
 16	Consider the Lobster	David	Foster Wallace	2005	92	343
 */
+select authorfname, authorlname, concat(authorfname, " ", authorlname) as 'Combine columns'
+from books;
+/*
+# authorfname	authorlname	Combine columns
+Jhumpa	Lahiri	Jhumpa Lahiri
+Neil	Gaiman	Neil Gaiman
+Neil	Gaiman	Neil Gaiman
+Jhumpa	Lahiri	Jhumpa Lahiri
+Dave	Eggers	Dave Eggers
+Dave	Eggers	Dave Eggers
+Michael	Chabon	Michael Chabon
+Patti	Smith	Patti Smith
+Dave	Eggers	Dave Eggers
+Neil	Gaiman	Neil Gaiman
+Raymond	Carver	Raymond Carver
+Raymond	Carver	Raymond Carver
+Don	DeLillo	Don DeLillo
+John	Steinbeck	John Steinbeck
+David	Foster Wallace	David Foster Wallace
+David	Foster Wallace	David Foster Wallace
+*/
+select title, authorfname, authorlname, concat_ws(' - ', title, authorfname, authorlname) as 'Combine columns with separator'
+from books;
+/*
+# title	authorfname	authorlname	Combine columns with separator
+The Namesake	Jhumpa	Lahiri	The Namesake - Jhumpa - Lahiri
+Norse Mythology	Neil	Gaiman	Norse Mythology - Neil - Gaiman
+American Gods	Neil	Gaiman	American Gods - Neil - Gaiman
+Interpreter of Maladies	Jhumpa	Lahiri	Interpreter of Maladies - Jhumpa - Lahiri
+A Hologram for the King: A Novel	Dave	Eggers	A Hologram for the King: A Novel - Dave - Eggers
+The Circle	Dave	Eggers	The Circle - Dave - Eggers
+The Amazing Adventures of Kavalier & Clay	Michael	Chabon	The Amazing Adventures of Kavalier & Clay - Michael - Chabon
+Just Kids	Patti	Smith	Just Kids - Patti - Smith
+A Heartbreaking Work of Staggering Genius	Dave	Eggers	A Heartbreaking Work of Staggering Genius - Dave - Eggers
+Coraline	Neil	Gaiman	Coraline - Neil - Gaiman
+What We Talk About When We Talk About Love:  Stories	Raymond	Carver	What We Talk About When We Talk About Love:  Stories - Raymond - Carver
+Where I'm Calling From: Selected Stories	Raymond	Carver	Where I'm Calling From: Selected Stories - Raymond - Carver
+White Noise	Don	DeLillo	White Noise - Don - DeLillo
+Cannery Row	John	Steinbeck	Cannery Row - John - Steinbeck
+Oblivion: Stories	David	Foster Wallace	Oblivion: Stories - David - Foster Wallace
+Consider the Lobster	David	Foster Wallace	Consider the Lobster - David - Foster Wallace
+*/
+select substring('Hello World',3,5) as 'Extract string start at third character extract five characters'; /* print llo W */
+select substring('Hello World',7) as 'Extract all string start at seventh character'; /* #print World */
+select substring('Hello World',-4) as 'Extract all string backwards four characters'; /* #print orld */
+select title, concat(substring(title,1,10),'...') as 'Extract characters ten from beginning add three dots at the end'
+from books;
+/*
+# title	Extract characters ten from beginning add three dots at the end
+The Namesake	The Namesa...
+Norse Mythology	Norse Myth...
+American Gods	American G...
+Interpreter of Maladies	Interprete...
+A Hologram for the King: A Novel	A Hologram...
+The Circle	The Circle...
+The Amazing Adventures of Kavalier & Clay	The Amazin...
+Just Kids	Just Kids...
+A Heartbreaking Work of Staggering Genius	A Heartbre...
+Coraline	Coraline...
+What We Talk About When We Talk About Love:  Stories	What We Ta...
+Where I'm Calling From: Selected Stories	Where I'm ...
+White Noise	White Nois...
+Cannery Row	Cannery Ro...
+Oblivion: Stories	Oblivion: ...
+Consider the Lobster	Consider t...
+*/
+select replace('Hello World','Hell','#$%^') as 'Replace string replace character'; /* #print #$%^o World */
+select title, replace(title,'e','3') as 'Replace letter e with string number 3'
+from books;
+/*
+# title	Replace letter e with string number 3
+The Namesake	Th3 Nam3sak3
+Norse Mythology	Nors3 Mythology
+American Gods	Am3rican Gods
+Interpreter of Maladies	Int3rpr3t3r of Maladi3s
+A Hologram for the King: A Novel	A Hologram for th3 King: A Nov3l
+The Circle	Th3 Circl3
+The Amazing Adventures of Kavalier & Clay	Th3 Amazing Adv3ntur3s of Kavali3r & Clay
+Just Kids	Just Kids
+A Heartbreaking Work of Staggering Genius	A H3artbr3aking Work of Stagg3ring G3nius
+Coraline	Coralin3
+What We Talk About When We Talk About Love:  Stories	What W3 Talk About Wh3n W3 Talk About Lov3:  Stori3s
+Where I'm Calling From: Selected Stories	Wh3r3 I'm Calling From: S3l3ct3d Stori3s
+White Noise	Whit3 Nois3
+Cannery Row	Cann3ry Row
+Oblivion: Stories	Oblivion: Stori3s
+Consider the Lobster	Consid3r th3 Lobst3r
+*/
+select reverse('Hello World') as 'Backwards string'; /* #print 'dlroW olleH' */
+select authorfname, reverse(authorfname)
+from books;
+/*
+# authorfname	reverse(authorfname)
+Jhumpa	apmuhJ
+Neil	lieN
+Neil	lieN
+Jhumpa	apmuhJ
+Dave	evaD
+Dave	evaD
+Michael	leahciM
+Patti	ittaP
+Dave	evaD
+Neil	lieN
+Raymond	dnomyaR
+Raymond	dnomyaR
+Don	noD
+John	nhoJ
+David	divaD
+David	divaD
+*/
+select char_length('Hello World') as 'Count characters in string'; /* #print 11 */
+select authorlname, char_length(authorlname) as 'Character length'
+from books;
+/*
+# authorlname	Character length
+Lahiri	6
+Gaiman	6
+Gaiman	6
+Lahiri	6
+Eggers	6
+Eggers	6
+Chabon	6
+Smith	5
+Eggers	6
+Gaiman	6
+Carver	6
+Carver	6
+DeLillo	7
+Steinbeck	9
+Foster Wallace	14
+Foster Wallace	14
+*/
+select upper('Hello World') as "Upper case", lower('Hello World') as "Lower case"; /* #print 'HELLO WORLD' 'hello world' */
+select title, upper(title) as "Title all caps"
+from books;
+/*
+# title	Title all caps
+The Namesake	THE NAMESAKE
+Norse Mythology	NORSE MYTHOLOGY
+American Gods	AMERICAN GODS
+Interpreter of Maladies	INTERPRETER OF MALADIES
+A Hologram for the King: A Novel	A HOLOGRAM FOR THE KING: A NOVEL
+The Circle	THE CIRCLE
+The Amazing Adventures of Kavalier & Clay	THE AMAZING ADVENTURES OF KAVALIER & CLAY
+Just Kids	JUST KIDS
+A Heartbreaking Work of Staggering Genius	A HEARTBREAKING WORK OF STAGGERING GENIUS
+Coraline	CORALINE
+What We Talk About When We Talk About Love:  Stories	WHAT WE TALK ABOUT WHEN WE TALK ABOUT LOVE:  STORIES
+Where I'm Calling From: Selected Stories	WHERE I'M CALLING FROM: SELECTED STORIES
+White Noise	WHITE NOISE
+Cannery Row	CANNERY ROW
+Oblivion: Stories	OBLIVION: STORIES
+Consider the Lobster	CONSIDER THE LOBSTER
+*/
+select reverse(upper('Why does my cat look at me with such hatred?'));  /* #print ?DERTAH HCUS HTIW EM TA KOOL TAC YM SEOD YHW */
+select replace(concat('I',' ','like',' ','cats'),' ', '_'); /* #print I_like_cats */
+select title, replace(title,' ','->') as 'title replace spaces'
+from books;
+/*
+# title	title replace spaces
+The Namesake	The->Namesake
+Norse Mythology	Norse->Mythology
+American Gods	American->Gods
+Interpreter of Maladies	Interpreter->of->Maladies
+A Hologram for the King: A Novel	A->Hologram->for->the->King:->A->Novel
+The Circle	The->Circle
+The Amazing Adventures of Kavalier & Clay	The->Amazing->Adventures->of->Kavalier->&->Clay
+Just Kids	Just->Kids
+A Heartbreaking Work of Staggering Genius	A->Heartbreaking->Work->of->Staggering->Genius
+Coraline	Coraline
+What We Talk About When We Talk About Love:  Stories	What->We->Talk->About->When->We->Talk->About->Love:->->Stories
+Where I'm Calling From: Selected Stories	Where->I'm->Calling->From:->Selected->Stories
+White Noise	White->Noise
+Cannery Row	Cannery->Row
+Oblivion: Stories	Oblivion:->Stories
+Consider the Lobster	Consider->the->Lobster
+*/
+select authorlname, reverse(authorlname) as "Backwards string author last name"
+from books;
+/*
+# authorlname	Backwards string author last name
+Lahiri	irihaL
+Gaiman	namiaG
+Gaiman	namiaG
+Lahiri	irihaL
+Eggers	sreggE
+Eggers	sreggE
+Chabon	nobahC
+Smith	htimS
+Eggers	sreggE
+Gaiman	namiaG
+Carver	revraC
+Carver	revraC
+DeLillo	olliLeD
+Steinbeck	kcebnietS
+Foster Wallace	ecallaW retsoF
+Foster Wallace	ecallaW retsoF
+*/
+select upper(concat(authorfname, ' ' ,authorlname)) as "Full name capitalized"
+from books;
+/*
+# Full name capitalized
+JHUMPA LAHIRI
+NEIL GAIMAN
+NEIL GAIMAN
+JHUMPA LAHIRI
+DAVE EGGERS
+DAVE EGGERS
+MICHAEL CHABON
+PATTI SMITH
+DAVE EGGERS
+NEIL GAIMAN
+RAYMOND CARVER
+RAYMOND CARVER
+DON DELILLO
+JOHN STEINBECK
+DAVID FOSTER WALLACE
+DAVID FOSTER WALLACE
+*/
+select concat(title,' was released in ',releaseyear) as "Concat sentence. Reminder run desc books for column names"
+from books;
+/*
+# Concat sentence. Reminder run desc books for column names
+The Namesake was released in 2003
+Norse Mythology was released in 2016
+American Gods was released in 2001
+Interpreter of Maladies was released in 1996
+A Hologram for the King: A Novel was released in 2012
+The Circle was released in 2013
+The Amazing Adventures of Kavalier & Clay was released in 2000
+Just Kids was released in 2010
+A Heartbreaking Work of Staggering Genius was released in 2001
+Coraline was released in 2003
+What We Talk About When We Talk About Love:  Stories was released in 1981
+Where I'm Calling From: Selected Stories was released in 1989
+White Noise was released in 1985
+Cannery Row was released in 1945
+Oblivion: Stories was released in 2004
+Consider the Lobster was released in 2005
+*/
+select title, char_length(title)
+from books;
+/*
+# title	char_length(title)
+The Namesake	12
+Norse Mythology	15
+American Gods	13
+Interpreter of Maladies	23
+A Hologram for the King: A Novel	32
+The Circle	10
+The Amazing Adventures of Kavalier & Clay	41
+Just Kids	9
+A Heartbreaking Work of Staggering Genius	41
+Coraline	8
+What We Talk About When We Talk About Love:  Stories	52
+Where I'm Calling From: Selected Stories	40
+White Noise	11
+Cannery Row	11
+Oblivion: Stories	17
+Consider the Lobster	20
+*/
+select concat(substring(title,1,10),'...') as "short title", concat(authorlname,',',authorfname) as "author", concat(stockquantity,' in stock')as "quantity"
+from books;
+/*
+# short title	author	quantity
+The Namesa...	Lahiri,Jhumpa	32 in stock
+Norse Myth...	Gaiman,Neil	43 in stock
+American G...	Gaiman,Neil	12 in stock
+Interprete...	Lahiri,Jhumpa	97 in stock
+A Hologram...	Eggers,Dave	154 in stock
+The Circle...	Eggers,Dave	26 in stock
+The Amazin...	Chabon,Michael	68 in stock
+Just Kids...	Smith,Patti	55 in stock
+A Heartbre...	Eggers,Dave	104 in stock
+Coraline...	Gaiman,Neil	100 in stock
+What We Ta...	Carver,Raymond	23 in stock
+Where I'm ...	Carver,Raymond	12 in stock
+White Nois...	DeLillo,Don	49 in stock
+Cannery Ro...	Steinbeck,John	95 in stock
+Oblivion: ...	Foster Wallace,David	172 in stock
+Consider t...	Foster Wallace,David	92 in stock
+*/
+/* Insert three more books */
+insert into books (title, authorfname, authorlname, releaseyear, stockquantity, pages)
+values('10% Happier','Dan','Harris',2014,29,256),('fake_book','Freida','Harris',2001,287,428),('Lincoln In The Bardo','George','Saunders',2017,1000,367);  /* fake_book is a fake book */
+select distinct(authorlname) as "Unique last name no duplicates"
+from books;
+/*
+# Unique last name no duplicates
+Lahiri
+Gaiman
+Eggers
+Chabon
+Smith
+Carver
+DeLillo
+Steinbeck
+Foster Wallace
+Harris
+Saunders
+*/
+select distinct(concat(authorfname,' ',authorlname)) /* select distinct authorfname, authorlame from books; also works */
+from books;
+/*
+# (concat(authorfname,' ',authorlname))
+Jhumpa Lahiri
+Neil Gaiman
+Dave Eggers
+Michael Chabon
+Patti Smith
+Raymond Carver
+Don DeLillo
+John Steinbeck
+David Foster Wallace
+Dan Harris
+Freida Harris
+George Saunders
+*/
+select distinct authorfname, authorlname
+from books
+order by authorlname, authorfname desc; /*order by 1, 2 desc; also works */
+/*
+# authorfname	authorlname
+Raymond	Carver
+Michael	Chabon
+Don	DeLillo
+Dave	Eggers
+David	Foster Wallace
+Neil	Gaiman
+Freida	Harris
+Dan	Harris
+Jhumpa	Lahiri
+George	Saunders
+Patti	Smith
+John	Steinbeck
+*/
+select title as "Return three rows limit rows"
+from books
+limit 3;
+/*
+# Return three rows limit rows
+The Namesake
+Norse Mythology
+American Gods
+*/
+select title, releaseyear as "Five most recent books start at zero which is first row return five"
+from books
+order by releaseyear desc
+limit 0,5;
+/*
+# title	Five most recent books start at zero which is first row return five
+Lincoln In The Bardo	2017
+Norse Mythology	2016
+10% Happier	2014
+The Circle	2013
+A Hologram for the King: A Novel	2012
+*/
+select title, releaseyear as "Sixth most recent book afterwards start at five which is sixth row return the rest of the rows"
+from books
+order by releaseyear desc
+limit 5, 18729817928173;
+/*
+# title	Sixth most recent book afterwards start at five which is sixth row return the rest of the rows
+Just Kids	2010
+Consider the Lobster	2005
+Oblivion: Stories	2004
+Coraline	2003
+The Namesake	2003
+American Gods	2001
+A Heartbreaking Work of Staggering Genius	2001
+fake_book	2001
+The Amazing Adventures of Kavalier & Clay	2000
+Interpreter of Maladies	1996
+Where I'm Calling From: Selected Stories	1989
+White Noise	1985
+What We Talk About When We Talk About Love:  Stories	1981
+Cannery Row	1945
+*/
+/* wild card search use percentage % for asterik *.  The underscore _ is one character. */
+select authorfname, title as "Find books first name author begins with Da case insensitive"
+from books
+where authorfname like 'da%';
+/*
+# authorfname	Find books first name author begins with Da case insensitive
+Dave	A Hologram for the King: A Novel
+Dave	The Circle
+Dave	A Heartbreaking Work of Staggering Genius
+David	Oblivion: Stories
+David	Consider the Lobster
+Dan	10% Happier
+*/
+select authorfname, title as "Search book title with percentage sign % use escape character backslash \\"
+from books
+where title like '%\%%';
+/*
+# authorfname	Search book title with percentage sign % use escape character backslash \
+Dan	10% Happier
+*/
+select title as "Find titles with stories in title"
+from books
+where title like '%stories%';
+/*
+# Find titles with stories in title
+What We Talk About When We Talk About Love:  Stories
+Where I'm Calling From: Selected Stories
+Oblivion: Stories
+*/
+select title as "Book most pages", pages
+from books
+order by pages desc
+limit 1;
+/*
+# Book most pages	pages
+The Amazing Adventures of Kavalier & Clay	634
+*/
+select concat(title,' - ',releaseyear) as "Summary title and year three most recent books"
+from books
+order by releaseyear desc
+limit 3;
+/*
+# Summary title and year three most recent books
+Lincoln In The Bardo - 2017
+Norse Mythology - 2016
+10% Happier - 2014
+*/
+select title, authorlname as "Author last name with a space"
+from books
+where authorlname like '% %';
+/*
+# title	Author last name with a space
+Oblivion: Stories	Foster Wallace
+Consider the Lobster	Foster Wallace
+*/
+select title, releaseyear, stockquantity as "Three books fewest in stock"
+from books
+order by stockquantity asc, releaseyear desc
+limit 0,3;
+/*
+# title	releaseyear	Three books fewest in stock
+American Gods	2001	12
+Where I'm Calling From: Selected Stories	1989	12
+What We Talk About When We Talk About Love:  Stories	1981	23
+*/
+select title, authorlname
+from books
+order by authorlname, title;
+/*
+# title	authorlname
+What We Talk About When We Talk About Love:  Stories	Carver
+Where I'm Calling From: Selected Stories	Carver
+The Amazing Adventures of Kavalier & Clay	Chabon
+White Noise	DeLillo
+A Heartbreaking Work of Staggering Genius	Eggers
+A Hologram for the King: A Novel	Eggers
+The Circle	Eggers
+Consider the Lobster	Foster Wallace
+Oblivion: Stories	Foster Wallace
+American Gods	Gaiman
+Coraline	Gaiman
+Norse Mythology	Gaiman
+10% Happier	Harris
+fake_book	Harris
+Interpreter of Maladies	Lahiri
+The Namesake	Lahiri
+Lincoln In The Bardo	Saunders
+Just Kids	Smith
+Cannery Row	Steinbeck
+*/
+select concat(upper('my favorite author is '),upper(authorfname),' ',upper(authorlname),'!')
+from books
+order by authorlname;
+/*
+# concat(upper('my favorite author is '),upper(authorfname),' ',upper(authorlname),'!')
+MY FAVORITE AUTHOR IS RAYMOND CARVER!
+MY FAVORITE AUTHOR IS RAYMOND CARVER!
+MY FAVORITE AUTHOR IS MICHAEL CHABON!
+MY FAVORITE AUTHOR IS DON DELILLO!
+MY FAVORITE AUTHOR IS DAVE EGGERS!
+MY FAVORITE AUTHOR IS DAVE EGGERS!
+MY FAVORITE AUTHOR IS DAVE EGGERS!
+MY FAVORITE AUTHOR IS DAVID FOSTER WALLACE!
+MY FAVORITE AUTHOR IS DAVID FOSTER WALLACE!
+MY FAVORITE AUTHOR IS NEIL GAIMAN!
+MY FAVORITE AUTHOR IS NEIL GAIMAN!
+MY FAVORITE AUTHOR IS NEIL GAIMAN!
+MY FAVORITE AUTHOR IS DAN HARRIS!
+MY FAVORITE AUTHOR IS FREIDA HARRIS!
+MY FAVORITE AUTHOR IS JHUMPA LAHIRI!
+MY FAVORITE AUTHOR IS JHUMPA LAHIRI!
+MY FAVORITE AUTHOR IS GEORGE SAUNDERS!
+MY FAVORITE AUTHOR IS PATTI SMITH!
+MY FAVORITE AUTHOR IS JOHN STEINBECK!
+*/
