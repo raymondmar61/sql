@@ -283,3 +283,60 @@ Larry	1943-12-25	04:10:42	1943-12-25 04:10:42
 EdwardElric	2004-05-30	23:50:17	2004-05-30 23:50:17
 */
 show databases; #people table didn't show up in Database column results
+select curdate() as "return current date"; #print 2023-02-11
+select curtime() as "return current time in 24 hour format"; #print 01:04:39
+select now() as "return current datetime"; #print 2023-02-11 01:05:12
+insert into people (name, birthdate, birthtime, birthdatetime) values ('AlElric',curdate(),curtime(),now());
+select *
+from people;
+/*
+# name	birthdate	birthtime	birthdatetime
+Padma	1983-11-11	10:07:35	1983-11-11 10:07:35
+Larry	1943-12-25	04:10:42	1943-12-25 04:10:42
+EdwardElric	2004-05-30	23:50:17	2004-05-30 23:50:17
+AlElric	2023-02-11	01:07:18	2023-02-11 01:07:18
+*/
+select name, birthdate, day(birthdate) as "day number", dayname(birthdate) as "day name", dayofweek(birthdate) as "day name number Sun 1 Sat 7", dayofyear(birthdate) as "day number of the year", monthname(birthdate) as "month name full"
+from people;
+/*
+# name	birthdate	day number	day name	day name number Sun 1 Sat 7	day number of the year	month name full
+Padma	1983-11-11	11	Friday	6	315	November
+Larry	1943-12-25	25	Saturday	7	359	December
+EdwardElric	2004-05-30	30	Sunday	1	151	May
+AlElric	2023-02-11	11	Saturday	7	42	February
+*/
+select name, birthtime, hour(birthtime) as "hour in 24 hour clock"
+from people;
+select name, birthdate, concat(monthname(birthdate),' ',day(birthdate),', ',year(birthdate)) as "MMM dd, yyyy"
+from people;
+/*
+'Padma', '1983-11-11', 'November 11, 1983', 'November 11 1983'
+'Larry', '1943-12-25', 'December 25, 1943', 'December 25 1943'
+'EdwardElric', '2004-05-30', 'May 30, 2004', 'May 30 2004'
+'AlElric', '2023-02-11', 'February 11, 2023', 'February 11 2023'
+*/
+/*
+# name	birthdate	MMM dd, yyyy
+Padma	1983-11-11	November 11, 1983
+Larry	1943-12-25	December 25, 1943
+EdwardElric	2004-05-30	May 30, 2004
+AlElric	2023-02-11	February 11, 2023
+*/
+select name, birthdate, concat(monthname(birthdate),' ',day(birthdate),', ',year(birthdate)) as "MMM dd, yyyy", date_format(birthdate,'%M %d, %Y') as "MMM dd, yyyy", date_format(birthdate,'%m/%d/%Y') as "mm/dd/yyyy"
+from people;
+/*
+# name	birthdate	MMM dd, yyyy	MMM dd, yyyy	mm/dd/yyyy
+Padma	1983-11-11	November 11, 1983	November 11, 1983	11/11/1983
+Larry	1943-12-25	December 25, 1943	December 25, 1943	12/25/1943
+EdwardElric	2004-05-30	May 30, 2004	May 30, 2004	05/30/2004
+AlElric	2023-02-11	February 11, 2023	February 11, 2023	02/11/2023
+*/
+select name, birthtime, date_format(birthtime,'%h:%m')
+from people;
+/*
+# name	birthtime	date_format(birthtime,'%h:%m')
+Padma	10:07:35	10:02
+Larry	04:10:42	04:02
+EdwardElric	23:50:17	11:02
+AlElric	01:07:18	01:02
+*/
