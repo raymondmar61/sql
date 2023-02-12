@@ -340,3 +340,81 @@ Larry	04:10:42	04:02
 EdwardElric	23:50:17	11:02
 AlElric	01:07:18	01:02
 */
+select datediff('2007-12-31 23:59:59','2007-12-30') as "difference in days"; #print 1
+select datediff(now(),'2023-01-22') as "difference today Feb 11, 2023 and Jan 22, 2023"; #print 20
+select name, birthdate, datediff(now(),birthdate) as "Number of days old"
+from people;
+/*
+# name	birthdate	Number of days old
+Padma	1983-11-11	14337
+Larry	1943-12-25	28903
+EdwardElric	2004-05-30	6831
+AlElric	2023-02-11	0
+*/
+select birthdatetime, date_add(birthdatetime, interval 1 month) as "add one month to birthdatetime" /* date_add(date, interval expression unit) date add.  date_sub() date subtraction exists */
+from people;
+/*
+# birthdatetime	add one month to birthdatetime
+1983-11-11 10:07:35	1983-12-11 10:07:35
+1943-12-25 04:10:42	1944-01-25 04:10:42
+2004-05-30 23:50:17	2004-06-30 23:50:17
+2023-02-11 01:07:18	2023-03-11 01:07:18
+*/
+select birthdatetime, birthdatetime + interval 15 month + interval 10 hour as "15 months and 10 hours later"
+from people;
+/*
+# birthdatetime	15 months and 10 hours later
+1983-11-11 10:07:35	1985-02-11 20:07:35
+1943-12-25 04:10:42	1945-03-25 14:10:42
+2004-05-30 23:50:17	2005-08-31 09:50:17
+2023-02-11 01:07:18	2024-05-11 11:07:18
+*/
+/* Datetime year range is from year 1000 to year 9999.  Timestamp year range is from 1970 to 2038.  Timestamp uses less memory. */
+create table comments
+(content varchar(100), createdate timestamp default now());
+insert into comments (content) values("lol what a funny article");
+insert into comments (content) values("I found an octopus");
+insert into comments (content) values("A third comment minutes later");
+select *
+from comments;
+/*
+# content	createdate
+lol what a funny article	2023-02-11 15:49:00
+I found an octopus	2023-02-11 15:49:40
+A third comment minutes later	2023-02-11 15:56:10
+*/
+alter table comments
+add column changeddate timestamp default now() on update current_timestamp;  #change in a row SQL updates the column changeddate.  Default is timestamp when column changeddate created.  Date update.  on update current_timestamp or on update now() is the same.
+select *
+from comments;
+/*
+# content	createdate	changeddate
+lol what a funny article	2023-02-11 15:49:00	2023-02-11 15:59:00
+I found an octopus	2023-02-11 15:49:40	2023-02-11 15:59:00
+A third comment minutes later	2023-02-11 15:56:10	2023-02-11 15:59:00
+*/
+set sql_safe_updates = 0;
+update comments
+set content = 'lol what a funny article Update at 4:07pm'
+where content = 'lol what a funny article';
+select *
+from comments; #RM:  needed to set sql_safe_updates = 0;  Update change date is 4:09pm.
+/*
+# content	createdate	changeddate
+lol what a funny article Update at 4:07pm	2023-02-11 15:49:00	2023-02-11 16:09:00
+I found an octopus	2023-02-11 15:49:40	2023-02-11 15:59:00
+A third comment minutes later	2023-02-11 15:56:10	2023-02-11 15:59:00
+*/
+#What's a good use case for char [instead of varchar]?  A column with a fixed length.  State abbreviation, male or female.
+create table inventorydontexecute
+(itemname varchar(100), price decimal(8,2), quantity int); #price is less than 1,000,000.  999,999.99.  Eight digits decimal with two on the right of the decimal.
+select now() as "display current date and time", curtime() as "display current time", curdate() as "display current date only", dayofweek(now()) as "display day number Sun 1 Sat 7", date_format(now(),'%w') as "display day number Sun 0 Sat 6", dayname(now()) as "display day name", date_format(now(),'%W') as "display day name again";
+/*
+# display current date and time	display current time	display current date only	display day number Sun 1 Sat 7	display day number Sun 0 Sat 6	display day name	display day name again
+2023-02-11 16:29:18	16:29:18	2023-02-11	7	6	Saturday	Saturday
+*/
+select date_format(now(),'%m/%d/%Y') as "Current date mm/dd/yyyy"; #print 02/11/2023
+select date_format(curdate(),'%m/%d/%Y') as "Current date mm/dd/yyyy"; #print 02/11/2023
+select date_format(now(),'%M %D at %l:%i') as "like January 2nd at 3:15"; #print February 11th at 4:35
+create table tweetstabledontexecute
+(content varchar(180), username varchar(25), datecreated timestamp default now());
