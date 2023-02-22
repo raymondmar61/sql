@@ -418,3 +418,270 @@ select date_format(curdate(),'%m/%d/%Y') as "Current date mm/dd/yyyy"; #print 02
 select date_format(now(),'%M %D at %l:%i') as "like January 2nd at 3:15"; #print February 11th at 4:35
 create table tweetstabledontexecute
 (content varchar(180), username varchar(25), datecreated timestamp default now());
+select title as "Not equal year !="
+from books
+where releaseyear != 2017;
+select title as "Wild card % not like"
+from books
+where title not like 'W%';
+select 99>1; #print 1 which is True
+select 99<1; #print 0 which is False
+select 'a'>'b'; #print 0.  MySQL b is greater than a.  Other programming languages a is greater than b.
+select 'b'>'a'; #print 1
+select 'h' < 'p'; #print 1
+select 'A'>'a'; #print 0
+select 'A'='a'; #print 1.  It seems upper case and lower case are irrelevant.  String comparison case insensitive.
+select 'Q' <= 'q'; #print 1
+select title, authorlname, releaseyear as "And can use &&"
+from books
+where authorlname = 'Eggers' && releaseyear > 2010 and title like '%novel%';
+/*
+# title	authorlname	And can use &&
+A Hologram for the King: A Novel	Eggers	2012
+*/
+select title, authorlname, releaseyear as "Or can use ||"
+from books
+where authorlname = 'Eggers' || releaseyear > 2010 or title like '%novel%';
+/*
+# title	authorlname	Or can use ||
+Norse Mythology	Gaiman	2016
+A Hologram for the King: A Novel	Eggers	2012
+The Circle	Eggers	2013
+A Heartbreaking Work of Staggering Genius	Eggers	2001
+10% Happier	Harris	2014
+Lincoln In The Bardo	Saunders	2017
+*/
+select 'a' = 5 || 3000 > 2000; #print 1.  True or False is True.
+select title, releaseyear as "between is inclusive"
+from books
+where releaseyear between 2004 and 2015;
+select title, releaseyear as "not between is inclusive"
+from books
+where releaseyear not between 2004 and 2015
+order by releaseyear;
+/*
+# title	not between is inclusive
+Cannery Row	1945
+What We Talk About When We Talk About Love:  Stories	1981
+White Noise	1985
+Where I'm Calling From: Selected Stories	1989
+Interpreter of Maladies	1996
+The Amazing Adventures of Kavalier & Clay	2000
+American Gods	2001
+A Heartbreaking Work of Staggering Genius	2001
+fake_book	2001
+The Namesake	2003
+Coraline	2003
+Norse Mythology	2016
+Lincoln In The Bardo	2017
+*/
+/*https://www.tutorialspoint.com/how-to-get-the-datatype-of-mysql-table-columns*/
+select column_name, data_type
+from information_schema.columns
+where table_schema='bookshop' and table_name='books';
+/*
+# COLUMN_NAME	DATA_TYPE
+authorfname	varchar
+authorlname	varchar
+bookid	int
+pages	int
+releaseyear	int
+stockquantity	int
+title	varchar
+*/
+desc books;
+/*
+# Field	Type	Null	Key	Default	Extra
+bookid	int	NO	PRI		auto_increment
+title	varchar(100)	YES			
+authorfname	varchar(100)	YES			
+authorlname	varchar(100)	YES			
+releaseyear	int	YES			
+stockquantity	int	YES			
+pages	int	YES			
+*/
+describe books title; #RM:  desc or describe is valid.
+/*
+# Field	Type	Null	Key	Default	Extra
+title	varchar(100)	YES			
+*/
+desc books 'author%';
+/*
+# Field	Type	Null	Key	Default	Extra
+authorfname	varchar(100)	YES			
+authorlname	varchar(100)	YES			
+*/
+select('2017-05-22') as "May 22, 2017"; #print 2017-05-22
+desc select('2017-05-22');
+/*
+# id	select_type	table	partitions	type	possible_keys	key	key_len	ref	rows	filtered	Extra
+1	SIMPLE										No tables used
+*/
+select cast('2017-05-22' as datetime); #print '2017-05-22 00:00:00'
+desc select cast('2017-05-22' as datetime);
+/*
+# id	select_type	table	partitions	type	possible_keys	key	key_len	ref	rows	filtered	Extra
+1	SIMPLE										No tables used
+*/
+select *
+from people;
+/*
+# name	birthdate	birthtime	birthdatetime
+Padma	1983-11-11	10:07:35	1983-11-11 10:07:35
+Larry	1943-12-25	04:10:42	1943-12-25 04:10:42
+EdwardElric	2004-05-30	23:50:17	2004-05-30 23:50:17
+AlElric	2023-02-11	01:07:18	2023-02-11 01:07:18
+*/
+desc people;
+/*
+# Field	Type	Null	Key	Default	Extra
+name	varchar(100)	YES			
+birthdate	date	YES			
+birthtime	time	YES			
+birthdatetime	datetime	YES			
+*/
+select *
+from people
+where birthdatetime between '1980-01-01' and '1999-12-31';
+/*
+# name	birthdate	birthtime	birthdatetime
+Padma	1983-11-11	10:07:35	1983-11-11 10:07:35
+*/
+select name, birthdatetime as "No need to convert to datetype using case because birthdatetime is datetime data type"
+from people
+where birthdatetime between cast('1980-01-01' as datetype) and cast('1999-12-31' as datetype);
+/*
+Error Code: 1064. You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'datetype) and cast('1999-12-31' as datetype)' at line 3	0.000095 sec
+*/
+select title, releaseyear as "for loop modulo in where clause odd years"
+from books
+where releaseyear >= 2000
+and releaseyear % 2 != 0
+order by releaseyear;
+select title, releaseyear as "for loop modulo in where clause odd years"
+from books
+where releaseyear >= 2000
+and releaseyear % 2 = 0
+order by releaseyear;
+select title, releaseyear as "Case if else based on year", case when releaseyear>=2000 then 'Modern Lit' else '20th Century Lit' end as columnnamegenre
+from books;
+/*
+# title	Case if else based on year	columnnamegenre
+The Namesake	2003	Modern Lit
+Norse Mythology	2016	Modern Lit
+American Gods	2001	Modern Lit
+Interpreter of Maladies	1996	20th Century Lit
+A Hologram for the King: A Novel	2012	Modern Lit
+The Circle	2013	Modern Lit
+The Amazing Adventures of Kavalier & Clay	2000	Modern Lit
+Just Kids	2010	Modern Lit
+A Heartbreaking Work of Staggering Genius	2001	Modern Lit
+Coraline	2003	Modern Lit
+What We Talk About When We Talk About Love:  Stories	1981	20th Century Lit
+Where I'm Calling From: Selected Stories	1989	20th Century Lit
+White Noise	1985	20th Century Lit
+Cannery Row	1945	20th Century Lit
+Oblivion: Stories	2004	Modern Lit
+Consider the Lobster	2005	Modern Lit
+10% Happier	2014	Modern Lit
+fake_book	2001	Modern Lit
+Lincoln In The Bardo	2017	Modern Lit
+*/
+select title, stockquantity, case when stockquantity <50 then '*' when stockquantity <100 then '**' else '***' end as columnnamestock
+from books;
+/*
+# title	stockquantity	columnnamestock
+The Namesake	32	*
+Norse Mythology	43	*
+American Gods	12	*
+Interpreter of Maladies	97	**
+A Hologram for the King: A Novel	154	***
+The Circle	26	*
+The Amazing Adventures of Kavalier & Clay	68	**
+Just Kids	55	**
+A Heartbreaking Work of Staggering Genius	104	***
+Coraline	100	***
+What We Talk About When We Talk About Love:  Stories	23	*
+Where I'm Calling From: Selected Stories	12	*
+White Noise	49	*
+Cannery Row	95	**
+Oblivion: Stories	172	***
+Consider the Lobster	92	**
+10% Happier	29	*
+fake_book	287	***
+Lincoln In The Bardo	1000	***
+*/
+select authorlname, count(*)
+from books
+group by authorlname
+order by authorlname;
+/*
+# authorlname	count(*)
+Carver	2
+Chabon	1
+DeLillo	1
+Eggers	3
+Foster Wallace	2
+Gaiman	3
+Harris	2
+Lahiri	2
+Saunders	1
+Smith	1
+Steinbeck	1
+*/
+select title, authorlname as "Substring wildcard author's last name first character begins with C or S"
+from books
+where substr(authorlname,1,1) in ('c','s');
+/*
+# title	Substring wildcard author's last name first character begins with C or S
+The Amazing Adventures of Kavalier & Clay	Chabon
+Just Kids	Smith
+What We Talk About When We Talk About Love:  Stories	Carver
+Where I'm Calling From: Selected Stories	Carver
+Cannery Row	Steinbeck
+Lincoln In The Bardo	Saunders
+*/
+select title, authorlname, case when title like '%stories%' then 'Short Stories' when title in ('Just Kids','A Heartbreaking Work of Staggering Genius') then 'Memoir' else 'Novel' end as columnnamegenre
+from books;
+/*
+# title	authorlname	columnnamegenre
+The Namesake	Lahiri	Novel
+Norse Mythology	Gaiman	Novel
+American Gods	Gaiman	Novel
+Interpreter of Maladies	Lahiri	Novel
+A Hologram for the King: A Novel	Eggers	Novel
+The Circle	Eggers	Novel
+The Amazing Adventures of Kavalier & Clay	Chabon	Novel
+Just Kids	Smith	Memoir
+A Heartbreaking Work of Staggering Genius	Eggers	Memoir
+Coraline	Gaiman	Novel
+What We Talk About When We Talk About Love:  Stories	Carver	Short Stories
+Where I'm Calling From: Selected Stories	Carver	Short Stories
+White Noise	DeLillo	Novel
+Cannery Row	Steinbeck	Novel
+Oblivion: Stories	Foster Wallace	Short Stories
+Consider the Lobster	Foster Wallace	Novel
+10% Happier	Harris	Novel
+fake_book	Harris	Novel
+Lincoln In The Bardo	Saunders	Novel
+*/
+#RM:  If I listened to the video for five more seconds, then I didn't need the title column in the sql code below.  The solution included author's first name and author's last name.
+select authorfname, authorlname, case when count(authorlname) = 1 then concat(count(authorlname),' book') else concat(count(authorlname),' books') end as columnnameCOUNT
+from books
+group by authorlname, authorfname
+order by authorlname;
+/*
+# authorfname	authorlname	columnnameCOUNT
+Raymond	Carver	2 books
+Michael	Chabon	1 book
+Don	DeLillo	1 book
+Dave	Eggers	3 books
+David	Foster Wallace	2 books
+Neil	Gaiman	3 books
+Dan	Harris	1 book
+Freida	Harris	1 book
+Jhumpa	Lahiri	2 books
+George	Saunders	1 book
+Patti	Smith	1 book
+John	Steinbeck	1 book
+*/
