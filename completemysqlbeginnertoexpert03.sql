@@ -138,15 +138,129 @@ David	Bowie
 Blue	Steele		
 Bette	Davis	1999-04-11	450.25
 */
-select firstname, lastname, ifnull(sum(amount),0) as "Sum all customer's amount include customers with no purchases ifnull then 0"
+select firstname, lastname, ifnull(sum(amount),0) as "Sum all customer's amount include customers with no purchases if null then 0"
 from customers left join orders
 on customers.id = orders.customerid
 group by customers.id;
 /*
-# firstname	lastname	Sum all customer's amount include customers with no purchases ifnull then 0
+# firstname	lastname	Sum all customer's amount include customers with no purchases if null then 0
 Boy	George	135.49
 George	Michael	813.17
 David	Bowie	0.00
 Blue	Steele	0.00
 Bette	Davis	450.25
+*/
+select *
+from customers right join orders
+on customers.id = orders.customerid;
+/*
+# id	firstname	lastname	email	id	orderdate	amount	customerid
+1	Boy	George	george@gmail.com	1	2016-02-10	99.99	1
+1	Boy	George	george@gmail.com	2	2017-11-11	35.50	1
+2	George	Michael	gm@gmail.com	3	2014-12-12	800.67	2
+2	George	Michael	gm@gmail.com	4	2015-01-03	12.50	2
+5	Bette	Davis	bette@aol.com	5	1999-04-11	450.25	5
+*/
+create table students (id int not null auto_increment primary key, firstname varchar(20));
+drop table students;
+insert into students(firstname)
+values ('Caleb'),('Samantha'),('Raj'),('Carlos'),('Lisa');
+select *
+from students;
+/*
+# id	firstname
+1	Caleb
+2	Samantha
+3	Raj
+4	Carlos
+5	Lisa
+*/
+create table papers(studentid int, title varchar(50), grade int, foreign key (studentid) references students (id));
+insert into papers(studentid, title, grade)
+values (1,'My First Book Report',60),(1,'My Second Book Report',75),(2,'Russian Lit Through The Ages',94),(2,'De Montaigne And The Art Of The Essay',98),(4,'Borges And Magical Realism',89);
+select *
+from papers;
+/*
+# studentid	title	grade
+1	My First Book Report	60
+1	My Second Book Report	75
+2	Russian Lit Through The Ages	94
+2	De Montaigne And The Art Of The Essay	98
+4	Borges And Magical Realism	89
+*/
+select students.firstname, papers.title, papers.grade
+from students join papers
+on students.id=papers.studentid
+order by papers.grade desc;
+/*
+# firstname	title	grade
+Samantha	De Montaigne And The Art Of The Essay	98
+Samantha	Russian Lit Through The Ages	94
+Carlos	Borges And Magical Realism	89
+Caleb	My Second Book Report	75
+Caleb	My First Book Report	60
+*/
+select students.firstname, papers.title, papers.grade
+from students left join papers
+on students.id=papers.studentid;
+/*
+# firstname	title	grade
+Caleb	My First Book Report	60
+Caleb	My Second Book Report	75
+Samantha	Russian Lit Through The Ages	94
+Samantha	De Montaigne And The Art Of The Essay	98
+Raj		
+Carlos	Borges And Magical Realism	89
+Lisa		
+*/
+select students.firstname, papers.title, papers.grade
+from students right join papers
+on students.id=papers.studentid
+order by firstname desc, grade desc;
+/*
+# firstname	title	grade
+Samantha	De Montaigne And The Art Of The Essay	98
+Samantha	Russian Lit Through The Ages	94
+Carlos	Borges And Magical Realism	89
+Caleb	My Second Book Report	75
+Caleb	My First Book Report	60
+*/
+select students.firstname, ifnull(papers.title,'MISSING') as "title", ifnull(papers.grade,0) as "grade"
+from students left join papers
+on students.id=papers.studentid;
+/*
+# firstname	title	grade
+Caleb	My First Book Report	60
+Caleb	My Second Book Report	75
+Samantha	Russian Lit Through The Ages	94
+Samantha	De Montaigne And The Art Of The Essay	98
+Raj	MISSING	0
+Carlos	Borges And Magical Realism	89
+Lisa	MISSING	0
+*/
+select students.firstname, ifnull(avg(grade),0) as "average"
+from students left join papers
+on students.id=papers.studentid
+group by students.firstname
+order by 2 desc;
+/*
+# firstname	average
+Samantha	96.0000
+Carlos	89.0000
+Caleb	67.5000
+Raj	0.0000
+Lisa	0.0000
+*/
+select students.firstname, ifnull(avg(grade),0) as "average", case when avg(grade) >=75 then 'PASSING' when avg(grade) is null then 'add case when null to be explicit' else 'FAILING' end as "passing status"
+from students left join papers
+on students.id=papers.studentid
+group by students.firstname
+order by 2 desc;
+/*
+# firstname	average	passing status
+Samantha	96.0000	PASSING
+Carlos	89.0000	PASSING
+Caleb	67.5000	FAILING
+Raj	0.0000	add case when null to be explicit
+Lisa	0.0000	add case when null to be explicit
 */
