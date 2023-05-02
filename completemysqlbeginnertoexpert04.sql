@@ -1,7 +1,7 @@
 /* Complete MySQL Beginner to Expert [en6YPAgc6WM] */
 /* Fourth file */
 drop database instagram;
-create database igclone;
+create database igclone; #igclone is instagram clone
 use igclone;
 create table users (id integer auto_increment primary key, username varchar(255) unique not null, createdat timestamp default now());
 describe users;
@@ -241,3 +241,86 @@ Adelle96	182	https://dorcas.biz	43
 Seth46	123	http://shannon.org	42
 Annalise.McKenzie16	52	https://hershel.com	41
 */
+#5 How many times does the average user post?  The answer is take the total number of images posted and divide by the total number of users.
+select count(photos.id)
+from photos; #return 257
+select count(users.id)
+from users; #return 100
+select (
+    (select count(photos.id)
+    from photos)/
+    (select count(users.id)
+    from users)) as "average two tables aggregate average"; #return 2.5700
+#6 What are the top five most commonly used hashtags?
+select t.tagname, count(p.tagid)
+from tags t inner join phototags p
+on t.id = p.tagid
+group by t.tagname
+order by count(p.tagid) desc;
+/*
+'smile', '59'
+'beach', '42'
+'party', '39'
+'fun', '38'
+'concert', '24'
+'lol', '24'
+'food', '24'
+'hair', '23'
+...
+*/
+#7 Find users who liked every photo.
+select userid, count(userid)
+from likes
+group by userid
+order by 2 desc, userid;
+/*
+# userid	count(userid)
+5	257
+14	257
+21	257
+24	257
+36	257
+41	257
+54	257
+57	257
+66	257
+71	257
+75	257
+76	257
+91	257
+16	103
+...
+*/
+select l.userid, u.username
+from likes l inner join users u
+on l.userid = u.id
+group by l.userid
+having count(l.userid) =
+    (select count(userid)
+    from likes
+    group by userid
+    order by 1 desc limit 1);
+/*
+# userid	username
+5	Aniya_Hackett
+91	Bethany20
+54	Duane60
+14	Jaclyn81
+76	Janelle.Nikolaus81
+57	Julien_Schmidt
+75	Leslie67
+24	Maxwell.Halvorson
+41	Mckenna17
+66	Mike.Auer39
+71	Nia_Haag
+36	Ollie_Ledner37
+21	Rocio33
+*/
+#more accurate, less SQL code.  Count the total number of photos posted which is 257.
+select l.userid, u.username
+from likes l inner join users u
+on l.userid = u.id
+group by l.userid
+having count(l.userid) =
+    (select count(*)
+    from photos);
